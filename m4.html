@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M4 · Evaluate release quality in Zephyr · Crew Academy 301</title>
+<meta name="description" content="Module 4 of Jira Planning Analytics and Connected Work: use coverage and execution history to explain a release risk and choose the next test action.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/site.css?v=1">
+<link rel="icon" href="assets/img/favicon.svg">
+<style>
+  .m4-chain { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 16px 0 22px; }
+  .m4-chain span.node { background: var(--white); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; font-size: .9rem; box-shadow: var(--shadow-1); }
+  .m4-chain span.node b { display: block; font-family: var(--font-display); letter-spacing: .06em; text-transform: uppercase; font-size: .78rem; color: var(--blue-600); }
+  .m4-chain .arr { color: var(--ink-3); }
+  /* Zephyr practice replica */
+  .zr-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; border-bottom: 2px solid var(--line); padding-bottom: 8px; }
+  .zr-tabs button { font: 600 .9rem var(--font-body); background: #f3f6fb; border: 1px solid var(--line); color: var(--ink-2); padding: 7px 12px; border-radius: 8px; cursor: pointer; }
+  .zr-tabs button[aria-selected="true"] { background: var(--navy-900); color: #fff; border-color: var(--navy-900); }
+  .zr-tabs button:focus-visible, .zr-row-btn:focus-visible { outline: 2px solid var(--sky-400); outline-offset: 2px; }
+  .zr-panel[hidden] { display: none; }
+  .zr-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; align-items: baseline; margin-bottom: 8px; }
+  .zr-head h4 { margin: 0; font-size: .9rem; }
+  .zr-bar { display: flex; height: 16px; border-radius: 999px; overflow: hidden; background: var(--sky-100); margin: 6px 0 6px; }
+  .zr-bar i { display: block; height: 100%; }
+  .s-pass { background: #2fa36b; } .s-fail { background: #d6203a; } .s-blocked { background: #8a5cd1; } .s-ne { background: #9aa6ba; } .s-ip { background: #f0a92b; }
+  .zr-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .82rem; color: var(--ink-2); margin-bottom: 10px; }
+  .zr-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
+  .zr-st { display: inline-block; font-size: .74rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 2px 8px; border-radius: 5px; color: #fff; white-space: nowrap; }
+  .zr-st.none { background: #fff; color: var(--alert); border: 1.5px dashed var(--alert); }
+  table.zr { width: 100%; border-collapse: collapse; font-size: .88rem; min-width: 640px; }
+  table.zr th { background: #24324d; color: #fff; text-align: left; padding: 8px 10px; font-weight: 600; font-size: .8rem; }
+  table.zr td { padding: 7px 10px; border-top: 1px solid var(--line); vertical-align: top; }
+  table.zr td code { font-size: .8rem; }
+  .zr-row-btn { font: inherit; font-size: .85rem; background: none; border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; cursor: pointer; color: var(--blue-600); }
+  .zr-detail { border: 1px solid var(--line); border-left: 5px solid var(--blue-500); border-radius: 10px; background: #fbfcfe; padding: 12px 14px; margin: 12px 0; font-size: .92rem; }
+  .zr-detail h5 { margin: 0 0 6px; font: 700 1rem var(--font-display); color: var(--navy-900); letter-spacing: .02em; }
+  .zr-detail ol { margin: 6px 0 8px; padding-left: 20px; }
+  .zr-seg { display: inline-flex; gap: 4px; flex-wrap: wrap; margin: 4px 0 10px; }
+  .zr-seg button { font: 600 .85rem var(--font-body); border: 1.5px solid var(--line); background: #fff; border-radius: 999px; padding: 5px 11px; cursor: pointer; color: var(--ink-2); }
+  .zr-seg button[aria-pressed="true"] { border-color: var(--blue-500); background: var(--sky-100); color: var(--navy-900); }
+  .zr-verdict { font-weight: 700; font-size: .85rem; }
+  .v-ok { color: var(--go); } .v-bad { color: var(--alert); } .v-warn { color: var(--beacon-ink); } .v-none { color: var(--alert); }
+  .zr-change { background: var(--warn-bg); border: 1px solid #f4d48b; border-radius: 10px; padding: 12px 14px; margin: 0 0 12px; font-size: .93rem; }
+  .zr-pick { list-style: none; padding: 0; margin: 0; columns: 2 300px; column-gap: 18px; }
+  .zr-pick li { break-inside: avoid; display: flex; gap: 8px; align-items: flex-start; padding: 6px 0; border-bottom: 1px dashed var(--line); font-size: .9rem; }
+  .zr-pick input { width: 18px; height: 18px; margin-top: 3px; accent-color: var(--blue-600); flex: none; }
+  .zr-pick li.good { background: var(--go-bg); } .zr-pick li.miss { background: var(--alert-bg); } .zr-pick li.extra { background: var(--warn-bg); }
+  .zr-pick small { display: block; color: var(--ink-3); }
+  .zr-feedback { margin-top: 12px; font-size: .93rem; }
+  .zr-dec { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin: 8px 0 12px; }
+  .zr-dec label { display: block; border: 1.5px solid var(--line); border-radius: 10px; padding: 10px 12px; cursor: pointer; background: #fff; }
+  .zr-dec label:has(input:checked) { border-color: var(--blue-500); background: var(--sky-100); }
+  .zr-dec b { font-family: var(--font-display); font-size: 1.2rem; letter-spacing: .06em; text-transform: uppercase; }
+  .zr-dec small { display: block; color: var(--ink-3); font-size: .82rem; }
+  @media (max-width: 640px) { .zr-dec { grid-template-columns: minmax(0,1fr); } }
+  .zr-ev { list-style: none; padding: 0; margin: 0; }
+  .zr-ev li { display: flex; gap: 8px; align-items: flex-start; padding: 5px 0; font-size: .92rem; }
+  .zr-ev input { width: 18px; height: 18px; margin-top: 3px; accent-color: var(--blue-600); flex: none; }
+  .btn-line { background: #fff; color: var(--blue-600); border: 1.5px solid var(--blue-500); }
+  .btn-line:hover { background: var(--sky-100); color: var(--blue-600); }
+  .zr-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+</style>
+</head>
+<body>
+<header id="site-header"></header>
+<main id="main">
+
+<section class="hero compact module-hero">
+  <div class="clouds" aria-hidden="true"><div class="cloud" style="top:24%;width:190px;height:44px;animation-duration:78s"></div><div class="cloud" style="top:62%;width:140px;height:34px;animation-duration:60s;animation-delay:-28s"></div></div>
+  <div class="wrap">
+    <div class="eyebrow">Module 4 of 8 · Session 1 · Reconcile the delivery evidence</div>
+    <h1>Evaluate release quality in Zephyr</h1>
+    <p class="lede">A 93% pass rate sounds like a release. Then you ask which acceptance criteria those passes actually prove, and the answer gets a lot more interesting.</p>
+    <div class="meta-row"><span class="chip">40 min</span><span class="chip">20 min practice</span><span class="chip gold">Lab: Find the risk behind the pass rate</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap layout">
+    <aside class="toc" aria-label="On this page">
+      <h4>On this page</h4>
+      <ol>
+        <li><a href="#objective">Objective</a></li>
+        <li><a href="#l1">Coverage is a mapping</a></li>
+        <li><a href="#l2">Failures and the retest trail</a></li>
+        <li><a href="#l3">Who signs the completion point</a></li>
+        <li><a href="#replica">Zephyr practice replica</a></li>
+        <li><a href="#demo">Instructor demo</a></li>
+        <li><a href="#m4-lab">Lab: The risk behind the pass rate</a></li>
+        <li><a href="#check">Checkpoint</a></li>
+      </ol>
+    </aside>
+
+    <div>
+      <div class="objective-banner" id="objective">
+        <div class="eyebrow">Objective</div>
+        <p>Use coverage and execution history to explain a release risk and the next test action.</p>
+      </div>
+      <ul class="topics" aria-label="Topics"><li>Requirement-to-case coverage</li><li>Cycle scope for a release or build</li><li>Failed, blocked and unexecuted tests</li><li>Linked defects</li><li>Regression selection</li><li>Retest history</li><li>Quality review (eQE)</li><li>Product Owner acceptance</li><li>UAT evidence</li><li>Approved completion point</li></ul>
+
+      <!-- L1 -->
+      <article class="lesson" id="l1">
+        <h2><span class="lesson-code">M4.1</span> Coverage is a mapping, not a percentage</h2>
+        <p>Zephyr organizes test evidence in four layers. You need all four to say anything about release quality:</p>
+        <div class="m4-chain" aria-label="Traceability chain">
+          <span class="node"><b>Requirement</b>a Jira Story and its acceptance criteria</span><span class="arr" aria-hidden="true">→</span>
+          <span class="node"><b>Test case</b>steps and expected results, linked to the requirement</span><span class="arr" aria-hidden="true">→</span>
+          <span class="node"><b>Test cycle</b>the cases chosen for a release or build</span><span class="arr" aria-hidden="true">→</span>
+          <span class="node"><b>Execution</b>Pass, Fail, Blocked, Not Executed or In Progress, plus linked defects</span>
+        </div>
+        <p>A <b>pass rate</b> is calculated inside one cycle: passed executions divided by executions. It says nothing about the requirements that never made it into the cycle. <b>Coverage</b> asks the opposite question: for each acceptance criterion, is there a linked test case, is it in the release's cycle, and what is its latest result?</p>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th>Question</th><th>Pass rate answers it?</th><th>Coverage answers it?</th></tr></thead>
+          <tbody>
+            <tr><td>How many of the tests we ran passed?</td><td class="v-ok">Yes</td><td>Partly</td></tr>
+            <tr><td>Does every acceptance criterion have a test?</td><td class="v-bad">No</td><td class="v-ok">Yes</td></tr>
+            <tr><td>Which criteria have no executed evidence on this build?</td><td class="v-bad">No</td><td class="v-ok">Yes</td></tr>
+            <tr><td>Is a failure still open, and is it linked to a Bug?</td><td class="v-bad">No</td><td class="v-ok">Yes, with execution history</td></tr>
+          </tbody>
+        </table></div>
+        <p>A cycle built from the regression library can score 93% and still never touch the criteria that matter for this release. A smaller cycle built from the release's acceptance criteria will usually look worse, because it includes the hard cases. Judge the release on the second kind.</p>
+        <div class="callout tip"><strong>Cycle scope is a decision</strong>Name each cycle after what it proves: the release or build it covers and the requirement set it was built from. "Regression · build 1.9.3" and "Release readiness · swap-approved path · build 1.9.4" tell a reviewer what each pass rate can and can't support.</div>
+      </article>
+
+      <!-- L2 -->
+      <article class="lesson" id="l2">
+        <h2><span class="lesson-code">M4.2</span> Failures, blocks and the retest trail</h2>
+        <p>Each execution status carries a different message for the release decision:</p>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th>Status</th><th>What it means</th><th>What to do with it</th></tr></thead>
+          <tbody>
+            <tr><td><span class="zr-st s-pass">Pass</span></td><td>The expected result was observed on this build.</td><td>Evidence, but only for this build. A later change to the same code can invalidate it.</td></tr>
+            <tr><td><span class="zr-st s-fail">Fail</span></td><td>The actual result differed. A defect should be linked.</td><td>Trace to the Bug. The criterion is unproven until a retest passes on a build that contains the fix.</td></tr>
+            <tr><td><span class="zr-st s-blocked">Blocked</span></td><td>The test couldn't run: an environment, data or dependency problem.</td><td>Name the blocker. A blocked test is missing evidence, not a soft pass.</td></tr>
+            <tr><td><span class="zr-st s-ne">Not Executed</span></td><td>Planned but never run.</td><td>Missing evidence. Ask why and when it will run.</td></tr>
+            <tr><td><span class="zr-st s-ip">In Progress</span></td><td>Started, not finished.</td><td>Treat as missing until it has a result.</td></tr>
+          </tbody>
+        </table></div>
+        <p>Zephyr keeps every execution, so a test case has a <b>history</b>: the build, the date, the result, the comment and any linked defects. The latest execution is the current state of that evidence. The history tells you whether a fix has been retested at all.</p>
+        <p>The live training site has the Jira side of one such trail. <a data-jira="/browse/CRW-62">Bug CRW-62 ↗</a>, "Swap-approved email shows the wrong home base", is High priority, in Development, 2 points, in sprint ALR-2026.q4.4. Its description says it was found by test execution of the swap-approved email case. The Bug is still in Development, so no retest on a fixed build can exist yet.</p>
+        <p>The symptom isn't new. Story CRW-29 describes the same wrong-home-base behaviour on the swap request form:</p>
+        <figure class="shot">
+          <div class="frame"><div class="frame-bar"><i></i><i></i><i></i><span>…atlassian.net/browse/CRW-29</span></div>
+          <img src="assets/img/crw-29-hidden-item.jpg" alt="CRW-29 Swap request shows the wrong home base: crew based at ORD see DEN as their home base on the swap request form; Development, 2 story points, sprint SWP-2026.q4.4, fix version Crew App 4.2, relates to KAN-4" loading="lazy"></div>
+          <figcaption>CRW-29: "Crew based at ORD see DEN as their home base on the swap request form." Same symptom family as Bug CRW-62. When a fix to home-base lookup lands, a regression selection that only reruns the email test would miss this path.</figcaption>
+        </figure>
+        <h3>Regression selection after a change</h3>
+        <p>Rerunning the whole library after every fix is slow and teaches people to ignore results. Rerunning only the failed test misses side effects. Choose by <b>what the change touches</b>:</p>
+        <ul>
+          <li>The test that failed and is linked to the Bug.</li>
+          <li>Every other test that exercises the same code path or data (here: anything that displays or converts by home base).</li>
+          <li>Any check for a sibling defect with the same symptom, even if it belongs to another team's work.</li>
+          <li>Not the unrelated cases. Unsubscribe links and retry policies don't read the home base.</li>
+        </ul>
+        <div class="callout warn"><strong>Blocked by a dependency, not by the tester</strong><a data-jira="/browse/CRW-58">CRW-58 ↗</a> "Test swap-approved notifications end to end" is blocked by <a data-jira="/browse/CRW-22">CRW-22 ↗</a>, the swap eligibility engine, which sits in eQE Testing. An end-to-end test that depends on it can't produce evidence until CRW-22 clears quality review. Say that in the decision instead of letting the Blocked count disappear into a percentage.</div>
+        <pre data-jql data-label="What CRW-22 is holding up (expect CRW-58)">issue in linkedIssues(CRW-22, "blocks")</pre>
+      </article>
+
+      <!-- L3 -->
+      <article class="lesson" id="l3">
+        <h2><span class="lesson-code">M4.3</span> Who signs the completion point</h2>
+        <p>The Crew Delivery Workflow separates three kinds of approval. Each leaves different evidence:</p>
+        <div class="flow" aria-label="Delivery stages that carry quality evidence"><span class="st prog">Ready for eQE</span><span class="arr">→</span><span class="st prog">eQE Testing</span><span class="arr">→</span><span class="st prog">PO Review</span><span class="arr">→</span><span class="st prog">Ready for Release</span><span class="arr">→</span><span class="st done">Done</span></div>
+        <div class="grid g3">
+          <div class="card"><h4>Quality review (eQE)</h4><p>Embedded quality engineering runs the cycle and links defects. Evidence: executions and linked Bugs.</p></div>
+          <div class="card"><h4>PO acceptance</h4><p>The Product Owner checks the result against the acceptance criteria. Evidence: the transition out of PO Review and a comment naming what was accepted.</p></div>
+          <div class="card"><h4>UAT evidence</h4><p>Business users confirm it works for them, where the release requires it. Evidence: a UAT cycle or signed record.</p></div>
+        </div>
+        <p>The <b>approved completion point</b> is the status at which your organization says the work is complete for a given purpose. Module 3 showed why it matters: the ALR board counts Ready for Release as done. <a data-jira="/browse/CRW-54">CRW-54 ↗</a>, "SMS template for swap approved", was counted in ALR's 19 completed points and is still in Ready for Release. In the replica below you'll see whether its acceptance criteria are actually proven.</p>
+        <h3>Proceed, hold or clarify</h3>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th>Call</th><th>Use it when</th><th>Must include</th></tr></thead>
+          <tbody>
+            <tr><td><b>Proceed</b></td><td>Every release criterion has a current passing execution, or an accepted and recorded exception.</td><td>The cycle, the build and who accepted any exception.</td></tr>
+            <tr><td><b>Hold</b></td><td>A known failure, or missing evidence for a criterion that matters, would reach users.</td><td>The precise evidence that releases the hold, and who produces it.</td></tr>
+            <tr><td><b>Clarify</b></td><td>The gap is a question, not a known failure: scope, definition, or who accepts a criterion.</td><td>The exact question, who answers it, and the decision each answer leads to.</td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout captain"><strong>Precise missing evidence</strong>"More testing needed" isn't a hold condition. "A Pass for CRW-T16 on a build containing the CRW-62 fix" is. A reviewer should be able to tell, from your sentence alone, when the hold is over.</div>
+      </article>
+
+      <!-- Replica -->
+      <article class="lesson" id="replica">
+        <h2><span class="lesson-code">M4.4</span> Zephyr practice replica</h2>
+        <div class="callout replica"><strong>Practice replica</strong>Zephyr isn't installed on the training site yet. This replica uses the same CRW records (Bug CRW-62, stories CRW-50, CRW-54, CRW-58, CRW-29, Risk CRW-71, CRW-22 in eQE Testing) so you can do the same analysis. The test cases (CRW-T…), the acceptance criteria list, the cycles, builds and execution results are replica fixtures, not data on the site. When the app is installed, repeat the analysis in Jira.</div>
+        <p>Scope under review: the <b>swap-approved notification path</b> that crew see when a self-service swap is approved: push, SMS and email. Seven acceptance criteria (AC1–AC7) define it.</p>
+        <div class="replica-frame">
+          <div class="replica-bar"><span>Zephyr · Crew Scheduling (Training) · Test cycles and traceability</span><span class="tag-rep">PRACTICE REPLICA</span></div>
+          <div class="replica-body">
+            <div class="zr-tabs" role="tablist" aria-label="Replica views">
+              <button type="button" role="tab" id="zt-c1" aria-controls="zp-c1" aria-selected="true">Cycle 1 · Regression</button>
+              <button type="button" role="tab" id="zt-c2" aria-controls="zp-c2" aria-selected="false" tabindex="-1">Cycle 2 · Release readiness</button>
+              <button type="button" role="tab" id="zt-cov" aria-controls="zp-cov" aria-selected="false" tabindex="-1">Traceability</button>
+              <button type="button" role="tab" id="zt-re" aria-controls="zp-re" aria-selected="false" tabindex="-1">Retest selection</button>
+              <button type="button" role="tab" id="zt-dec" aria-controls="zp-dec" aria-selected="false" tabindex="-1">Decision</button>
+            </div>
+            <div class="zr-panel" role="tabpanel" id="zp-c1" aria-labelledby="zt-c1"></div>
+            <div class="zr-panel" role="tabpanel" id="zp-c2" aria-labelledby="zt-c2" hidden></div>
+            <div class="zr-panel" role="tabpanel" id="zp-cov" aria-labelledby="zt-cov" hidden>
+              <div class="zr-head"><h4>Requirement coverage · swap-approved path</h4></div>
+              <p style="font-size:.9rem;margin:0">Count evidence from:</p>
+              <div class="zr-seg" role="group" aria-label="Count evidence from">
+                <button type="button" data-scope="c1" aria-pressed="true">Cycle 1 only</button>
+                <button type="button" data-scope="c2" aria-pressed="false">Cycle 2 only</button>
+                <button type="button" data-scope="both" aria-pressed="false">Both cycles (latest execution)</button>
+              </div>
+              <div id="zr-cov"></div>
+            </div>
+            <div class="zr-panel" role="tabpanel" id="zp-re" aria-labelledby="zt-re" hidden>
+              <div class="zr-change"><b>Supplied change (replica):</b> the fix for CRW-62 changes how the crew member's home base is looked up. It now comes from the crew profile instead of the first trip's departure station. The same lookup feeds the swap-approved email, the SMS report-time conversion and the swap request form. Build 1.9.5 will contain it.</div>
+              <p style="font-size:.93rem">Tick the test cases to rerun on build 1.9.5 because of this change. CRW-T31 is in the library but in neither cycle.</p>
+              <ul class="zr-pick" id="zr-pick"></ul>
+              <div class="zr-btns"><button class="btn btn-sm btn-blue" type="button" id="zr-check">Check my selection</button><button class="btn btn-sm btn-line" type="button" id="zr-send-re">Send to my evidence</button></div>
+              <div class="zr-feedback" id="zr-refb" aria-live="polite"></div>
+            </div>
+            <div class="zr-panel" role="tabpanel" id="zp-dec" aria-labelledby="zt-dec" hidden>
+              <div class="zr-head"><h4>Release-quality recommendation · swap-approved path</h4></div>
+              <fieldset style="border:0;padding:0;margin:0"><legend class="muted" style="font-size:.9rem">Your call</legend>
+              <div class="zr-dec">
+                <label><input type="radio" name="zr-call" value="proceed"> <b>Proceed</b><small>Evidence supports release.</small></label>
+                <label><input type="radio" name="zr-call" value="hold"> <b>Hold</b><small>Known failure or missing evidence that matters.</small></label>
+                <label><input type="radio" name="zr-call" value="clarify"> <b>Clarify</b><small>An open question decides it.</small></label>
+              </div></fieldset>
+              <p style="font-size:.93rem;margin-bottom:4px">What precise evidence would change or release your call? Tick all that apply.</p>
+              <ul class="zr-ev" id="zr-ev"></ul>
+              <div class="zr-btns"><button class="btn btn-sm btn-blue" type="button" id="zr-dcheck">Check my recommendation</button><button class="btn btn-sm btn-line" type="button" id="zr-send-dec">Send to my evidence</button></div>
+              <div class="zr-feedback" id="zr-decfb" aria-live="polite"></div>
+            </div>
+            <div id="zr-detail" aria-live="polite"></div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Demo -->
+      <div class="callout demo" id="demo"><strong>Instructor demo · 8 min</strong>
+        <ol>
+          <li>Open Cycle 1 in the replica (or the real cycle if Zephyr is installed). Read out the pass rate: 13 of 14, 93%. Ask the room: "Ship it?"</li>
+          <li>Open Traceability with "Cycle 1 only". Three criteria (AC3, AC4, AC7) have no test in the cycle. The 93% says nothing about them.</li>
+          <li>Switch to Cycle 2, the one built from the acceptance criteria. Every criterion has a case, and the pass rate drops to 4 of 7. Point at CRW-T15 Not Executed and CRW-T19 Blocked.</li>
+          <li>Open CRW-T16's execution history: failed on build 1.9.3, retested on 1.9.4, failed again, linked to CRW-62. Open <a data-jira="/browse/CRW-62">CRW-62 ↗</a> in Jira: High, still in Development.</li>
+          <li>Open <a data-jira="/browse/CRW-58">CRW-58 ↗</a>: blocked by CRW-22, which is in eQE Testing on the <a data-jira="/jira/software/c/projects/CRW/boards/60">SWP board ↗</a>. That's why CRW-T19 is Blocked.</li>
+          <li>Open <a data-jira="/browse/CRW-29">CRW-29 ↗</a>: the same ORD-shows-DEN symptom on the swap request form. Ask what the regression selection after the home-base fix should include.</li>
+          <li>Model the format: "Hold the swap-approved path. Released when: …" with each condition precise enough to check.</li>
+        </ol>
+      </div>
+
+      <!-- Lab -->
+      <article class="mission" id="m4-lab" data-miles="450">
+        <div class="mission-head">
+          <div><span class="mcode">LAB M4 · 20 MIN · CRW READ-ONLY · REPLICA + YOUR SEAT</span><h3>Find the risk behind the pass rate</h3></div>
+          <span class="turb" title="Difficulty"><i class="on"></i><i class="on"></i><i class="on"></i><i></i> Turbulence</span>
+        </div>
+        <div class="mission-body">
+          <div class="brief"><b>Brief</b> The release review asks QA for "a quality number" on the swap-approved notification path. Someone has already pasted "93% pass". Find what that number hides, choose the retests after the supplied fix, and give a proceed, hold or clarify call with the precise missing evidence. <b>CRW is read-only</b>: open CRW-62, CRW-29, CRW-54, CRW-58, CRW-22 and CRW-71 to check facts, but don't edit, transition, comment, link or flag. The analysis runs in the replica. If you want to record your call in Jira, comment on your own seat epic <span data-seat-epic></span> only.</div>
+          <ol class="steps">
+            <li><b>Find the coverage gap and the unresolved executions (7 min).</b>
+              <ol>
+                <li>In the <a href="#replica">replica</a>, open <b>Cycle 1</b>. Note the pass rate and which requirements its cases are linked to.</li>
+                <li>Open <b>Traceability</b> with "Cycle 1 only". List the acceptance criteria with no test in that cycle.</li>
+                <li>Switch to "Both cycles". Find the criterion that still has <b>no executed evidence anywhere</b>, and the executions that are unresolved (failed or blocked). Open each one's history.</li>
+                <li>Open <a data-jira="/browse/CRW-71">Risk CRW-71 ↗</a> in Jira. Its ROAM treatment is Mitigated. Ask yourself what evidence that mitigation rests on.</li>
+              </ol></li>
+            <li><b>Trace the Bug and choose the retests (7 min).</b>
+              <ol>
+                <li>Open CRW-T16's history in Cycle 2 and follow the link to <a data-jira="/browse/CRW-62">CRW-62 ↗</a>. Record its status, priority and sprint.</li>
+                <li>Open <a data-jira="/browse/CRW-29">CRW-29 ↗</a> and compare the symptom. Treat a shared root cause as a hypothesis to confirm with the developer, not a fact.</li>
+                <li>In <b>Retest selection</b>, read the supplied change, tick the cases to rerun on build 1.9.5, and check your selection. Send it to your evidence.</li>
+              </ol></li>
+            <li><b>Make the call (6 min).</b>
+              <ol>
+                <li>In <b>Decision</b>, choose proceed, hold or clarify and tick the precise evidence that would release or change your call. Check it.</li>
+                <li>Complete your evidence card. Each missing item names a test case, a build or a Jira key.</li>
+                <li>Optional: add your call as a comment on your seat epic <span data-seat-epic></span>, starting with <code>L{SEAT} · M4 quality call:</code>.</li>
+              </ol></li>
+          </ol>
+          <pre data-jql data-label="Check your work: the records behind the replica (expect 6)">key in (CRW-22, CRW-29, CRW-54, CRW-58, CRW-62, CRW-71) ORDER BY key ASC</pre>
+          <pre data-jql data-label="Check your work: open Bugs in CRW (expect CRW-34, CRW-62)">project = CRW AND issuetype = Bug AND statusCategory != Done ORDER BY key ASC</pre>
+          <pre data-jql data-label="Discovery: what else mentions the home base?">project = CRW AND text ~ "home base" ORDER BY key ASC</pre>
+          <details class="reveal"><summary>Debrief: what a strong answer looks like</summary><div>
+            <p><b>Coverage finding.</b> Cycle 1's 93% (13 of 14) never tests AC3 (report time in home-base local time), AC4 (no personal data beyond first name in the SMS) or AC7 (end to end). Across both cycles, <b>AC4 has no executed evidence</b>: its only case, CRW-T15, is Not Executed in Cycle 2. Risk CRW-71 "Crew personal data in SMS notifications" is marked Mitigated, but no executed test supports that.</p>
+            <p><b>Unresolved executions.</b> CRW-T16 (AC5, email) failed on 1.9.3 and again on its retest on 1.9.4; it's linked to Bug CRW-62, which is High and still in Development. CRW-T19 (AC7, end to end) is Blocked because CRW-58 is blocked by CRW-22, still in eQE Testing. CRW-T15 is Not Executed.</p>
+            <p><b>Targeted retest.</b> On the build with the fix: CRW-T16 (the failure), CRW-T14 (SMS report time converts by home base; its Pass on 1.9.4 predates the change) and CRW-T31 (swap request form home base, the CRW-29 symptom). Run CRW-T15 too, but because it was never executed, not because of the change. Unsubscribe, retry, rate-limit and audit cases don't touch the home-base lookup.</p>
+            <p><b>Recommendation.</b> <b>Hold</b> the swap-approved notification path. It's released when: CRW-T16 passes on a build containing the CRW-62 fix; CRW-T14 and CRW-T31 pass on that same build; CRW-T15 has an executed result for AC4, reviewed by the CRW-71 risk owner; CRW-T19 runs once CRW-22 clears eQE Testing; and the Product Owner accepts the result. Add a <b>clarify</b> if the release scope is unclear: if the email channel isn't in this release, say so in writing and the AC5 condition moves to the next release, but AC4 and AC7 still apply. "Proceed" isn't supported: a High defect is failing in the path users will see.</p>
+            <p><b>Cross-check with Module 3.</b> CRW-54, the SMS template, sits in ALR's 19 "completed" points. One of its criteria (AC4) has no executed evidence. A board that counts Ready for Release as done can call work complete before quality evidence exists.</p>
+          </div></details>
+          <div class="evidence" data-evidence="m4">
+            <h4>Learner output · Module 4</h4>
+            <p class="hint">A coverage finding, a targeted retest choice and a release-quality recommendation.</p>
+            <label for="m4-coverage">Coverage finding (missing acceptance criterion)</label><textarea id="m4-coverage" data-field="coverage" placeholder="AC… has no executed evidence because …"></textarea>
+            <label for="m4-execution">Unresolved or unexecuted test execution</label><textarea id="m4-execution" data-field="execution"></textarea>
+            <label for="m4-retest">Targeted retest choice and the linked Bug</label><textarea id="m4-retest" data-field="retest"></textarea>
+            <label for="m4-decision">Proceed, hold or clarify, with the precise missing evidence</label><textarea id="m4-decision" data-field="decision"></textarea>
+          </div>
+        </div>
+        <div class="mission-foot"><span class="miles-tag">+450 mi</span><button class="complete-btn" type="button">Mark lab complete</button></div>
+      </article>
+
+      <!-- Quiz -->
+      <section class="quiz" id="check" data-id="m4" data-pass="75" data-miles="200" style="padding:24px">
+        <h2 style="margin-top:0">Checkpoint</h2>
+        <div class="q"><p class="prompt">1. Cycle 1 passed 13 of 14 executions. What does that tell you about AC4 (no personal data beyond first name in the SMS)?</p><div class="opts">
+          <button class="opt" type="button" data-right>Nothing. Cycle 1 has no test case linked to AC4.</button>
+          <button class="opt" type="button">AC4 is very likely fine, since 93% of tests passed.</button>
+          <button class="opt" type="button">AC4 failed, because the one failure in the cycle must be the SMS case.</button>
+          <button class="opt" type="button">AC4 is covered by the regression cases for unsubscribe links.</button></div>
+          <div class="why">A pass rate only describes the executions in its cycle. Coverage asks which criteria have linked, executed tests. A criterion without a test has no evidence, good or bad.</div></div>
+        <div class="q"><p class="prompt">2. CRW-T15 is Not Executed in the release-readiness cycle. How should it appear in your recommendation?</p><div class="opts">
+          <button class="opt" type="button" data-right>As missing evidence for AC4, with the test case to run and who runs it.</button>
+          <button class="opt" type="button">It doesn't need to appear, because it didn't fail.</button>
+          <button class="opt" type="button">As a failure, to be safe.</button>
+          <button class="opt" type="button">As a pass if the previous build passed it.</button></div>
+          <div class="why">Not Executed is neither good nor bad news. It's missing evidence. Name it precisely so someone can close the gap.</div></div>
+        <div class="q"><p class="prompt">3. The CRW-62 fix changes how home base is looked up for email, SMS time conversion and the swap request form. Which retest set fits best?</p><div class="opts">
+          <button class="opt" type="button" data-right>CRW-T16, CRW-T14 and CRW-T31, on the build that contains the fix.</button>
+          <button class="opt" type="button">Only CRW-T16, the test that failed.</button>
+          <button class="opt" type="button">The whole regression library, to be thorough.</button>
+          <button class="opt" type="button">CRW-T16 and the unsubscribe and retry cases, because they're all email or push.</button></div>
+          <div class="why">Select by what the change touches: the failed test, the other tests on the same lookup, and the sibling symptom (CRW-29). Unsubscribe and retry don't read the home base, and rerunning everything hides the signal.</div></div>
+        <div class="q"><p class="prompt">4. Risk CRW-71 "Crew personal data in SMS notifications" is marked Mitigated. The only test for the related criterion was never executed. What do you say?</p><div class="opts">
+          <button class="opt" type="button" data-right>The mitigation is claimed, not evidenced. Ask the risk owner and QA for an executed test result before relying on it.</button>
+          <button class="opt" type="button">Mitigated means handled, so the criterion can be skipped.</button>
+          <button class="opt" type="button">Change the risk to Accepted in CRW yourself.</button>
+          <button class="opt" type="button">Close the risk, because the SMS template is in Ready for Release.</button></div>
+          <div class="why">A ROAM value is a statement. Evidence is an execution result. CRW is read-only in class, and changing a risk treatment is the risk owner's decision anyway.</div></div>
+        <div class="q"><p class="prompt">5. When is "clarify" the right call rather than "hold"?</p><div class="opts">
+          <button class="opt" type="button" data-right>When the gap is an open question (scope, definition, or who accepts a criterion) rather than a known failure.</button>
+          <button class="opt" type="button">Whenever the pass rate is between 70% and 90%.</button>
+          <button class="opt" type="button">When a High Bug is still in Development.</button>
+          <button class="opt" type="button">When you'd rather not be the one who holds the release.</button></div>
+          <div class="why">Clarify names a question, who answers it and what each answer means. A known failing High defect is a hold condition. If the scope is also unclear, you can say both.</div></div>
+        <div class="quiz-score"><span class="msg"></span><span><b>0 / 5</b> <button class="btn btn-sm btn-ghost retry" type="button">Retry</button></span></div>
+      </section>
+
+      <nav class="module-nav" aria-label="Module navigation">
+        <a class="prev" href="m3.html"><small>Previous</small><b>M3 · Reconcile eazyBI and Jira metrics</b></a>
+        <a class="next" href="m5.html"><small>Next</small><b>M5 · Connect Jira to Git</b></a>
+      </nav>
+    </div>
+  </div>
+</section>
+
+</main>
+<div id="site-footer"></div>
+<script src="assets/js/config.js?v=1"></script>
+<script src="assets/js/site.js?v=1"></script>
+<script src="assets/js/widgets.js?v=1"></script>
+<script>
+(function () {
+  "use strict";
+  const CA = window.CA, CW = window.CW || {};
+  const esc = CA.esc;
+  const $ = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
+  const jira = k => '<a href="' + CA.siteUrl() + '/browse/' + k + '" target="_blank" rel="noopener">' + k + "</a>";
+
+  /* Replica fixtures. Jira keys (CRW-…) are real; test cases, criteria, cycles, builds and results are replica data. */
+  const ACS = [
+    { id: "AC1", req: "CRW-50", text: "Push notification reaches both crew members within 60 seconds of approval." },
+    { id: "AC2", req: "CRW-54", text: "SMS lists both trip numbers." },
+    { id: "AC3", req: "CRW-54", text: "SMS shows the report time in the crew member's home-base local time." },
+    { id: "AC4", req: "CRW-54", text: "SMS contains no personal data beyond the crew member's first name.", risk: "CRW-71" },
+    { id: "AC5", req: "CRW-58", text: "Swap-approved email shows the correct trips, home base and report time." },
+    { id: "AC6", req: "CRW-58", text: "No approval notification is sent after a swap is rejected or withdrawn." },
+    { id: "AC7", req: "CRW-58", text: "End to end: an approved swap from the eligibility engine triggers push, SMS and email once each." }
+  ];
+  const CASES = {
+    "CRW-T11": { name: "Push on approval reaches both crew members", ac: "AC1", req: "CRW-50", home: false },
+    "CRW-T12": { name: "Push payload opens the approved swap", ac: "AC1", req: "CRW-50", home: false },
+    "CRW-T13": { name: "SMS approved: both trip numbers listed", ac: "AC2", req: "CRW-54", home: false },
+    "CRW-T14": { name: "SMS approved: report time in home-base local time (ORD-based crew)", ac: "AC3", req: "CRW-54", home: true },
+    "CRW-T15": { name: "SMS approved: no personal data beyond first name", ac: "AC4", req: "CRW-54", home: false },
+    "CRW-T16": { name: "Email approved: trips, home base and report time", ac: "AC5", req: "CRW-58", home: true },
+    "CRW-T17": { name: "No approval notification after rejection", ac: "AC6", req: "CRW-58", home: false },
+    "CRW-T18": { name: "No approval notification after withdrawal", ac: "AC6", req: "CRW-58", home: false },
+    "CRW-T19": { name: "End to end: approved swap triggers push, SMS and email once", ac: "AC7", req: "CRW-58", home: false },
+    "CRW-T21": { name: "Unsubscribe link in swap emails", ac: null, req: "CRW-56", home: false },
+    "CRW-T22": { name: "Retry failed push sends", ac: null, req: "CRW-57", home: false },
+    "CRW-T23": { name: "Rate-limit duplicate swap alerts", ac: null, req: "CRW-53", home: false },
+    "CRW-T24": { name: "Scheduler alert when a swap needs approval", ac: null, req: "CRW-55", home: false },
+    "CRW-T25": { name: "Email template for swap submitted", ac: null, req: "CRW-48", home: false },
+    "CRW-T26": { name: "Push token registration", ac: null, req: "CRW-49", home: false },
+    "CRW-T27": { name: "Email when a swap is rejected", ac: null, req: "CRW-51", home: false },
+    "CRW-T28": { name: "Notification audit log entry written", ac: null, req: "CRW-52", home: false },
+    "CRW-T31": { name: "Swap request form shows the crew member's home base", ac: null, req: "CRW-29", home: true }
+  };
+  const ST = { Pass: "s-pass", Fail: "s-fail", Blocked: "s-blocked", "Not Executed": "s-ne", "In Progress": "s-ip" };
+  const CYCLES = {
+    c1: { name: "Cycle 1 · Notify regression · build 1.9.3", built: "Built from the regression library", ex: [
+      ["CRW-T11", "Pass"], ["CRW-T12", "Pass"], ["CRW-T13", "Pass"], ["CRW-T16", "Fail", "CRW-62", "Email shows DEN as home base for an ORD-based flight attendant. Bug raised."], ["CRW-T17", "Pass"], ["CRW-T18", "Pass"],
+      ["CRW-T21", "Pass"], ["CRW-T22", "Pass"], ["CRW-T23", "Pass"], ["CRW-T24", "Pass"], ["CRW-T25", "Pass"], ["CRW-T26", "Pass"], ["CRW-T27", "Pass"], ["CRW-T28", "Pass"]] },
+    c2: { name: "Cycle 2 · Release readiness · swap-approved path · build 1.9.4", built: "Built from acceptance criteria AC1–AC7", ex: [
+      ["CRW-T11", "Pass"], ["CRW-T13", "Pass"], ["CRW-T14", "Pass", null, "ORD-based crew: report time shown in ORD local time."], ["CRW-T15", "Not Executed", null, "Planned. No tester assigned."], ["CRW-T16", "Fail", "CRW-62", "Retest of CRW-62 on 1.9.4: still shows DEN. Bug still in Development."], ["CRW-T17", "Pass"], ["CRW-T19", "Blocked", "CRW-58", "Needs the eligibility engine (CRW-22), still in eQE Testing. CRW-58 is blocked by CRW-22."]] }
+  };
+  const HISTORY = {
+    "CRW-T16": [["Cycle 1", "1.9.3", "Fail", "Email shows DEN as home base for an ORD-based flight attendant. Linked Bug CRW-62."], ["Cycle 2", "1.9.4", "Fail", "Retest: still DEN. CRW-62 is still in Development, so 1.9.4 doesn't contain a fix."]],
+    "CRW-T14": [["Cycle 2", "1.9.4", "Pass", "ORD-based crew: report time shown in ORD local time. Note: executed before the home-base lookup change."]],
+    "CRW-T15": [["Cycle 2", "1.9.4", "Not Executed", "Planned, never run."]],
+    "CRW-T19": [["Cycle 2", "1.9.4", "Blocked", "Depends on CRW-22 (eQE Testing). CRW-58 is blocked by CRW-22."]]
+  };
+  const STEPS = {
+    "CRW-T16": ["Sign in as an ORD-based flight attendant test user.", "As a scheduler, approve a swap for that crew member.", "Open the swap-approved email.", "Expected: both trips, home base ORD, report time in ORD local time."]
+  };
+
+  function stBadge(s) { return '<span class="zr-st ' + (ST[s] || "") + '">' + esc(s) + "</span>"; }
+
+  function renderCycle(id) {
+    const c = CYCLES[id], n = c.ex.length;
+    const cnt = {}; c.ex.forEach(e => cnt[e[1]] = (cnt[e[1]] || 0) + 1);
+    const pass = cnt.Pass || 0, executed = n - (cnt["Not Executed"] || 0);
+    const acs = Array.from(new Set(c.ex.map(e => CASES[e[0]].ac).filter(Boolean))).sort();
+    let h = '<div class="zr-head"><h4>' + esc(c.name) + '</h4><span class="muted" style="font-size:.85rem">' + esc(c.built) + "</span></div>";
+    h += '<div class="zr-bar" role="img" aria-label="' + Object.keys(cnt).map(k => cnt[k] + " " + k).join(", ") + '">' + ["Pass", "Fail", "Blocked", "In Progress", "Not Executed"].map(k => cnt[k] ? '<i class="' + ST[k] + '" style="width:' + (cnt[k] / n * 100) + '%"></i>' : "").join("") + "</div>";
+    h += '<div class="zr-legend">' + ["Pass", "Fail", "Blocked", "In Progress", "Not Executed"].filter(k => cnt[k]).map(k => '<span><i class="' + ST[k] + '"></i>' + k + " " + cnt[k] + "</span>").join("") + "<span><b>Pass rate " + Math.round(pass / n * 100) + "%</b> (" + pass + " of " + n + ")</span><span>Executed " + executed + " of " + n + "</span><span>Criteria touched: " + (acs.length ? acs.join(", ") : "none") + "</span></div>";
+    h += '<div class="table-wrap" style="margin:0"><table class="zr"><thead><tr><th>Test case</th><th>Name</th><th>Requirement</th><th>Criterion</th><th>Status</th><th>Defects</th><th>Details</th></tr></thead><tbody>';
+    c.ex.forEach(e => { const tc = CASES[e[0]];
+      h += "<tr><td><code>" + e[0] + "</code></td><td>" + esc(tc.name) + "</td><td>" + jira(tc.req) + "</td><td>" + (tc.ac || '<span class="muted">regression</span>') + "</td><td>" + stBadge(e[1]) + "</td><td>" + (e[2] && e[1] === "Fail" ? jira(e[2]) : e[2] ? '<span class="muted">blocked by ' + jira("CRW-22") + "</span>" : "") + '</td><td><button type="button" class="zr-row-btn" data-detail="' + e[0] + '" data-cycle="' + id + '">History</button></td></tr>'; });
+    h += "</tbody></table></div>";
+    const p = $("#zp-" + id); p.innerHTML = h;
+    p.querySelectorAll("button[data-detail]").forEach(b => b.addEventListener("click", () => detail(b.dataset.detail)));
+  }
+
+  function detail(k) {
+    const tc = CASES[k];
+    const hist = HISTORY[k] || [].concat(...Object.keys(CYCLES).map(cid => CYCLES[cid].ex.filter(e => e[0] === k).map(e => [cid === "c1" ? "Cycle 1" : "Cycle 2", cid === "c1" ? "1.9.3" : "1.9.4", e[1], e[3] || ""])));
+    let h = '<div class="zr-detail" tabindex="-1" id="zr-detail-box"><h5>' + k + " · " + esc(tc.name) + "</h5>";
+    h += "<div>Requirement " + jira(tc.req) + (tc.ac ? " · " + tc.ac + ": " + esc(ACS.find(a => a.id === tc.ac).text) : " · regression case") + "</div>";
+    if (STEPS[k]) h += "<ol>" + STEPS[k].map(s => "<li>" + esc(s) + "</li>").join("") + "</ol>";
+    h += '<div class="table-wrap" style="margin:8px 0 0"><table class="zr" style="min-width:480px"><thead><tr><th>Cycle</th><th>Build</th><th>Result</th><th>Comment</th></tr></thead><tbody>' +
+      (hist.length ? hist.map(r => "<tr><td>" + r[0] + "</td><td>" + r[1] + "</td><td>" + stBadge(r[2]) + "</td><td>" + esc(r[3]) + "</td></tr>").join("") : '<tr><td colspan="4">No executions. This case isn\'t in either cycle.</td></tr>') + "</tbody></table></div>";
+    if (k === "CRW-T16") h += '<p style="margin:8px 0 0">Linked defect: ' + jira("CRW-62") + " (Bug, High, Development, ALR-2026.q4.4). Latest result: Fail. A passing retest needs a build that contains the fix.</p>";
+    if (k === "CRW-T19") h += '<p style="margin:8px 0 0">Check the dependency in Jira: ' + jira("CRW-58") + " is blocked by " + jira("CRW-22") + ".</p>";
+    h += '<button type="button" class="zr-row-btn" id="zr-close" style="margin-top:8px">Close details</button></div>';
+    $("#zr-detail").innerHTML = h;
+    const box = $("#zr-detail-box"); box.focus({ preventScroll: true }); box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    $("#zr-close").addEventListener("click", () => { $("#zr-detail").innerHTML = ""; });
+  }
+
+  let covScope = "c1";
+  function latestFor(caseKey) {
+    const order = covScope === "both" ? ["c2", "c1"] : [covScope];
+    for (const cid of order) { const e = CYCLES[cid].ex.find(x => x[0] === caseKey); if (e) return { st: e[1], cyc: cid === "c1" ? "Cycle 1 · 1.9.3" : "Cycle 2 · 1.9.4" }; }
+    return null;
+  }
+  function renderCov() {
+    let h = '<div class="table-wrap" style="margin:0"><table class="zr"><thead><tr><th>Criterion</th><th>Requirement</th><th>Linked cases</th><th>Latest execution</th><th>Evidence verdict</th></tr></thead><tbody>';
+    let gaps = 0;
+    ACS.forEach(a => {
+      const cases = Object.keys(CASES).filter(k => CASES[k].ac === a.id);
+      const res = cases.map(k => ({ k, r: latestFor(k) }));
+      const ran = res.filter(x => x.r);
+      let verdict, cls;
+      if (!ran.length) { verdict = "Not covered by this scope"; cls = "v-none"; gaps++; }
+      else if (ran.some(x => x.r.st === "Fail")) { verdict = "Failed: linked defect open"; cls = "v-bad"; }
+      else if (ran.some(x => x.r.st === "Blocked")) { verdict = "Blocked: no evidence yet"; cls = "v-warn"; }
+      else if (ran.every(x => x.r.st === "Not Executed")) { verdict = "No executed evidence"; cls = "v-none"; gaps++; }
+      else if (ran.some(x => x.r.st === "Pass")) { verdict = "Passed"; cls = "v-ok"; }
+      else { verdict = "Incomplete"; cls = "v-warn"; }
+      h += "<tr><td><b>" + a.id + "</b> " + esc(a.text) + (a.risk ? ' <span class="muted">(risk ' + jira(a.risk) + ")</span>" : "") + "</td><td>" + jira(a.req) + "</td><td>" + cases.map(k => "<code>" + k + "</code>").join("<br>") + "</td><td>" +
+        res.map(x => x.r ? stBadge(x.r.st) + ' <span class="muted" style="font-size:.78rem">' + x.r.cyc + "</span>" : '<span class="zr-st none">not in scope</span>').join("<br>") + '</td><td class="zr-verdict ' + cls + '">' + verdict + "</td></tr>";
+    });
+    h += "</tbody></table></div>";
+    const label = covScope === "c1" ? "Cycle 1 only" : covScope === "c2" ? "Cycle 2 only" : "both cycles";
+    h += '<p style="font-size:.9rem;margin-top:10px">' + gaps + " of " + ACS.length + " criteria have no executed evidence when you count " + label + "." + (covScope === "c1" ? " Compare that with the 93% pass rate." : covScope === "both" ? " Look for the criterion that has a case but no result anywhere." : "") + "</p>";
+    $("#zr-cov").innerHTML = h;
+    if (covScope === "both") CA.store.set("m4:sawBoth", true);
+  }
+  $$(".zr-seg button").forEach(b => b.addEventListener("click", () => { covScope = b.dataset.scope; $$(".zr-seg button").forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false")); renderCov(); }));
+
+  /* Tabs (roving tabindex, arrow keys) */
+  const tabs = $$('.zr-tabs [role="tab"]');
+  function select(t) {
+    tabs.forEach(x => { const on = x === t; x.setAttribute("aria-selected", on ? "true" : "false"); x.tabIndex = on ? 0 : -1; document.getElementById(x.getAttribute("aria-controls")).hidden = !on; });
+    $("#zr-detail").innerHTML = "";
+  }
+  tabs.forEach((t, i) => {
+    t.addEventListener("click", () => select(t));
+    t.addEventListener("keydown", e => {
+      let j = null;
+      if (e.key === "ArrowRight") j = (i + 1) % tabs.length; else if (e.key === "ArrowLeft") j = (i - 1 + tabs.length) % tabs.length; else if (e.key === "Home") j = 0; else if (e.key === "End") j = tabs.length - 1;
+      if (j !== null) { e.preventDefault(); tabs[j].focus(); select(tabs[j]); }
+    });
+  });
+
+  /* Retest selection */
+  const NEED = ["CRW-T16", "CRW-T14", "CRW-T31"];
+  const pick = $("#zr-pick");
+  pick.innerHTML = Object.keys(CASES).map(k => '<li data-k="' + k + '"><input type="checkbox" id="rp-' + k + '" value="' + k + '"><label for="rp-' + k + '"><code>' + k + "</code> " + esc(CASES[k].name) + "<small>" + (CASES[k].ac ? CASES[k].ac + " · " : "regression · ") + CASES[k].req + "</small></label></li>").join("");
+  $("#zr-check").addEventListener("click", () => {
+    const chosen = $$("#zr-pick input:checked").map(i => i.value);
+    let miss = 0, extra = 0;
+    $$("#zr-pick li").forEach(li => {
+      const k = li.dataset.k, on = chosen.indexOf(k) > -1, need = NEED.indexOf(k) > -1;
+      li.classList.remove("good", "miss", "extra");
+      if (need && on) li.classList.add("good"); else if (need) { li.classList.add("miss"); miss++; } else if (on && k !== "CRW-T15") { li.classList.add("extra"); extra++; }
+    });
+    const t15 = chosen.indexOf("CRW-T15") > -1;
+    let msg = "";
+    if (!miss) msg += "<b>All three change-driven retests selected</b>: CRW-T16 (the failure linked to CRW-62), CRW-T14 (SMS time conversion uses the home base, and its Pass predates the change) and CRW-T31 (the CRW-29 swap form symptom). ";
+    else msg += "<b>Missing " + miss + " change-driven retest(s)</b> (marked red). Ask: which tests read or display the home base? ";
+    if (extra) msg += extra + " extra case(s) (amber) don't touch the home-base lookup. Rerunning them costs time and dilutes the signal. ";
+    msg += t15 ? "CRW-T15 is fine to run, but say why: it was never executed, which is a coverage gap rather than a change impact." : "CRW-T15 isn't affected by the change, but it still has to run for AC4. Record that separately.";
+    $("#zr-refb").innerHTML = msg;
+    if (!miss && !extra) CA.awardOnce("widget:m4-retest", 100, "Targeted retest selected");
+  });
+  $("#zr-send-re").addEventListener("click", () => {
+    const chosen = $$("#zr-pick input:checked").map(i => i.value);
+    if (!chosen.length) { CA.toast("Tick at least one test case first"); return; }
+    if (CW.saveEvidence) CW.saveEvidence("m4", "retest", "Rerun on the build with the CRW-62 fix (home-base lookup change): " + chosen.join(", ") + ". Linked Bug: CRW-62 (High, Development, ALR-2026.q4.4).");
+    CA.toast("Retest choice sent to your evidence");
+  });
+
+  /* Decision */
+  const EV = [
+    ["t16", true, "CRW-T16 passes on a build that contains the CRW-62 fix"],
+    ["t14", true, "CRW-T14 and CRW-T31 pass on that same build"],
+    ["t15", true, "CRW-T15 has an executed result for AC4, reviewed by the CRW-71 risk owner"],
+    ["t19", true, "CRW-T19 runs once CRW-22 clears eQE Testing (CRW-58 unblocked)"],
+    ["po", true, "Product Owner acceptance recorded after the retests"],
+    ["rate", false, "Cycle 1's pass rate rises above 95%"],
+    ["reg", false, "More regression cases are added for unsubscribe links and push retries"]
+  ];
+  $("#zr-ev").innerHTML = EV.map(e => '<li><input type="checkbox" id="ev-' + e[0] + '" value="' + e[0] + '"><label for="ev-' + e[0] + '">' + esc(e[2]) + "</label></li>").join("");
+  function decisionText() {
+    const call = ($('input[name="zr-call"]:checked') || {}).value;
+    const ticks = $$("#zr-ev input:checked").map(i => EV.find(e => e[0] === i.value)[2]);
+    return { call, ticks };
+  }
+  $("#zr-dcheck").addEventListener("click", () => {
+    const d = decisionText();
+    if (!d.call) { $("#zr-decfb").innerHTML = "Choose proceed, hold or clarify first."; return; }
+    const picked = $$("#zr-ev input:checked").map(i => i.value);
+    const goodMissing = EV.filter(e => e[1] && picked.indexOf(e[0]) < 0).map(e => e[2]);
+    const bad = EV.filter(e => !e[1] && picked.indexOf(e[0]) > -1).map(e => e[2]);
+    let msg = "";
+    if (d.call === "proceed") msg = "<b>Not supported.</b> AC5 has a failing latest execution linked to High Bug CRW-62, AC4 has no executed evidence, and AC7 is blocked. Proceeding would ship a known defect in the path users see. ";
+    else if (d.call === "hold") msg = "<b>Supported.</b> A hold is only useful if it says exactly what ends it. ";
+    else msg = "<b>Partly.</b> Clarify fits an open question, such as whether the email channel is in this release or who accepts AC4. There's also a known failure (CRW-T16 → CRW-62), so clarify alone understates the risk. Strong answers hold and clarify the scope question in the same sentence. ";
+    if (goodMissing.length) msg += "Release conditions you didn't name: " + goodMissing.map(esc).join("; ") + ". ";
+    if (bad.length) msg += "These don't add evidence for the criteria at risk: " + bad.map(esc).join("; ") + ".";
+    if (!goodMissing.length && !bad.length) msg += "Your release conditions are precise and complete.";
+    $("#zr-decfb").innerHTML = msg;
+    if (d.call !== "proceed" && !goodMissing.length && !bad.length) CA.awardOnce("widget:m4-decision", 100, "Quality call defended");
+  });
+  $("#zr-send-dec").addEventListener("click", () => {
+    const d = decisionText();
+    if (!d.call) { CA.toast("Choose proceed, hold or clarify first"); return; }
+    const word = d.call.charAt(0).toUpperCase() + d.call.slice(1);
+    if (CW.saveEvidence) CW.saveEvidence("m4", "decision", word + " the swap-approved notification path." + (d.ticks.length ? " Released or revisited when: " + d.ticks.join("; ") + "." : ""));
+    CA.toast("Recommendation sent to your evidence");
+  });
+
+  renderCycle("c1"); renderCycle("c2"); renderCov();
+})();
+</script>
+</body>
+</html>

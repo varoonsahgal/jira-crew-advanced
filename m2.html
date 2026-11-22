@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M2 · Compare Plans scenarios across teams · Crew Academy 301</title>
+<meta name="description" content="Module 2 of Jira Planning Analytics and Connected Work: compare Plans scenarios for a reduced-capacity team and recommend one based on capacity, dependencies, releases and stated assumptions.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/site.css?v=1">
+<link rel="icon" href="assets/img/favicon.svg">
+<style>
+  .m2-cmp { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-2); margin: 18px 0 28px; overflow: hidden; scroll-margin-top: 80px; }
+  .m2-cmp-head { background: linear-gradient(90deg, var(--navy-900), var(--navy-700)); color: #fff; padding: 12px 18px; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .m2-cmp-head h3 { color: #fff; margin: 0; font-size: 1.25rem; }
+  .m2-presets { display: flex; flex-wrap: wrap; gap: 8px; padding: 14px 18px 4px; }
+  .m2-presets button { font: 600 .88rem var(--font-body); border: 1.5px solid var(--line); background: var(--white); color: var(--ink); border-radius: 999px; padding: 6px 13px; cursor: pointer; }
+  .m2-presets button[aria-pressed="true"] { background: var(--navy-900); color: #fff; border-color: var(--navy-900); }
+  .m2-presets button:focus-visible, .m2-controls input:focus-visible { outline: 3px solid var(--sky-400); outline-offset: 2px; }
+  .m2-grid { display: grid; grid-template-columns: minmax(0,.9fr) minmax(0,1.1fr); gap: 20px; padding: 12px 18px 18px; }
+  @media (max-width: 820px) { .m2-grid { grid-template-columns: minmax(0,1fr); } }
+  .m2-controls fieldset { border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px 10px; margin: 0 0 12px; }
+  .m2-controls legend { font-family: var(--font-display); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; font-size: .8rem; color: var(--ink-2); padding: 0 6px; }
+  .m2-controls .chk { display: flex; gap: 10px; align-items: flex-start; padding: 5px 0; font-size: .93rem; }
+  .m2-controls .chk input { width: 18px; height: 18px; margin-top: 3px; accent-color: var(--blue-600); flex: none; }
+  .m2-controls .num { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: .93rem; }
+  .m2-controls .num input { width: 80px; font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; }
+  .m2-out h4 { font-size: .8rem; margin: 14px 0 6px; }
+  .m2-out h4:first-child { margin-top: 0; }
+  .m2-row { display: flex; justify-content: space-between; gap: 10px; font-size: .9rem; color: var(--ink-2); margin-top: 6px; }
+  .m2-row b { color: var(--navy-900); font-family: var(--font-mono); font-size: .85rem; white-space: nowrap; }
+  .m2-out .meter { margin-top: 3px; }
+  .m2-out .meter.warn > i { background: linear-gradient(90deg, var(--beacon), #ffd36b); }
+  .m2-status { border-radius: 10px; padding: 9px 12px; font-size: .92rem; margin: 6px 0; border: 1px solid var(--line); }
+  .m2-status.ok { background: var(--go-bg); border-color: #b5e6cd; }
+  .m2-status.warn { background: var(--warn-bg); border-color: #f4d48b; }
+  .m2-status.bad { background: var(--alert-bg); border-color: #f2b7c0; }
+  .m2-status b { display: block; font-family: var(--font-display); letter-spacing: .04em; font-size: 1rem; color: var(--navy-900); }
+  .m2-src { display: inline-block; font: 700 .7rem var(--font-body); letter-spacing: .06em; text-transform: uppercase; border-radius: 6px; padding: 2px 8px; margin-left: 6px; vertical-align: middle; }
+  .m2-src.ver { background: var(--go-bg); color: var(--go); }
+  .m2-src.ari { background: var(--warn-bg); color: var(--beacon-ink); }
+  .m2-send { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .m2-send button { font: 700 .85rem var(--font-display); letter-spacing: .06em; text-transform: uppercase; border: 2px solid var(--blue-600); color: var(--blue-600); background: #fff; border-radius: 9px; padding: 7px 12px; cursor: pointer; }
+  .m2-send button:hover { background: var(--sky-100); }
+  table.data td.m2-bad { color: var(--alert); font-weight: 700; }
+  table.data td.m2-ok { color: var(--go); font-weight: 700; }
+  table.data td.m2-warn { color: var(--beacon-ink); font-weight: 700; }
+  .m2-load td:nth-child(3) { font-family: var(--font-mono); white-space: nowrap; }
+</style>
+</head>
+<body>
+<header id="site-header"></header>
+<main id="main">
+
+<section class="hero compact module-hero">
+  <div class="clouds" aria-hidden="true"><div class="cloud" style="top:18%;width:210px;height:48px;animation-duration:84s"></div><div class="cloud" style="top:62%;width:140px;height:34px;animation-duration:62s;animation-delay:-20s"></div></div>
+  <div class="wrap">
+    <div class="eyebrow">Module 2 of 8 · Session 1 · Connect outcomes to the forecast</div>
+    <h1>Compare Plans scenarios across teams</h1>
+    <p class="lede">Swap Squad just lost a quarter of its capacity. Find the option that keeps the release forecast honest, not the one that merely turns the capacity bar green.</p>
+    <div class="meta-row"><span class="chip">55 min</span><span class="chip">30 min practice</span><span class="chip gold">Lab: Choose a realistic release forecast</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap layout">
+    <aside class="toc" aria-label="On this page">
+      <h4>On this page</h4>
+      <ol>
+        <li><a href="#objective">Objective</a></li>
+        <li><a href="#l1">How the plan is built</a></li>
+        <li><a href="#l2">Scenarios and draft changes</a></li>
+        <li><a href="#l3">Reading the warnings</a></li>
+        <li><a href="#l4">Three options, one decision</a></li>
+        <li><a href="#comparer">Scenario comparer</a></li>
+        <li><a href="#demo">Instructor demo</a></li>
+        <li><a href="#m2-lab">Lab: Choose a realistic release forecast</a></li>
+        <li><a href="#check">Checkpoint</a></li>
+      </ol>
+    </aside>
+
+    <div>
+      <div class="objective-banner" id="objective">
+        <div class="eyebrow">Objective</div>
+        <p>Recommend a delivery scenario based on capacity, dependencies, releases and stated assumptions.</p>
+      </div>
+      <ul class="topics" aria-label="Topics">
+        <li>Plan sources</li><li>Hierarchy</li><li>Team setup</li><li>Capacity</li><li>Sprint assignments</li><li>Scheduled dates</li><li>Alternative scenarios</li><li>Dependency warnings</li><li>Cross-team release coordination</li><li>Unestimated work</li><li>Draft changes and Review changes</li>
+      </ul>
+
+      <div class="callout captain"><strong>The situation</strong>It's 22 November. Crew App 4.2 is due on <b>18 December</b>. Swap Squad has just learned that two people will be out for most of SWP-2026.q4.5 (7–18 Dec), so its capacity for that sprint drops from 20 points to <b>15</b>. The delivery lead wants a recommendation before the release review: what moves, who's affected and what date can we honestly promise? Plans makes it easy to make a red bar green. Your job is to notice what turns red somewhere else when you do.</div>
+
+      <!-- Lesson 1 -->
+      <article class="lesson" id="l1">
+        <h2><span class="lesson-code">M2.1</span> How the plan is built</h2>
+        <p>Before you trust a plan's forecast, know what it's made of. Every number on the timeline traces back to a setting someone chose.</p>
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th>Setting</th><th>In "Crew Self-Service 2027"</th><th>Why it matters for the forecast</th></tr></thead>
+            <tbody>
+              <tr><td>Sources</td><td>SWP - Sprint Execution board (60), ALR - Sprint Execution board (62), the CRW space</td><td>Work that isn't in a source isn't in the plan. Board sources also bring the teams' sprints.</td></tr>
+              <tr><td>Hierarchy</td><td>Initiative → Epic → Story level</td><td>The Initiative CRW-1 and its Epics roll up the stories' schedule.</td></tr>
+              <tr><td>Estimation</td><td>Story points</td><td>Capacity bars sum Story Points. Unestimated work adds <b>zero</b>.</td></tr>
+              <tr><td>Dates</td><td>Target start / Target end for Initiatives and Epics; sprint dates for stories</td><td>A story in a sprint is scheduled for that sprint's dates. Move the sprint and you move the date.</td></tr>
+              <tr><td>Teams</td><td>Swap Squad: Scrum, board 60, capacity <b>20</b>. Alerts Squad: Scrum, board 62, capacity <b>18</b>.</td><td>Capacity is a planning input. Compare it with evidence: Swap Squad's average completed velocity is 18.33.</td></tr>
+              <tr><td>Scheduling</td><td>Scenarios on, auto-scheduler on</td><td>You can compare alternatives without touching Jira until someone saves.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Here's the Baseline for the sprint that's about to break. Each line is real CRW work:</p>
+        <div class="table-wrap">
+          <table class="data m2-load">
+            <thead><tr><th>Sprint</th><th>Work (points · release)</th><th>Load</th></tr></thead>
+            <tbody>
+              <tr><td>SWP-2026.q4.5<br><small>7–18 Dec · "Swap rules and the supervisor queue"</small></td><td><a data-jira="/browse/CRW-30">CRW-30</a> Supervisor approval queue (8 · Crew App 4.3)<br><a data-jira="/browse/CRW-31">CRW-31</a> Swap deadline rule (5 · Crew App 4.2 · <b>blocks CRW-73</b>)<br><a data-jira="/browse/CRW-32">CRW-32</a> Swap reason codes (5 · Crew App 4.2)<br><a data-jira="/browse/CRW-33">CRW-33</a> Partial-trip swaps (<b>no estimate</b>)<br><a data-jira="/browse/CRW-34">CRW-34</a> Bug: swap fails when the trip crosses midnight UTC (<b>no estimate</b> · High · Crew App 4.2)</td><td>18 / 20</td></tr>
+              <tr><td>SWP-2026.q4.6<br><small>21 Dec – 1 Jan · "Holiday hardening"</small></td><td><a data-jira="/browse/CRW-36">CRW-36</a> Swap reminder before the deadline (3)<br><a data-jira="/browse/CRW-35">CRW-35</a> Export swap history to CSV (no estimate)</td><td>3 / 20</td></tr>
+              <tr><td>ALR-2026.q4.5<br><small>7–18 Dec · "Reliable delivery"</small></td><td><a data-jira="/browse/CRW-63">CRW-63</a> Notification retry policy for SMS (5)<br><a data-jira="/browse/CRW-64">CRW-64</a> Quiet hours for crew alerts (3)<br><a data-jira="/browse/CRW-73">CRW-73</a> Alert crew when a pending swap passes its deadline (3 · <b>is blocked by CRW-31</b>)</td><td>11 / 18</td></tr>
+              <tr><td>ALR-2026.q4.6<br><small>next Alerts sprint</small></td><td>Empty</td><td>0 / 18</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <figure class="shot">
+          <div class="frame"><div class="frame-bar"><i></i><i></i><i></i><span>…atlassian.net/jira/plans/1/scenarios/1/timeline</span></div>
+          <img src="assets/img/crew-plan-capacity-baseline.jpg" alt="Plans timeline in Capacity view grouped by team. Alerts Squad has CRW-63, CRW-64 and CRW-73 in ALR-2026.q4.5; Swap Squad has CRW-30 to CRW-34 in SWP-2026.q4.5. A tooltip reads SWP-2026.q4.5, 7 – Dec 18, 18/20 points allocated" loading="lazy"></div>
+          <figcaption>Capacity view, grouped by team, before any change. Hover the sprint bar to see "18/20 points allocated". Notice the red link icons on CRW-31 and CRW-73: the two items depend on each other and are scheduled in the same two weeks.</figcaption>
+        </figure>
+        <div class="callout warn"><strong>18/20 is not the whole story</strong>CRW-33 and CRW-34 add nothing to the bar because they have no estimate. CRW-34 is a <b>High-priority Bug on the Crew App 4.2 release</b>. The real load of q4.5 is "18 points plus two unknowns, one of them urgent". A forecast that doesn't say that is overconfident before you've changed anything.</div>
+        <figure class="shot">
+          <div class="frame"><div class="frame-bar"><i></i><i></i><i></i><span>…atlassian.net/jira/plans/1/scenarios/1/teams</span></div>
+          <img src="assets/img/plans-review-team-config.jpg" alt="Unsaved changes dialog listing team configuration: Alerts Squad with iteration length 2 Weeks, velocity 18 and issue source ALR - Sprint Execution; Swap Squad with 3 fields changed" loading="lazy"></div>
+          <figcaption>Team setup is a draft change too. When the plan's teams were configured, Review changes listed each team's iteration length, velocity (18 for Alerts Squad) and issue source before anything was saved.</figcaption>
+        </figure>
+      </article>
+
+      <!-- Lesson 2 -->
+      <article class="lesson" id="l2">
+        <h2><span class="lesson-code">M2.2</span> Scenarios and draft changes</h2>
+        <p>A <b>scenario</b> is a named, alternative version of the plan. The plan has two today: <b>Baseline</b> (scenario 1, the plan as it matches Jira) and <b>DEMO capacity cut (SWP 15)</b> (scenario 3, the instructor's demo, never saved). Changes you make in a scenario are <b>draft changes</b>. They live in the plan and change nothing in Jira until someone opens <b>Review changes</b> and presses <b>Save changes</b>.</p>
+        <div class="split">
+          <div class="vs"><h4>What a draft change can be</h4><ul style="margin:0;padding-left:18px"><li>A work item moved to another sprint (its Sprint field)</li><li>A sprint's capacity ("Sprint velocity 20 → 15")</li><li>Dates, estimates, teams, releases, new work</li></ul></div>
+          <div class="vs"><h4>What Save does</h4><ul style="margin:0;padding-left:18px"><li>Writes the selected work-item changes to Jira</li><li>Changes boards, sprints and reports everyone else sees</li><li>Can notify watchers (the "Send update notifications" box)</li></ul></div>
+        </div>
+        <figure class="shot">
+          <div class="frame"><div class="frame-bar"><i></i><i></i><i></i><span>…atlassian.net/jira/plans/1/scenarios/3/dependencies</span></div>
+          <img src="assets/img/crew-plan-review-changes.jpg" alt="Unsaved changes dialog with two rows: CRW-31 Sprint from SWP-2026.q4.5 to SWP-2026.q4.6, and SWP-2026.q4.5 Sprint velocity for Swap Squad from 20 points to 15 points. Buttons: Discard selected changes and Save changes" loading="lazy"></div>
+          <figcaption>The Review changes dialog after the demo: exactly two draft changes, each showing Current (Jira) → New. In this course you read this list, then press <b>Discard selected changes</b>. You never press Save changes.</figcaption>
+        </figure>
+        <div class="callout danger"><strong>Shared plan, personal scenario</strong>Twenty people share one plan. Each learner or pair works only in a scenario of their own, named <code>Lab {SEAT}</code>. If anyone presses Save, CRW items move in Jira for everyone, and the verified answers in this course stop being true. The instructor deletes lab scenarios after class.</div>
+        <p>The outline says "save only the designated sandbox update if the exercise role permits it". On this training site <b>no update is designated</b>, because the plan's sources are the read-only CRW space. Your output is the comparison and the recommendation, not a saved change. In your own team's plan, the person who owns the plan reviews the list and saves the selected rows.</p>
+      </article>
+
+      <!-- Lesson 3 -->
+      <article class="lesson" id="l3">
+        <h2><span class="lesson-code">M2.3</span> Reading the warnings: capacity, dependencies, releases</h2>
+        <h3>Capacity: the red bar everyone sees</h3>
+        <p>Set SWP-2026.q4.5's sprint capacity to 15 and the sprint bar turns red: <b>18 / 15 points allocated, 120%</b>. That's the warning everyone reacts to, and the one that's easiest to "fix" badly.</p>
+        <figure class="shot">
+          <div class="frame"><div class="frame-bar"><i></i><i></i><i></i><span>…atlassian.net/jira/plans/1/scenarios/3/timeline</span></div>
+          <img src="assets/img/crew-plan-capacity-overload.jpg" alt="DEMO capacity cut scenario: the SWP-2026.q4.5 sprint bar is red. The sprint panel shows 7 – Dec 18, Future sprint, goal Swap rules and the supervisor queue, Sprint capacity (points) 15, and 18 / 15 points allocated, 120%" loading="lazy"></div>
+          <figcaption>The sprint panel in the demo scenario. The capacity field is editable right here. Notice "Unsaved changes 1" in the top right: the capacity cut is already a draft change.</figcaption>
+        </figure>
+
+        <h3>Releases: the marker that turns red somewhere else</h3>
+        <p>The obvious fix is to move 5 points out. Move <b>CRW-31</b> to SWP-2026.q4.6 and q4.5 drops to <b>13/15</b>. It fits. But CRW-31 is on <b>Crew App 4.2</b>, and q4.6 starts on 21 December, three days after the release. The release marker for 18 December turns red.</p>
+        <figure class="shot">
+          <div class="frame"><div class="frame-bar"><i></i><i></i><i></i><span>…atlassian.net/jira/plans/1/scenarios/3/timeline</span></div>
+          <img src="assets/img/crew-plan-release-at-risk.jpg" alt="Timeline after moving CRW-31: CRW-31's bar now starts in the next Swap Squad sprint, and the release marker tooltip reads Crew App 4.2 (12/18/2026) in red" loading="lazy"></div>
+          <figcaption>After the move: CRW-31's bar sits in the next sprint (right edge) and the Crew App 4.2 marker on 18 Dec is red. The capacity bar is green now, but the release promise is broken.</figcaption>
+        </figure>
+
+        <h3>Dependencies: the team that isn't in the room</h3>
+        <p>CRW-31 <b>blocks</b> CRW-73, the Alerts Squad story "Alert crew when a pending swap passes its deadline". You can't alert on a deadline rule that doesn't exist yet. Open the <b>Dependencies</b> tab after the move:</p>
+        <figure class="shot">
+          <div class="frame"><div class="frame-bar"><i></i><i></i><i></i><span>…atlassian.net/jira/plans/1/scenarios/3/dependencies</span></div>
+          <img src="assets/img/crew-plan-dependencies.jpg" alt="Dependencies view: CRW-3 blocks CRW-4 (-2m); CRW-22 blocks CRW-58 (-13d) with both scheduled 11/22/2026 to 12/04/2026; CRW-31 blocks CRW-73 (-25d) with CRW-31 now 12/21/2026 to 01/01/2027 and CRW-73 12/07/2026 to 12/18/2026" loading="lazy"></div>
+          <figcaption>Read the dates on each card. CRW-31 now runs 21 Dec – 1 Jan, while the work that needs it (CRW-73) is scheduled 7–18 Dec. That's <b>−25d</b>: the dependent work finishes before its blocker starts. CRW-22 → CRW-58 (−13d) was already a problem in the Baseline.</figcaption>
+        </figure>
+        <p>A negative number means the blocked item is scheduled before its blocker is done. The size of the number tells you how far apart they are. Three dependencies are worth knowing in this plan:</p>
+        <ul>
+          <li><b>CRW-31 blocks CRW-73</b>: created by Option A. Alerts Squad would build an alert for a rule that ships 25 days later.</li>
+          <li><b>CRW-22 blocks CRW-58 (−13d)</b>: already in the Baseline. The eligibility engine (in eQE Testing) and the end-to-end notification test that needs it are in the same sprint window. The plan setting that allows dependent work in the same iteration is off, so Plans flags it.</li>
+          <li><b>CRW-3 blocks CRW-4 (−2m)</b>: Epic-level overlap between Shift Swap Self-Service and Swap Notifications.</li>
+        </ul>
+
+        <h3>The receiving team's view</h3>
+        <p>Alerts Squad's capacity matters as much as Swap Squad's whenever an option pushes work onto them. The <b>Program</b> board shows every team's load per increment on one screen.</p>
+        <figure class="shot">
+          <div class="frame"><div class="frame-bar"><i></i><i></i><i></i><span>…atlassian.net/jira/plans/1/scenarios/1/program/1</span></div>
+          <img src="assets/img/crew-plan-program-board.jpg" alt="Program board Holiday PI (Nov 2026 – Jan 2027) in the Baseline: Alerts Squad shows 18 / 18 points in increment 1 (Nov 22 – Dec 06) and 11 / 18 points in increment 2 (Dec 06 – Dec 20), then 0 / 18 for later increments" loading="lazy"></div>
+          <figcaption>Program board "Holiday PI" in the Baseline. Alerts Squad is full in the current increment (18/18, including CRW-58, which is blocked) and has room in the next (11/18). Any option that hands Alerts Squad more work must be checked here and agreed with that team.</figcaption>
+        </figure>
+        <div class="callout tip"><strong>One more hidden load</strong>The active sprint SWP-2026.q4.4 carries 18 points. <a data-jira="/browse/CRW-25">CRW-25</a> (5 points) is flagged and blocked by Impediment CRW-46, whose credentials were needed by 25 November. If CRW-25 carries over, it lands in q4.5 too. A good recommendation names that as an assumption.</div>
+      </article>
+
+      <!-- Lesson 4 -->
+      <article class="lesson" id="l4">
+        <h2><span class="lesson-code">M2.4</span> Three options, one decision</h2>
+        <p>The outline asks you to compare shifting scope with changing the handoff. Treat them as three real options, each with a cost, plus one you may find yourself:</p>
+        <div class="grid g3">
+          <div class="card"><h3>A · Shift scope</h3><p style="margin:0;font-size:.95rem">Move CRW-31 to SWP-2026.q4.6. Swap Squad fits (13/15). Crew App 4.2 turns red, and Alerts Squad's CRW-73 is now scheduled 25 days before the rule it needs. <b>Verified in the demo.</b></p></div>
+          <div class="card"><h3>B · Change the handoff</h3><p style="margin:0;font-size:.95rem">Move CRW-31 to q4.6 <em>and</em> agree with Alerts Squad to take CRW-73 in ALR-2026.q4.6. The dependency order improves, but Alerts must agree, the deadline alert ships later, and CRW-31 still misses 4.2 unless the Product Owner retargets it.</p></div>
+          <div class="card"><h3>C · Hold scope, accept risk</h3><p style="margin:0;font-size:.95rem">Change nothing but capacity. On paper 4.2 is intact. In practice q4.5 is at 120% with two unestimated items. History says about 15 points land, so something slips. You just don't get to choose what.</p></div>
+        </div>
+        <p style="margin-top:18px">Before you pick, look at the <b>release field of each item</b> in q4.5. Not every item in the sprint is on Crew App 4.2. Moving the right item can protect both the release and the handoff, at a different cost. The comparer lets you test that.</p>
+        <div class="callout standard"><strong>Arithmetic versus observation</strong>Sprint loads are sums, so you can predict them. Dependency lags and release markers are calculated by Plans from the schedule, so you <em>observe</em> them. The comparer below labels each result: <span class="m2-src ver">Verified</span> means it was observed on the site during the build (Baseline, the capacity cut, Option A). <span class="m2-src ari">Arithmetic</span> means you must confirm it in your own scenario before you put it in a recommendation.</div>
+      </article>
+
+      <!-- Interactive comparer -->
+      <section class="m2-cmp" id="comparer" aria-labelledby="cmp-h" style="padding:0">
+        <div class="m2-cmp-head"><h3 id="cmp-h">Scenario comparer: Swap Squad at reduced capacity</h3><span class="chip gold">Interactive</span></div>
+        <div class="m2-presets" role="group" aria-label="Load an option">
+          <button type="button" data-preset="base" aria-pressed="false">Baseline</button>
+          <button type="button" data-preset="C" aria-pressed="false">C · Hold scope</button>
+          <button type="button" data-preset="A" aria-pressed="true">A · Shift scope</button>
+          <button type="button" data-preset="B" aria-pressed="false">B · Change the handoff</button>
+          <button type="button" data-preset="D" aria-pressed="false">Your own option</button>
+        </div>
+        <div class="m2-grid">
+          <div class="m2-controls">
+            <fieldset><legend>Capacity input</legend>
+              <label class="num" for="cmp-cap">SWP-2026.q4.5 sprint capacity (points) <input type="number" id="cmp-cap" min="5" max="30" step="1" value="15"></label>
+            </fieldset>
+            <fieldset><legend>Swap Squad moves to SWP-2026.q4.6</legend>
+              <label class="chk"><input type="checkbox" data-mv="CRW-30"> CRW-30 Supervisor approval queue · 8 · Crew App 4.3</label>
+              <label class="chk"><input type="checkbox" data-mv="CRW-31"> CRW-31 Swap deadline rule · 5 · Crew App 4.2 · blocks CRW-73</label>
+              <label class="chk"><input type="checkbox" data-mv="CRW-32"> CRW-32 Swap reason codes · 5 · Crew App 4.2</label>
+            </fieldset>
+            <fieldset><legend>Alerts Squad (needs their agreement)</legend>
+              <label class="chk"><input type="checkbox" data-mv="CRW-73"> CRW-73 Alert on passed deadline · 3 → ALR-2026.q4.6</label>
+            </fieldset>
+            <p class="muted" style="font-size:.85rem;margin:0">Everything here is a model of the plan for comparison. Make the real changes only in your <code>Lab {SEAT}</code> scenario, and discard them at the end.</p>
+          </div>
+          <div class="m2-out" id="cmp-out" aria-live="polite"></div>
+        </div>
+        <div style="padding:0 18px 18px">
+          <h4 style="font-size:.8rem">Side by side</h4>
+          <div class="table-wrap" style="margin-top:6px"><table class="data" id="cmp-table"><thead><tr><th>Option</th><th>SWP q4.5</th><th>SWP q4.6</th><th>ALR q4.5</th><th>ALR q4.6</th><th>CRW-31 → CRW-73</th><th>Crew App 4.2 (18 Dec)</th></tr></thead><tbody></tbody></table></div>
+          <p class="muted" style="font-size:.85rem;margin:0">The table assumes capacity 15 for Options A–D, as in the exercise input. "Your own option" row shows whatever you've ticked.</p>
+        </div>
+      </section>
+
+      <div class="callout demo" id="demo"><strong>Instructor demo · 15 min</strong>
+        <ol style="margin:6px 0 0;padding-left:20px">
+          <li>Open <a data-jira="/jira/plans/1/scenarios/1/timeline">Crew Self-Service 2027 ↗</a> in the Baseline. Show Sources, Teams (Swap Squad 20, Alerts Squad 18), Capacity view, Group: Team. Hover SWP-2026.q4.5: 18/20. Point at CRW-33 and CRW-34 with no estimate.</li>
+          <li>Switch to the scenario <b>DEMO capacity cut (SWP 15)</b>. (In a fresh rehearsal, create it as a copy of Baseline first, and say out loud that you're doing it in a copy.)</li>
+          <li>Click the SWP-2026.q4.5 sprint bar and set Sprint capacity to <b>15</b>. Show "18 / 15 points allocated, 120%" and "Unsaved changes 1".</li>
+          <li>Inspect the dependent test activity: open Dependencies and show <b>CRW-22 blocks CRW-58 (−13d)</b>. The notification test is in the same sprint as the eligibility engine it needs. That's already a risk before anything moves.</li>
+          <li><b>Shift scope:</b> move CRW-31 to SWP-2026.q4.6. Show q4.5 at 13/15, then the red <b>Crew App 4.2</b> marker, then <b>CRW-31 blocks CRW-73 (−25d)</b> in Dependencies.</li>
+          <li><b>Change the handoff:</b> open the <a data-jira="/jira/plans/1/scenarios/1/program/1">Program board ↗</a>. Show Alerts Squad's 18/18 and 11/18 and ask: "What would we have to ask Alerts Squad to accept?" Move CRW-73 to ALR-2026.q4.6, let the room read the result, then move it back.</li>
+          <li>Open <b>Review changes</b>. Read the two rows aloud (CRW-31 Sprint q4.5 → q4.6; SWP-2026.q4.5 Sprint velocity 20 → 15). Select all and press <b>Discard selected changes</b>. Show the counter is gone.</li>
+        </ol>
+      </div>
+
+      <!-- Lab -->
+      <article class="mission" id="m2-lab" data-miles="600">
+        <div class="mission-head">
+          <div><span class="mcode">LAB M2 · 30 MIN · CRW READ-ONLY · YOUR SCENARIO LAB {SEAT}</span><h3>Choose a realistic release forecast</h3></div>
+          <span class="turb" title="Difficulty"><i class="on"></i><i class="on"></i><i class="on"></i><i></i> Turbulence</span>
+        </div>
+        <div class="mission-body">
+          <div class="brief"><b>Brief</b> Swap Squad's capacity for SWP-2026.q4.5 drops from 20 to 15. Build two options in Plans, check both teams' load, the dependency order and the Crew App 4.2 date for each, and recommend one with its assumptions. <b>CRW is read-only</b> and the plan is shared. Work only in your own scenario <code>Lab {SEAT}</code> (one per pair), and <b>never press Save changes</b>. You'll discard everything at the end. No other Jira writes are part of this lab.</div>
+          <ol class="steps">
+            <li><b>Read the Baseline first.</b> Open <a data-jira="/jira/plans/1/scenarios/1/timeline">the plan ↗</a> in the Baseline scenario, switch to <b>Capacity view</b> and <b>Group: Team</b>. Confirm SWP-2026.q4.5 shows 18/20 and ALR-2026.q4.5 shows 11/18. Note which q4.5 items have no estimate and which release each item is on (Fields panel: Fix versions).</li>
+            <li><b>Create your scenario.</b> Open the scenario menu next to the plan name, choose to create a scenario, copy it from <b>Baseline</b> and name it <code>Lab {SEAT}</code>. Check the name in the header <em>before</em> you change anything. If you're working in a pair, only one of you creates it.</li>
+            <li><b>Apply the input.</b> Click the SWP-2026.q4.5 sprint bar and set Sprint capacity to <b>15</b>. Confirm you see 18 / 15 and 120%. This is your "Option C" view, so record it.</li>
+            <li><b>Build Option A (shift scope).</b> Set CRW-31's Sprint to SWP-2026.q4.6. Record: q4.5 and q4.6 loads, the Crew App 4.2 marker colour, and the CRW-31 → CRW-73 entry in <b>Dependencies</b> (date ranges and lag). Open the <a data-jira="/jira/plans/1/scenarios/1/program/1">Program board ↗</a> (switch it to your scenario) and record Alerts Squad's load.</li>
+            <li><b>Reset, then build Option B.</b> Open <b>Review changes</b>, tick only the CRW-31 row and press <b>Discard selected changes</b>, which keeps the capacity cut. Now build your second option. Either change the handoff (CRW-31 to q4.6 <em>and</em> CRW-73 to ALR-2026.q4.6) or move a different item whose release isn't 4.2. Record the same four facts. Note anything that differs from what the comparer predicted.</li>
+            <li><b>Check both teams.</b> For each option, write down both teams' sprint load, the dependency order (blocker finishes before, with, or after the dependent work) and whether Crew App 4.2's date holds. Add the unestimated items and the CRW-25 carry-over risk as assumptions.</li>
+            <li><b>Recommend and clean up.</b> Choose an option and state its assumptions and who must agree. Then open <b>Review changes</b>, read the list (it should match the moves you made plus the capacity change), select all and press <b>Discard selected changes</b>. Confirm "Unsaved changes" shows no count. Do not press Save changes.</li>
+          </ol>
+          <pre data-jql data-label="Check your work: Jira unchanged · CRW-31 still in q4.5 (expect 1)">project = CRW AND key = CRW-31 AND sprint = "SWP-2026.q4.5"</pre>
+          <pre data-jql data-label="Room check: nobody saved to CRW (expect 0)">project = CRW AND updated >= -1h ORDER BY updated DESC</pre>
+          <details class="reveal"><summary>Debrief: what a strong answer looks like</summary><div>
+            <p><b>Option C (hold, 15 capacity):</b> SWP q4.5 18/15 (120%) plus two unestimated items, one of them High Bug CRW-34 on 4.2. Swap Squad averages 18.33 completed at capacity 20, so at 15 plan for roughly 15 points to land: at least 3 points slip, chosen by accident rather than by decision. The 4.2 date looks green but isn't credible.</p>
+            <p><b>Option A (move CRW-31):</b> SWP q4.5 13/15, q4.6 8/20. Crew App 4.2 marker turns red. CRW-31 blocks CRW-73 at −25d: Alerts Squad would build the deadline alert in 7–18 Dec for a rule scheduled 21 Dec – 1 Jan. Verified on the site.</p>
+            <p><b>Option B (change the handoff):</b> SWP q4.5 13/15; ALR q4.5 8/18; ALR q4.6 3/18. The alert follows the rule, but both sit in the next sprint window, so expect Plans to keep flagging a same-iteration dependency unless the two teams sequence it inside the sprint. Crew App 4.2 stays red for CRW-31 unless the Product Owner agrees to retarget the deadline rule. It costs a conversation with Alerts Squad and a later deadline alert.</p>
+            <p><b>The option many strong pairs find:</b> move <b>CRW-30</b> (8 points, Crew App 4.3, due 26 Feb) instead. By arithmetic, q4.5 becomes 10/15, leaving room to estimate and fix CRW-34. CRW-31 and CRW-32 stay on track for 4.2, and the CRW-31 → CRW-73 handoff is untouched. The costs are real: the sprint goal "Swap rules and the supervisor queue" loses the queue, Epic CRW-6 has less slack before 4.3, and "Holiday hardening" (q4.6) grows to 11 points over the holidays. Confirm all of that in your scenario before recommending it.</p>
+            <p><b>A recommendation that holds up</b> names the option, the numbers you observed, the assumptions (capacity 15 is accurate; CRW-34 fits the remaining room once estimated; CRW-25 doesn't carry over, or its effect if it does; CRW-22 → CRW-58 at −13d is managed separately) and who must agree (Product Owner for release scope, Alerts Squad for any handoff change). <b>Review changes</b> should have listed exactly your moves plus "SWP-2026.q4.5 Sprint velocity 20 → 15", and you discarded all of them.</p>
+          </div></details>
+
+          <div class="evidence" data-evidence="m2">
+            <h4>Learner output · Module 2</h4>
+            <p class="hint">Two scenario views and a recommendation tied to capacity, dependency order and the release target. Use the comparer's "Send" buttons, then correct the text with what your scenario actually showed.</p>
+            <label for="m2-optionA">Option A: sprint load, dependency order, release date</label><textarea id="m2-optionA" data-field="optionA" placeholder="Scenario Lab NN · moves… · SWP q4.5 …/15 · ALR q4.5 …/18 · CRW-31 → CRW-73 … · Crew App 4.2 …"></textarea>
+            <label for="m2-optionB">Option B: sprint load, dependency order, release date</label><textarea id="m2-optionB" data-field="optionB"></textarea>
+            <label for="m2-recommend">Recommended option and its assumptions</label><textarea id="m2-recommend" data-field="recommend" placeholder="Recommend … because … Assumptions: … Needs agreement from: …"></textarea>
+            <label for="m2-review">Review changes: what was listed and what you did</label><textarea id="m2-review" data-field="review" placeholder="Listed: … Discarded all; nothing saved."></textarea>
+          </div>
+        </div>
+        <div class="mission-foot"><span class="miles-tag">+600 mi</span><button class="complete-btn" type="button">Mark lab complete</button></div>
+      </article>
+
+      <section class="quiz" id="check" data-id="m2" data-pass="75" data-miles="200" style="padding:24px">
+        <h2 style="margin-top:0">Checkpoint</h2>
+        <div class="q"><p class="prompt">1. With q4.5 capacity at 15, you move CRW-31 to SWP-2026.q4.6 and the bar turns green at 13/15. What else did the plan show?</p><div class="opts">
+          <button class="opt" type="button" data-right>The Crew App 4.2 marker turned red, and CRW-31 blocks CRW-73 shows −25d in Dependencies.</button>
+          <button class="opt" type="button">Nothing. A green capacity bar means the forecast is safe.</button>
+          <button class="opt" type="button">CRW-73 moved automatically to Alerts Squad's next sprint.</button>
+          <button class="opt" type="button">The change was saved to Jira and CRW-31 left the sprint.</button></div>
+          <div class="why">CRW-31 is on Crew App 4.2 (18 Dec) and now lands after it. It also blocks CRW-73, which stays scheduled 7–18 Dec, 25 days before the rule it needs. Plans doesn't move other teams' work for you, and nothing reaches Jira until someone saves.</div></div>
+        <div class="q"><p class="prompt">2. Why is "18/20 points allocated" an underestimate of SWP-2026.q4.5's load?</p><div class="opts">
+          <button class="opt" type="button" data-right>CRW-33 and CRW-34 have no estimate, so they add nothing to the bar, and CRW-34 is a High Bug on 4.2.</button>
+          <button class="opt" type="button">Plans rounds points down to the nearest 5.</button>
+          <button class="opt" type="button">Bugs are never counted in capacity.</button>
+          <button class="opt" type="button">The bar excludes items on Crew App 4.3.</button></div>
+          <div class="why">Capacity bars sum Story Points. Unestimated work counts as zero, so the bar looks lighter than the sprint really is. Say so in the forecast.</div></div>
+        <div class="q"><p class="prompt">3. You've finished comparing options in your <code>Lab {SEAT}</code> scenario. What do you do in Review changes?</p><div class="opts">
+          <button class="opt" type="button" data-right>Read the listed changes, select them all and press Discard selected changes.</button>
+          <button class="opt" type="button">Press Save changes so the instructor can see your scenario.</button>
+          <button class="opt" type="button">Save only the capacity change, because it isn't a work-item change.</button>
+          <button class="opt" type="button">Close the dialog. Unsaved changes expire overnight.</button></div>
+          <div class="why">The plan's sources are the shared, read-only CRW space. Saving would move real items or change sprint capacity for everyone. Your scenario is visible in the plan without saving, and the instructor deletes lab scenarios after class.</div></div>
+        <div class="q"><p class="prompt">4. Option B hands CRW-73 to ALR-2026.q4.6. Which check is essential before you recommend it?</p><div class="opts">
+          <button class="opt" type="button" data-right>Alerts Squad's load and agreement for that sprint (Program board), and whether the dependency is still flagged in the Dependencies view.</button>
+          <button class="opt" type="button">That CRW-73 has a fix version of Crew App 4.2.</button>
+          <button class="opt" type="button">That Swap Squad's velocity report shows 18.33.</button>
+          <button class="opt" type="button">None. Moving another team's work is a Swap Squad decision.</button></div>
+          <div class="why">Changing a handoff spends the receiving team's capacity and changes their commitments. Check their sprint load, get their agreement, and observe what Plans says about the dependency order. Don't assume it.</div></div>
+        <div class="q"><p class="prompt">5. CRW-22 blocks CRW-58 shows −13d even in the Baseline, with both scheduled 22 Nov – 4 Dec. What does that mean?</p><div class="opts">
+          <button class="opt" type="button" data-right>The notification test is scheduled in the same sprint window as the eligibility engine it depends on, and this plan doesn't allow dependent work in the same iteration.</button>
+          <button class="opt" type="button">CRW-58 is 13 days late against its due date.</button>
+          <button class="opt" type="button">CRW-22 has 13 days of estimated work left.</button>
+          <button class="opt" type="button">The dependency link is broken and should be deleted.</button></div>
+          <div class="why">A negative lag means the dependent item is scheduled before its blocker finishes. Here they share dates, and the plan setting for same-iteration dependencies is off. It's a real risk: the test can't finish until the engine passes eQE Testing.</div></div>
+        <div class="quiz-score"><span class="msg"></span><span><b>0 / 5</b> <button class="btn btn-sm btn-ghost retry" type="button">Retry</button></span></div>
+      </section>
+
+      <nav class="module-nav" aria-label="Module navigation">
+        <a class="prev" href="m1.html"><small>Previous</small><b>M1 · Trace portfolio work and business outcomes</b></a>
+        <a class="next" href="m3.html"><small>Next</small><b>M3 · Reconcile eazyBI and Jira delivery metrics</b></a>
+      </nav>
+    </div>
+  </div>
+</section>
+
+</main>
+<div id="site-footer"></div>
+<script src="assets/js/config.js?v=1"></script>
+<script src="assets/js/site.js?v=1"></script>
+<script src="assets/js/widgets.js?v=1"></script>
+<script>
+(function () {
+  "use strict";
+  var root = document.getElementById("comparer");
+  if (!root) return;
+  var CA = window.CA, esc = CA.esc;
+  var PRESETS = {
+    base: { cap: 20, mv: [] , label: "Baseline" },
+    C: { cap: 15, mv: [], label: "C · Hold scope" },
+    A: { cap: 15, mv: ["CRW-31"], label: "A · Shift scope" },
+    B: { cap: 15, mv: ["CRW-31", "CRW-73"], label: "B · Change the handoff" },
+    D: { cap: 15, mv: ["CRW-30"], label: "Your own option" }
+  };
+  var SWP45 = [["CRW-30", 8], ["CRW-31", 5], ["CRW-32", 5]];
+  var capIn = document.getElementById("cmp-cap");
+  var mvBoxes = Array.prototype.slice.call(root.querySelectorAll("input[data-mv]"));
+  var presetBtns = Array.prototype.slice.call(root.querySelectorAll("[data-preset]"));
+  var out = document.getElementById("cmp-out");
+  var tbody = root.querySelector("#cmp-table tbody");
+  var current = "A", customMv = ["CRW-30"];
+
+  function same(a, b) { return a.length === b.length && a.slice().sort().join() === b.slice().sort().join(); }
+
+  function model(cap, mv) {
+    var has = function (k) { return mv.indexOf(k) > -1; };
+    var swp45 = 0, swp46 = 3, moved = [];
+    SWP45.forEach(function (it) { if (has(it[0])) { swp46 += it[1]; moved.push(it[0]); } else swp45 += it[1]; });
+    var alr45 = 11, alr46 = 0;
+    if (has("CRW-73")) { alr45 -= 3; alr46 += 3; }
+    var r = { cap: cap, mv: mv, swp45: swp45, swp46: swp46, alr45: alr45, alr46: alr46 };
+    r.pct = Math.round(swp45 / cap * 100);
+    // dependency CRW-31 -> CRW-73
+    var r31 = has("CRW-31") ? "q4.6" : "q4.5", r73 = has("CRW-73") ? "q4.6" : "q4.5";
+    if (r31 === "q4.6" && r73 === "q4.5") r.dep = { cls: "bad", short: "Broken (−25d)", text: "Broken. CRW-73 is scheduled 7–18 Dec; the rule it needs (CRW-31) runs 21 Dec – 1 Jan. Plans shows −25d." };
+    else if (r31 === r73) r.dep = { cls: "warn", short: "Same window", text: r31 === "q4.5" ? "Same window (7–18 Dec). Rule and alert are built in parallel; the link icons show red in the Baseline. Workable only if the rule lands early in the sprint and both teams sequence it." : "Same window again, in the next sprints. Expect Plans to keep flagging the same-iteration dependency. Record what the Dependencies view shows." };
+    else r.dep = { cls: "ok", short: "In order", text: "In order by arithmetic: the rule's sprint ends before the alert's sprint starts. Confirm in Dependencies." };
+    // release Crew App 4.2
+    var late = moved.filter(function (k) { return k === "CRW-31" || k === "CRW-32"; });
+    if (late.length) r.rel = { cls: "bad", short: "Red: " + late.join(", ") + " late", text: "Red. " + late.join(" and ") + (late.length > 1 ? " are" : " is") + " on Crew App 4.2 but now scheduled 21 Dec – 1 Jan, after the 18 Dec release. Needs the Product Owner to retarget or descope." };
+    else if (swp45 > cap) r.rel = { cls: "warn", short: "Amber: " + r.pct + "% loaded", text: "On paper intact, but q4.5 is " + r.pct + "% loaded. At this capacity plan for about " + cap + " points to finish; roughly " + (swp45 - cap) + " points slip, and you don't choose which." };
+    else r.rel = { cls: "ok", short: "Holds (4.2 items stay)", text: "The 4.2 items CRW-31 and CRW-32 stay in q4.5, which ends on 18 Dec. Still unestimated on 4.2: CRW-34 (High Bug)." };
+    // provenance
+    if (same(mv, []) && (cap === 20 || cap === 15)) r.src = "ver";
+    else if (same(mv, ["CRW-31"]) && cap === 15) r.src = "ver";
+    else r.src = "ari";
+    // notes
+    r.notes = [];
+    r.notes.push("Unestimated: CRW-33 and CRW-34 (High Bug, Crew App 4.2) in q4.5; CRW-35 in q4.6. None of them count in the bars.");
+    if (has("CRW-30")) r.notes.push("CRW-30 is on Crew App 4.3 (26 Feb), so 4.2 isn't affected by it. But the sprint goal loses the supervisor queue, Epic CRW-6 loses slack, and Holiday hardening grows to " + swp46 + " points.");
+    if (has("CRW-73")) r.notes.push("Alerts Squad must agree to take CRW-73 later. Their current increment is already 18/18 (Program board).");
+    if (swp45 > cap) r.notes.push("Swap Squad averages 18.33 completed at capacity 20. At " + cap + ", over-allocation is a forecast of slippage, not ambition.");
+    r.notes.push("Unchanged in every option: CRW-22 blocks CRW-58 (−13d); CRW-25 (5 pts) is blocked by CRW-46 and may carry over into q4.5.");
+    return r;
+  }
+
+  function meter(label, load, cap) {
+    var pct = Math.round(load / cap * 100), cls = load > cap ? " over" : (pct >= 90 ? " warn" : "");
+    return '<div class="m2-row"><span>' + esc(label) + '</span><b>' + load + " / " + cap + " · " + pct + '%</b></div><div class="meter' + cls + '" role="img" aria-label="' + esc(label) + ": " + load + " of " + cap + ' points"><i style="width:' + Math.min(100, pct) + '%"></i></div>';
+  }
+
+  function srcTag(s) { return s === "ver" ? '<span class="m2-src ver">Verified</span>' : '<span class="m2-src ari">Arithmetic · confirm</span>'; }
+
+  function state() {
+    var cap = parseInt(capIn.value, 10); if (!(cap >= 5)) cap = 15; if (cap > 30) cap = 30;
+    var mv = mvBoxes.filter(function (b) { return b.checked; }).map(function (b) { return b.dataset.mv; });
+    return { cap: cap, mv: mv };
+  }
+
+  function summary(r, name) {
+    return name + " (" + (r.src === "ver" ? "verified on the site" : "arithmetic, confirm in Lab scenario") + "): capacity SWP q4.5 = " + r.cap +
+      "; moves: " + (r.mv.length ? r.mv.map(function (k) { return k + (k === "CRW-73" ? " → ALR-2026.q4.6" : " → SWP-2026.q4.6"); }).join(", ") : "none") +
+      ". Load: SWP q4.5 " + r.swp45 + "/" + r.cap + " (" + r.pct + "%), SWP q4.6 " + r.swp46 + "/20, ALR q4.5 " + r.alr45 + "/18, ALR q4.6 " + r.alr46 + "/18. " +
+      "CRW-31 → CRW-73: " + r.dep.short + ". Crew App 4.2: " + r.rel.short + ". Unestimated: CRW-33, CRW-34 (q4.5).";
+  }
+
+  function render() {
+    var s = state(), r = model(s.cap, s.mv);
+    var name = current !== "D" && same(PRESETS[current].mv, s.mv) && PRESETS[current].cap === s.cap ? PRESETS[current].label : "Your own option";
+    out.innerHTML =
+      "<h4>Sprint load " + srcTag(r.src) + "</h4>" +
+      meter("SWP-2026.q4.5 (7–18 Dec)", r.swp45, r.cap) +
+      meter("SWP-2026.q4.6 (21 Dec – 1 Jan)", r.swp46, 20) +
+      meter("ALR-2026.q4.5 (7–18 Dec)", r.alr45, 18) +
+      meter("ALR-2026.q4.6 (next Alerts sprint)", r.alr46, 18) +
+      "<h4>Dependency order · CRW-31 → CRW-73</h4><div class=\"m2-status " + r.dep.cls + "\"><b>" + esc(r.dep.short) + "</b>" + esc(r.dep.text) + "</div>" +
+      "<h4>Release target · Crew App 4.2 (18 Dec)</h4><div class=\"m2-status " + r.rel.cls + "\"><b>" + esc(r.rel.short) + "</b>" + esc(r.rel.text) + "</div>" +
+      "<h4>Assumptions to state</h4><ul style=\"margin:0;padding-left:18px;font-size:.9rem\">" + r.notes.map(function (n) { return "<li>" + esc(n) + "</li>"; }).join("") + "</ul>" +
+      '<div class="m2-send"><button type="button" data-send="optionA">Send to Option A evidence</button><button type="button" data-send="optionB">Send to Option B evidence</button></div>';
+    out.dataset.name = name;
+    Array.prototype.forEach.call(out.querySelectorAll("[data-send]"), function (b) {
+      b.addEventListener("click", function () {
+        var cur = state(), m = model(cur.cap, cur.mv);
+        window.CW.saveEvidence("m2", b.dataset.send, summary(m, out.dataset.name));
+        CA.toast("Sent to " + (b.dataset.send === "optionA" ? "Option A" : "Option B") + " · now check it in your scenario");
+        var ev = CA.evidence("m2");
+        if (ev.optionA && ev.optionB) CA.awardOnce("widget:m2-compare", 150, "Two scenarios compared");
+      });
+    });
+  }
+
+  function renderTable() {
+    var rows = ["C", "A", "B", "D"].map(function (k) {
+      var p = PRESETS[k], mv = k === "D" ? customMv : p.mv, r = model(15, mv);
+      var td = function (txt, cls) { return "<td" + (cls ? ' class="m2-' + cls + '"' : "") + ">" + esc(txt) + "</td>"; };
+      return "<tr><td><b>" + esc(p.label) + "</b><br><small>" + esc(mv.length ? mv.join(", ") + " moved" : "no moves") + "</small></td>" +
+        td(r.swp45 + "/15 (" + r.pct + "%)", r.swp45 > 15 ? "bad" : "ok") + td(r.swp46 + "/20") + td(r.alr45 + "/18") + td(r.alr46 + "/18") +
+        td(r.dep.short, r.dep.cls) + td(r.rel.short, r.rel.cls) + "</tr>";
+    });
+    tbody.innerHTML = rows.join("");
+  }
+
+  function load(k) {
+    var p = PRESETS[k]; current = k;
+    capIn.value = p.cap;
+    var mv = k === "D" ? customMv : p.mv;
+    mvBoxes.forEach(function (b) { b.checked = mv.indexOf(b.dataset.mv) > -1; });
+    presetBtns.forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.preset === k ? "true" : "false"); });
+    render(); renderTable();
+  }
+  presetBtns.forEach(function (b) { b.addEventListener("click", function () { load(b.dataset.preset); }); });
+  function onEdit() {
+    customMv = state().mv;
+    if (current !== "D") { current = "D"; presetBtns.forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.preset === "D" ? "true" : "false"); }); }
+    render(); renderTable();
+  }
+  mvBoxes.forEach(function (b) { b.addEventListener("change", onEdit); });
+  capIn.addEventListener("input", onEdit);
+  load("A");
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reference sheets · Crew Academy 301</title>
+<meta name="description" content="Printable reference sheets for Jira Planning Analytics and Connected Work: release decision worksheet, scenario comparison template, metric definitions, reconciliation checklist, Zephyr and eazyBI glossaries, Git key conventions, MCP safe-use checklist and a JQL validation worksheet.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/site.css?v=1">
+<link rel="icon" href="assets/img/favicon.svg">
+<style>
+  .sheet { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px 24px 10px; margin: 0 0 30px; box-shadow: var(--shadow-1); scroll-margin-top: 80px; }
+  .sheet > h2 { font-size: 1.8rem; display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+  .sheet .lesson-code { font-size: .8rem; }
+  .blank td { height: 2.4em; }
+  .tagkey { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0 14px; }
+  .proto { display: grid; grid-template-columns: repeat(6, minmax(0,1fr)); gap: 8px; margin: 12px 0 18px; }
+  @media (max-width: 860px) { .proto { grid-template-columns: repeat(3, minmax(0,1fr)); } }
+  @media (max-width: 480px) { .proto { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+  .proto div { border: 1px solid var(--line); border-top: 4px solid var(--blue-500); border-radius: 10px; padding: 10px; font-size: .86rem; color: var(--ink-2); }
+  .proto div.w { border-top-color: var(--beacon); }
+  .proto div.v { border-top-color: var(--go); }
+  .proto b { display: block; font-family: var(--font-display); letter-spacing: .08em; color: var(--navy-900); font-size: 1rem; }
+  .glossary dt { font-weight: 700; color: var(--navy-800); margin-top: 10px; }
+  .glossary dd { margin: 2px 0 0; color: var(--ink-2); }
+  .conv code { white-space: nowrap; }
+  @media print {
+    .toc { display: none !important; }
+    .layout { display: block; }
+    .sheet { break-before: page; box-shadow: none; border: 0; padding: 0; }
+    .sheet:first-of-type { break-before: auto; }
+    .codeblock .cb-actions { display: none; }
+  }
+</style>
+</head>
+<body>
+<header id="site-header"></header>
+<main id="main">
+
+<section class="hero compact">
+  <div class="clouds" aria-hidden="true"><div class="cloud" style="top:20%;width:200px;height:46px;animation-duration:80s"></div></div>
+  <div class="wrap">
+    <div class="eyebrow">Crew Academy 301 · Reference</div>
+    <h1>Reference sheets</h1>
+    <p class="lede">The worksheets, definitions and checklists you use in class and keep for the next release review. Each sheet prints on its own page.</p>
+    <div class="btn-row no-print" style="margin-top:18px"><button class="btn btn-primary" type="button" id="print-all">Print all sheets</button></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap layout">
+    <aside class="toc" aria-label="Sheets on this page">
+      <h4>Sheets</h4>
+      <ol>
+        <li><a href="#worksheet">Release decision worksheet</a></li>
+        <li><a href="#scenarios">Scenario comparison template</a></li>
+        <li><a href="#portfolio">Portfolio stage gates</a></li>
+        <li><a href="#roam">ROAM risk treatment</a></li>
+        <li><a href="#metrics">Metric definitions</a></li>
+        <li><a href="#reconcile">Reconciliation checklist</a></li>
+        <li><a href="#quality">Release quality checklist</a></li>
+        <li><a href="#glossary">Zephyr and eazyBI glossary</a></li>
+        <li><a href="#git">Git key conventions</a></li>
+        <li><a href="#mcp">MCP safe-use checklist</a></li>
+        <li><a href="#jql">JQL validation worksheet</a></li>
+      </ol>
+    </aside>
+
+    <div>
+      <!-- 1 -->
+      <article class="sheet" id="worksheet">
+        <h2><span class="lesson-code">R1</span> Release decision worksheet</h2>
+        <p>Fill one row per evidence source. Every row gets a tag. A recommendation that rests on unverified claims is a <b>clarify</b>, not a proceed. Build it interactively in <a href="m8.html">Module 8</a>.</p>
+        <div class="tagkey"><span class="chip green">Observed</span><span class="chip">Observed in replica</span><span class="chip gold">Assumption</span><span class="chip red">Unverified claim</span></div>
+        <div class="table-wrap"><table class="data blank">
+          <thead><tr><th scope="col">Evidence</th><th scope="col">What you found (numbers, keys)</th><th scope="col">Source (link, query, report)</th><th scope="col">Tag</th></tr></thead>
+          <tbody>
+            <tr><td>Release and date</td><td></td><td></td><td></td></tr>
+            <tr><td>Delivery forecast (chosen scenario)</td><td></td><td></td><td></td></tr>
+            <tr><td>Reconciled measure (definition, scope, import time)</td><td></td><td></td><td></td></tr>
+            <tr><td>Quality evidence (coverage, failures, retests)</td><td></td><td></td><td></td></tr>
+            <tr><td>Development traceability</td><td></td><td></td><td></td></tr>
+            <tr><td>Verified MCP query or retrieval</td><td></td><td></td><td></td></tr>
+            <tr><td>Open blockers and unestimated work</td><td></td><td></td><td></td></tr>
+          </tbody>
+        </table></div>
+        <div class="table-wrap"><table class="data blank">
+          <tbody>
+            <tr><th scope="row">Recommendation</th><td>☐ Proceed &nbsp; ☐ Hold &nbsp; ☐ Clarify</td></tr>
+            <tr><th scope="row">One-line headline</th><td></td></tr>
+            <tr><th scope="row">Assumptions stated</th><td></td></tr>
+            <tr><th scope="row">Next action and accountable role</th><td></td></tr>
+            <tr><th scope="row">Evidence that would change the decision</th><td></td></tr>
+            <tr><th scope="row">Revisit by (date or trigger)</th><td></td></tr>
+          </tbody>
+        </table></div>
+        <p><b>Three-minute structure:</b> 20 s decision and headline · 90 s the evidence, one line per source with its tag · 40 s assumptions and what would change your mind · 30 s next action, owner and revisit trigger.</p>
+        <p class="muted">Useful live checks for Crew App 4.2 (18 Dec 2026):</p>
+        <pre data-jql data-label="Open work in Crew App 4.2 (expect 10)">project = CRW AND fixVersion = "Crew App 4.2" AND statusCategory != Done</pre>
+        <pre data-jql data-label="Blocked or flagged, not done (expect 5)">project = CRW AND (Flagged is not EMPTY OR issueLinkType = "is blocked by") AND statusCategory != Done</pre>
+      </article>
+
+      <!-- 2 -->
+      <article class="sheet" id="scenarios">
+        <h2><span class="lesson-code">R2</span> Scenario comparison template</h2>
+        <p>Use it in your own plan scenario (<code>Lab {SEAT}</code>), never in Baseline, and discard at the end. The Baseline column is pre-filled from the training plan <a data-jira="/jira/plans/1/scenarios/1/timeline">Crew Self-Service 2027 ↗</a>. Loads are arithmetic you can predict; dependency lags and release markers are calculated by Plans, so you <b>observe</b> them.</p>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th scope="col">Check</th><th scope="col">Baseline</th><th scope="col">Option A</th><th scope="col">Option B</th><th scope="col">Option C</th></tr></thead>
+          <tbody>
+            <tr><td>What changes</td><td>Nothing (capacity 20)</td><td></td><td></td><td></td></tr>
+            <tr><td>SWP-2026.q4.5 load / capacity</td><td>18 / 20</td><td></td><td></td><td></td></tr>
+            <tr><td>SWP-2026.q4.6 load / capacity</td><td>3 (CRW-36) + CRW-35 unestimated</td><td></td><td></td><td></td></tr>
+            <tr><td>ALR-2026.q4.5 load / capacity</td><td>11 / 18</td><td></td><td></td><td></td></tr>
+            <tr><td>ALR next sprint load</td><td>Empty</td><td></td><td></td><td></td></tr>
+            <tr><td>CRW-31 → CRW-73 order</td><td>Rule before alert</td><td></td><td></td><td></td></tr>
+            <tr><td>Other dependency warnings</td><td>CRW-3 → CRW-4 (−2m), CRW-22 → CRW-58 (−13d)</td><td></td><td></td><td></td></tr>
+            <tr><td>Crew App 4.2 marker (18 Dec)</td><td>On track</td><td></td><td></td><td></td></tr>
+            <tr><td>Unestimated work in scope</td><td>CRW-33, CRW-34 (High Bug, 4.2)</td><td></td><td></td><td></td></tr>
+            <tr><td>Assumptions</td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>Who must agree</td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>Review changes list</td><td>—</td><td></td><td></td><td></td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout warn"><strong>Verified on the site</strong>Capacity 20 → 15 shows “18 / 15 points allocated, 120%”. Moving CRW-31 to SWP-2026.q4.6 gives 13/15 but turns the Crew App 4.2 marker red and shows CRW-31 blocks CRW-73 at −25d. Review changes then lists exactly two changes. Press <b>Discard</b>, never Save.</div>
+      </article>
+
+      <!-- 3 -->
+      <article class="sheet" id="portfolio">
+        <h2><span class="lesson-code">R3</span> Portfolio stage gates</h2>
+        <p>Crew Portfolio Workflow for Initiatives and Epics. Each stage answers one decision; the evidence is what lets the item leave the stage.</p>
+        <div class="flow" aria-label="Portfolio workflow"><span class="st todo">New Idea</span><span class="arr">→</span><span class="st todo">Discovery</span><span class="arr">→</span><span class="st prog">Technical Analysis</span><span class="arr">→</span><span class="st prog">Prioritized</span><span class="arr">→</span><span class="st prog">Developing</span><span class="arr">→</span><span class="st prog">Monitored</span><span class="arr">→</span><span class="st done">Done</span><span class="arr">|</span><span class="st done">Canceled</span></div>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th scope="col">Stage</th><th scope="col">Decision</th><th scope="col">Evidence to leave the stage</th><th scope="col">Crew example</th></tr></thead>
+          <tbody>
+            <tr><td>New Idea</td><td>Is it worth discovering?</td><td>Problem statement, Expected Business Impact, sponsor</td><td>CRW-10 (no impact stated yet), CRW-11</td></tr>
+            <tr><td>Discovery</td><td>Is the problem real and the outcome measurable?</td><td>Lean Canvas link, measurable impact, rough Portfolio Size</td><td>CRW-2, CRW-8</td></tr>
+            <tr><td>Technical Analysis</td><td>Can we build it, and roughly how big?</td><td>Feasibility notes, risks raised, Portfolio Size confirmed</td><td>CRW-7</td></tr>
+            <tr><td>Prioritized</td><td>Is it next, against what else?</td><td>Rank, PPM reference, target start and end, team</td><td>CRW-6</td></tr>
+            <tr><td>Developing</td><td>Are we delivering what we promised?</td><td>Child work progress, release, dependencies and risks owned</td><td>CRW-1, CRW-3, CRW-4</td></tr>
+            <tr><td>Monitored</td><td>Did the outcome happen?</td><td>Outcome Evidence against the Expected Business Impact: baseline, measured value, window, source, who measured</td><td>CRW-5 (Outcome Evidence empty)</td></tr>
+            <tr><td>Done</td><td>Close: outcome recorded</td><td>Outcome Evidence filled; follow-up raised if the target was missed</td><td>—</td></tr>
+            <tr><td>Canceled</td><td>Stop: Won't Do</td><td>Reason in Outcome Evidence (superseded, no value, no capacity)</td><td>CRW-9</td></tr>
+          </tbody>
+        </table></div>
+        <pre data-jql data-label="Monitored Epics with no outcome evidence (expect CRW-5)">project = CRW AND issuetype = Epic AND status = Monitored AND "Outcome Evidence" is EMPTY</pre>
+        <pre data-jql data-label="Every Epic under CRW-1, whole tree (expect 6)">issue in portfolioChildIssuesOf("CRW-1") AND issuetype = Epic</pre>
+        <pre data-jql data-label="Leadership view label (expect 4)">project = CRW AND labels = LeadershipRequest</pre>
+        <div class="callout tip"><strong>Portfolio Size vs Story Points</strong>Portfolio Size (XS–XL) on Initiatives and Epics supports funding and sequencing decisions before work is broken down. Story Points on team work support sprint commitment and forecasting. Don't convert one into the other: CRW-5 is size S and its four Stories totalled 21 points.</div>
+      </article>
+
+      <!-- 4 -->
+      <article class="sheet" id="roam">
+        <h2><span class="lesson-code">R4</span> ROAM risk treatment</h2>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th scope="col">Treatment</th><th scope="col">Means</th><th scope="col">Evidence it needs</th><th scope="col">Crew example</th></tr></thead>
+          <tbody>
+            <tr><td>Resolved</td><td>The risk no longer exists.</td><td>What removed it, and when</td><td>CRW-72 Nightly roster sync delays swap visibility</td></tr>
+            <tr><td>Owned</td><td>A named person is actively managing it.</td><td>Owner, next action, review date, escalation route</td><td>CRW-69 Rules vendor API rate limits during holiday peak</td></tr>
+            <tr><td>Accepted</td><td>We'll live with it, knowingly.</td><td>Who accepted it, at what level, and the trigger to revisit</td><td>CRW-70 Union review of the self-service swap policy</td></tr>
+            <tr><td>Mitigated</td><td>Action has reduced likelihood or impact.</td><td>The mitigation and proof it works (for example, an executed test)</td><td>CRW-71 Crew personal data in SMS notifications</td></tr>
+          </tbody>
+        </table></div>
+        <p>A <b>Risk</b> might happen. An <b>Impediment</b> is already blocking work: CRW-46 (credentials not issued, escalated 18 Nov, needed by 25 Nov) blocks CRW-25.</p>
+        <pre data-jql data-label="All Crew risks (expect 4)">project = CRW AND issuetype = Risk</pre>
+      </article>
+
+      <!-- 5 -->
+      <article class="sheet" id="metrics">
+        <h2><span class="lesson-code">R5</span> Metric definitions</h2>
+        <p>Write the definition next to every number you quote. Same name, different definition, different number.</p>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th scope="col">Metric</th><th scope="col">Definition</th><th scope="col">Crew example</th></tr></thead>
+          <tbody>
+            <tr><td>Velocity · Commitment</td><td>Story points in the sprint when it started (Velocity report).</td><td>SWP q4.3: 21</td></tr>
+            <tr><td>Velocity · Completed</td><td>Points of items in the board's rightmost column when the sprint closed, including items added after start.</td><td>SWP q4.1–q4.3: 21, 18, 16 (average 18.33)</td></tr>
+            <tr><td>Sprint Report completed</td><td>Same rule as Velocity; statuses shown are the statuses at sprint close.</td><td>ALR q4.3: 19, with CRW-54 and CRW-55 shown as Ready for Release</td></tr>
+            <tr><td>Board completion mapping</td><td>Which statuses sit in the board's last column. Differs by board.</td><td>ALR board maps Ready for Release into Done; SWP board doesn't</td></tr>
+            <tr><td>Sample eazyBI “completed”</td><td>Points of items whose status was in the Done status category at sprint close.</td><td>ALR q4.3: 11 (CRW-53, CRW-56, CRW-57)</td></tr>
+            <tr><td>Current-state count</td><td>Items matching a status today (JQL). Changes after every transition and every import.</td><td>ALR q4.3 Done today: CRW-53, 55, 56, 57 (CRW-54 still Ready for Release)</td></tr>
+            <tr><td>Estimation completeness</td><td>Estimated items ÷ all items of the stated work types in the stated sprint. Say which types.</td><td>SWP q4.5, Stories and Bugs: 3 of 5 estimated (CRW-33 and CRW-34 missing)</td></tr>
+            <tr><td>Pass rate</td><td>Passed executions ÷ executed tests in one cycle. Says nothing about untested criteria.</td><td>Module 4 replica Cycle 1: 13 of 14</td></tr>
+            <tr><td>Requirement coverage</td><td>Acceptance criteria with at least one executed, passing test ÷ all criteria in scope.</td><td>Module 4 replica: AC4 has no executed test</td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout warn"><strong>Current state can't rebuild history</strong>JQL sees today's status and every sprint an item has ever been in. <code>sprint = "SWP-2026.q4.2" AND statusCategory = Done</code> also returns CRW-19, which was finished a sprint later. For past velocity, read the native Velocity report or Sprint Report.</div>
+      </article>
+
+      <!-- 6 -->
+      <article class="sheet" id="reconcile">
+        <h2><span class="lesson-code">R6</span> Reconciliation checklist</h2>
+        <p>Work top to bottom. Stop when the totals match and you can name the reason.</p>
+        <ul class="checklist" data-id="ref-recon">
+          <li><input type="checkbox" id="rc1"><label for="rc1"><b>Same team.</b> Both views filter by the same team, by Team id rather than name (<code>Team = "Swap Squad"</code> matches nothing).</label></li>
+          <li><input type="checkbox" id="rc2"><label for="rc2"><b>Same sprint.</b> Same sprint name and id (ALR-2026.q4.3 is sprint 50).</label></li>
+          <li><input type="checkbox" id="rc3"><label for="rc3"><b>Same filter.</b> Board filter and report filter select the same work types and space.</label></li>
+          <li><input type="checkbox" id="rc4"><label for="rc4"><b>Same moment.</b> Sprint close versus today, and the report's last import time.</label></li>
+          <li><input type="checkbox" id="rc5"><label for="rc5"><b>Same fields imported.</b> Team and Story Points are imported into the report.</label></li>
+          <li><input type="checkbox" id="rc6"><label for="rc6"><b>Same definition.</b> Which statuses count as completed: board column or status category.</label></li>
+          <li><input type="checkbox" id="rc7"><label for="rc7"><b>Drill through.</b> List the keys behind each total and find the ones counted differently.</label></li>
+          <li><input type="checkbox" id="rc8"><label for="rc8"><b>Check history.</b> Confirm each key's status at close with JQL history or the Sprint Report.</label></li>
+          <li><input type="checkbox" id="rc9"><label for="rc9"><b>Record.</b> Save a report copy with the definition written in its description, and name the owner of any correction.</label></li>
+        </ul>
+        <pre data-jql data-label="Items that were Ready for Release in ALR q4.3 (expect CRW-54, CRW-55)">project = CRW AND sprint = "ALR-2026.q4.3" AND status WAS "Ready for Release"</pre>
+      </article>
+
+      <!-- 7 -->
+      <article class="sheet" id="quality">
+        <h2><span class="lesson-code">R7</span> Release quality checklist</h2>
+        <ul class="checklist" data-id="ref-quality">
+          <li><input type="checkbox" id="rq1"><label for="rq1">Every acceptance criterion in scope has at least one linked test case.</label></li>
+          <li><input type="checkbox" id="rq2"><label for="rq2">Every linked test case has an <b>executed</b> result on the release build (not Not Executed, not only In Progress).</label></li>
+          <li><input type="checkbox" id="rq3"><label for="rq3">Every Fail links to a Bug; the Bug's status and priority are known (for example CRW-62, High, Development).</label></li>
+          <li><input type="checkbox" id="rq4"><label for="rq4">Every Blocked execution names its blocker (for example CRW-58 waiting on CRW-22).</label></li>
+          <li><input type="checkbox" id="rq5"><label for="rq5">After a fix, the failed test <b>and</b> the tests touching the changed behaviour are rerun on the build that contains the fix.</label></li>
+          <li><input type="checkbox" id="rq6"><label for="rq6">Risks marked Mitigated have executed evidence behind them.</label></li>
+          <li><input type="checkbox" id="rq7"><label for="rq7">Quality review (eQE), Product Owner acceptance and any UAT evidence are recorded at the approved completion point.</label></li>
+        </ul>
+        <p><b>Proceed</b> when evidence covers the scope and no High defect is open in the path users see. <b>Hold</b> when a known failure or missing evidence affects that path. <b>Clarify</b> when the scope or the criterion itself is unclear; say exactly what you need and from whom.</p>
+      </article>
+
+      <!-- 8 -->
+      <article class="sheet" id="glossary">
+        <h2><span class="lesson-code">R8</span> Zephyr and eazyBI glossary</h2>
+        <div class="grid g2">
+          <dl class="glossary">
+            <dt>Test case</dt><dd>A reusable test with steps and expected results, linked to the requirement (Story) it verifies.</dd>
+            <dt>Test step</dt><dd>One action and its expected result inside a test case.</dd>
+            <dt>Test cycle</dt><dd>A set of test executions for a release, build or sprint.</dd>
+            <dt>Execution status</dt><dd>Pass, Fail, Blocked, Not Executed, In Progress.</dd>
+            <dt>Coverage</dt><dd>Which requirements and criteria have linked test cases, and whether those were executed.</dd>
+            <dt>Traceability</dt><dd>The chain requirement → test case → execution → defect, readable in both directions.</dd>
+            <dt>Retest</dt><dd>A new execution of a failed test on a build that contains the fix. History keeps every earlier execution.</dd>
+            <dt>Regression selection</dt><dd>The tests to rerun after a change: the failure, plus tests touching the changed behaviour.</dd>
+          </dl>
+          <dl class="glossary">
+            <dt>Measure</dt><dd>A number the report calculates, such as “Sprint story points completed”. Its definition decides which items count.</dd>
+            <dt>Dimension</dt><dd>A way to slice measures: Sprint, Team, Issue Type, Status.</dd>
+            <dt>Sprint issues committed</dt><dd>Items in the sprint at its start.</dd>
+            <dt>Sprint issues added</dt><dd>Items added after the sprint started (CRW-21 in SWP q4.2).</dd>
+            <dt>Sprint issues completed</dt><dd>Items counted as completed at sprint close, under the measure's definition.</dd>
+            <dt>Sprint story points committed / completed</dt><dd>The same, summed in story points.</dd>
+            <dt>Drill through issue</dt><dd>Open the list of keys behind one cell.</dd>
+            <dt>Last import time</dt><dd>When the report last loaded Jira data. Anything that changed after it isn't in the report.</dd>
+          </dl>
+        </div>
+      </article>
+
+      <!-- 9 -->
+      <article class="sheet" id="git">
+        <h2><span class="lesson-code">R9</span> Git key conventions</h2>
+        <p>The provider links activity to Jira by finding the work item key. Use the key exactly as Jira shows it, in capitals.</p>
+        <div class="table-wrap"><table class="data conv">
+          <thead><tr><th scope="col">Where</th><th scope="col">Convention</th><th scope="col">Example</th></tr></thead>
+          <tbody>
+            <tr><td>Branch</td><td>Key first, then a short slug</td><td><code>CRW-25-trip-board-swap</code></td></tr>
+            <tr><td>Commit</td><td>Key at the start of the message</td><td><code>CRW-25 Add swap button to trip card</code></td></tr>
+            <tr><td>Pull request</td><td>Key in the title</td><td><code>CRW-25 Submit a swap request from the trip board</code></td></tr>
+            <tr><td>Your seat</td><td>Same pattern with your seat's Ready story</td><td><code><span data-seat-key="2">CRP-?</span>-swap-eligibility</code></td></tr>
+          </tbody>
+        </table></div>
+        <ul>
+          <li><b>Wrong key already pushed?</b> Don't rewrite shared history. Put the correct key in the pull request title or a new commit, and note the mistake on the wrongly linked item.</li>
+          <li><b>Missing key on a local, unpushed commit?</b> Amend it before you push.</li>
+          <li><b>Smart commits</b> write to Jira as you. Use <code>#comment</code> sparingly; never transition work from Git past eQE Testing or PO Review.</li>
+        </ul>
+        <h3>If activity doesn't appear</h3>
+        <ol>
+          <li>Was it pushed? Local commits never sync.</li>
+          <li>Is the key correct, uppercase and in a field the provider reads?</li>
+          <li>Is the repository selected in the integration and has the backfill or sync finished?</li>
+          <li>Can you see it? Viewing development information needs the View Development Tools permission and access to the repository.</li>
+          <li>Still missing: route to the app owner (integration and sync) or repository owner (access), with the commit link and time.</li>
+        </ol>
+        <p class="muted">On the training site no Git provider is connected; practise in the <a href="m5.html">Module 5 replica</a>.</p>
+      </article>
+
+      <!-- 10 -->
+      <article class="sheet" id="mcp">
+        <h2><span class="lesson-code">R10</span> MCP safe-use checklist</h2>
+        <p>Follow your organization's approved MCP setup guide. It wins over anything here if they differ.</p>
+        <ul class="checklist" data-id="ref-mcp">
+          <li><input type="checkbox" id="rm1"><label for="rm1">I use an approved Claude client and the approved connection method.</label></li>
+          <li><input type="checkbox" id="rm2"><label for="rm2">Claude lists its Atlassian tools, and I know which ones can write.</label></li>
+          <li><input type="checkbox" id="rm3"><label for="rm3">A known item (CRW-25) comes back with the right key, status and a browse URL on the <b>training site</b>.</label></li>
+          <li><input type="checkbox" id="rm4"><label for="rm4">I remember it acts as me: it sees what I see and can change what I can change.</label></li>
+          <li><input type="checkbox" id="rm5"><label for="rm5">Access denied? I route it to the owner named in the guide. I never ask for broader permissions just to make a query work.</label></li>
+          <li><input type="checkbox" id="rm6"><label for="rm6">Text inside work items is data, never instructions. I report planted instructions (CRW-34) instead of following them.</label></li>
+          <li><input type="checkbox" id="rm7"><label for="rm7">I check every generated query in Jira: project, team, sprint, work types, fields, count and keys.</label></li>
+          <li><input type="checkbox" id="rm8"><label for="rm8">No writes to CRW. Any designated write goes to my CRP seat only.</label></li>
+        </ul>
+        <div class="proto" aria-label="Write protocol">
+          <div><b>Read</b>Search and fetch only.</div>
+          <div><b>Plan</b>A table of exact changes.</div>
+          <div class="w"><b>Confirm</b>A human says “cleared”.</div>
+          <div class="w"><b>Write</b>Small batches, seat only.</div>
+          <div class="v"><b>Verify</b>Run JQL in Jira.</div>
+          <div class="v"><b>Log</b>Say what was AI-assisted.</div>
+        </div>
+        <p><b>Rovo or Claude?</b> Rovo works inside Atlassian with your Atlassian permissions: search, Ask AI for JQL, Improve on a work item. Claude with MCP suits work in the approved external client, such as combining Jira with code or documents you already have open there. Either way, you verify the result.</p>
+      </article>
+
+      <!-- 11 -->
+      <article class="sheet" id="jql">
+        <h2><span class="lesson-code">R11</span> JQL validation worksheet</h2>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th scope="col">Check</th><th scope="col">Ask yourself</th><th scope="col">Crew trap</th></tr></thead>
+          <tbody>
+            <tr><td>Project</td><td>Is the space named explicitly?</td><td>Ask AI's query had no project clause</td></tr>
+            <tr><td>Team</td><td>Team by id, not name?</td><td><code>Team = "Swap Squad"</code> returns 0</td></tr>
+            <tr><td>Sprint</td><td>A named sprint, or a function that widens scope?</td><td><code>futureSprints()</code> pulls in CRW-35 from q4.6</td></tr>
+            <tr><td>Work types</td><td>Every type the question names?</td><td><code>issuetype = Story</code> drops Bug CRW-34</td></tr>
+            <tr><td>Fields</td><td>Can you decode every field id?</td><td><code>cf[10020]</code> = Sprint, <code>cf[10036]</code> = Story Points</td></tr>
+            <tr><td>Count and keys</td><td>Do actual keys equal expected keys?</td><td>Expected CRW-33, CRW-34</td></tr>
+            <tr><td>Limits</td><td>Was the result paged or truncated? Whose access ran it?</td><td>Different accounts can see different counts</td></tr>
+            <tr><td>Time</td><td>Current state or history?</td><td>Velocity comes from the native report</td></tr>
+          </tbody>
+        </table></div>
+        <pre data-jql data-label="Corrected: Stories and Bugs missing estimates (expect CRW-33, CRW-34)">project = CRW AND sprint = "SWP-2026.q4.5" AND issuetype in (Story, Bug) AND "Story Points" is EMPTY</pre>
+        <pre data-jql data-label="The plausible query that omits Bugs (returns CRW-33 only)">project = CRW AND sprint = "SWP-2026.q4.5" AND issuetype = Story AND "Story Points" is EMPTY</pre>
+        <pre data-jql data-label="Scope too wide (adds decoy CRW-35)">project = CRW AND issuetype in (Story, Bug) AND "Story Points" is EMPTY AND sprint in futureSprints()</pre>
+        <pre data-jql data-label="Team by id: Swap Squad">project = CRW AND Team = 7ab46d0b-f5d5-4c27-9d3b-648ed1c6c67e</pre>
+        <pre data-jql data-label="Sprint work with no Team (expect CRW-29)">project = CRW AND sprint in openSprints() AND Team is EMPTY</pre>
+      </article>
+    </div>
+  </div>
+</section>
+
+</main>
+<div id="site-footer"></div>
+<script src="assets/js/config.js?v=1"></script>
+<script src="assets/js/site.js?v=1"></script>
+<script src="assets/js/widgets.js?v=1"></script>
+<script>
+document.getElementById("print-all").addEventListener("click", function () { window.print(); });
+</script>
+</body>
+</html>

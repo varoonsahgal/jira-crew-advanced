@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My completion record · Crew Academy 301</title>
+<meta name="description" content="Your completion record for Jira Planning Analytics and Connected Work: the learner outputs from all eight labs, checkpoint status and the completion criteria, ready to print, save as PDF or download as Markdown.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/site.css?v=1">
+<link rel="icon" href="assets/img/favicon.svg">
+<style>
+  .who { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; }
+  @media (max-width: 760px) { .who { grid-template-columns: minmax(0,1fr); } }
+  .who label { display: block; font-weight: 600; font-size: .9rem; color: var(--navy-800); margin-bottom: 4px; }
+  .who input { width: 100%; font: inherit; border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; background: var(--white); }
+  .who input:focus { outline: 2px solid var(--sky-400); }
+  .rec { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; margin: 0 0 18px; box-shadow: var(--shadow-1); break-inside: avoid; }
+  .rec-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .rec-head h3 { margin: 0; font-size: 1.3rem; }
+  .rec-head .code { font-family: var(--font-mono); font-size: .8rem; color: var(--white); background: var(--blue-600); border-radius: 6px; padding: 2px 8px; margin-right: 8px; }
+  .rec .out { color: var(--ink-3); font-size: .9rem; margin: 6px 0 10px; }
+  .rec dl { margin: 0; display: grid; grid-template-columns: minmax(0,1fr); gap: 2px; }
+  .rec dt { font-weight: 700; font-size: .88rem; color: var(--navy-800); margin-top: 8px; }
+  .rec dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: .95rem; }
+  .rec dd.empty { color: var(--alert); font-style: italic; }
+  .badges { display: flex; gap: 6px; flex-wrap: wrap; }
+  .sum { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin: 18px 0 24px; }
+  @media (max-width: 760px) { .sum { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+  .sum div { background: var(--white); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+  .sum b { display: block; font-family: var(--font-display); font-size: 1.7rem; color: var(--blue-600); line-height: 1.1; }
+  .sum span { font-size: .82rem; color: var(--ink-3); }
+  @media print {
+    .rec a.no-print { display: none; }
+    .who input { border: 0; padding: 0; font-weight: 700; }
+    .checklist input { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<header id="site-header"></header>
+<main id="main">
+
+<section class="hero compact">
+  <div class="clouds" aria-hidden="true"><div class="cloud" style="top:24%;width:200px;height:46px;animation-duration:80s"></div></div>
+  <div class="wrap">
+    <div class="eyebrow">Crew Academy 301 · Completion record</div>
+    <h1>My completion record</h1>
+    <p class="lede">Everything you recorded in the eight labs, in one place. Check it, fill the gaps, then print it, save it as PDF or download it as Markdown for your instructor.</p>
+  </div>
+</section>
+
+<section class="tight">
+  <div class="wrap">
+    <div class="callout tip"><strong>Stays in this browser</strong>Your entries are saved only in this browser on this device (local storage). Nothing is sent anywhere. If you clear your browser data or switch devices, they're gone, so download a copy before you leave the session.</div>
+
+    <div class="card">
+      <h2 style="font-size:1.6rem">Learner</h2>
+      <div class="who">
+        <div><label for="ev-name">Name</label><input type="text" id="ev-name" autocomplete="name" placeholder="Your name"></div>
+        <div><label for="ev-seat">Lab seat (and partner, if paired)</label><input type="text" id="ev-seat" placeholder="Seat NN"></div>
+        <div><label for="ev-cohort">Cohort and date</label><input type="text" id="ev-cohort" placeholder="e.g. Cohort 1 · 2026-12-01"></div>
+      </div>
+    </div>
+
+    <div class="sum" aria-live="polite">
+      <div><b id="s-labs">0 / 8</b><span>labs marked complete</span></div>
+      <div><b id="s-quiz">0 / 8</b><span>checkpoints passed</span></div>
+      <div><b id="s-fields">0 / 0</b><span>evidence fields filled</span></div>
+      <div><b><span data-miles-total>0</span></b><span>miles · <span data-miles-tier>Trainee</span></span></div>
+    </div>
+
+    <div class="btn-row no-print" style="margin:0 0 26px">
+      <button class="btn btn-blue" type="button" id="btn-print">Print / Save as PDF</button>
+      <button class="btn btn-primary" type="button" id="btn-md">Download as Markdown</button>
+      <button class="btn btn-sm" type="button" id="btn-copy" style="color:var(--blue-600);border-color:var(--line)">Copy as text</button>
+    </div>
+
+    <h2>Completion criteria</h2>
+    <p>Tick each criterion when your record shows it. Your instructor checks the same list.</p>
+    <ul class="checklist" data-id="completion">
+      <li><input type="checkbox" id="cc1"><label for="cc1">A Plan scenario comparison with downstream dependencies and receiving-team capacity checked (Module 2).</label></li>
+      <li><input type="checkbox" id="cc2"><label for="cc2">A reconciled metric with the report scope, definition, import time and Jira keys recorded (Module 3).</label></li>
+      <li><input type="checkbox" id="cc3"><label for="cc3">A validated Claude-generated query with expected and actual results and one corrected error (Module 7).</label></li>
+      <li><input type="checkbox" id="cc4"><label for="cc4">A Jira development link and a release recommendation supported by planning and test evidence (Modules 4, 5 and 8).</label></li>
+    </ul>
+
+    <h2 style="margin-top:34px">Module evidence</h2>
+    <div id="records"><p class="muted">Loading your saved evidence…</p></div>
+  </div>
+</section>
+
+</main>
+<div id="site-footer"></div>
+<script src="assets/js/config.js?v=1"></script>
+<script src="assets/js/site.js?v=1"></script>
+<script src="assets/js/widgets.js?v=1"></script>
+<script>
+(function () {
+  "use strict";
+  const CA = window.CA, CW = window.CW;
+  const esc = CA.esc;
+  const mods = CA.config.modules;
+  const ids = ["ev-name", "ev-seat", "ev-cohort"];
+  const who = CA.store.get("learner", {});
+  if (!who.seat && CA.seat()) who.seat = "Seat " + CA.seat();
+  ids.forEach(id => {
+    const el = document.getElementById(id); const k = id.slice(3);
+    el.value = who[k] || "";
+    el.addEventListener("input", () => { const w = CA.store.get("learner", {}); w[k] = el.value; CA.store.set("learner", w); });
+  });
+
+  function status(id) {
+    const d = CA.store.get("done", {});
+    return { lab: !!d[id + "-lab"], quiz: !!d["quiz:" + id] };
+  }
+  function savedAt(ev) { if (!ev._at) return ""; try { return new Date(ev._at).toLocaleString(); } catch (e) { return ""; } }
+
+  function render() {
+    let labs = 0, quizzes = 0, filled = 0, total = 0;
+    const html = mods.map((m, i) => {
+      const schema = CW.EVIDENCE[m.id] || { fields: [], output: "" };
+      const ev = CA.evidence(m.id); const st = status(m.id);
+      if (st.lab) labs++; if (st.quiz) quizzes++;
+      const rows = schema.fields.map(([k, label]) => {
+        total++; const v = (ev[k] || "").trim(); if (v) filled++;
+        return "<dt>" + esc(label) + "</dt>" + (v ? "<dd>" + esc(v) + "</dd>" : '<dd class="empty">Not recorded yet</dd>');
+      }).join("");
+      const when = savedAt(ev);
+      return '<article class="rec" id="rec-' + m.id + '"><div class="rec-head"><h3><span class="code">M' + (i + 1) + "</span>" + esc(m.title) + '</h3><div class="badges">' +
+        '<span class="chip ' + (st.lab ? "green" : "red") + '">' + (st.lab ? "✓ Lab complete" : "Lab not marked complete") + "</span>" +
+        '<span class="chip ' + (st.quiz ? "green" : "red") + '">' + (st.quiz ? "✓ Checkpoint passed" : "Checkpoint not passed") + "</span></div></div>" +
+        '<p class="out"><b>Learner output:</b> ' + esc(schema.output) + (when ? " · last saved " + esc(when) : "") + "</p><dl>" + rows + "</dl>" +
+        '<p style="margin:12px 0 0"><a class="no-print" href="' + m.href + "#" + m.id + '-lab">Fill in or edit on Module ' + (i + 1) + " →</a></p></article>";
+    }).join("");
+    document.getElementById("records").innerHTML = html;
+    document.getElementById("s-labs").textContent = labs + " / " + mods.length;
+    document.getElementById("s-quiz").textContent = quizzes + " / " + mods.length;
+    document.getElementById("s-fields").textContent = filled + " / " + total;
+  }
+  render();
+
+  function markdown() {
+    const w = CA.store.get("learner", {});
+    const L = [];
+    L.push("# Completion record · " + CA.config.title + " (" + CA.config.course + ")", "");
+    L.push("- Name: " + (w.name || "_not entered_"));
+    L.push("- Seat: " + (w.seat || "_not entered_"));
+    L.push("- Cohort and date: " + (w.cohort || "_not entered_"));
+    L.push("- Exported: " + new Date().toLocaleString());
+    L.push("- Miles: " + Object.values(CA.store.get("done", {})).reduce((a, b) => a + (+b || 0), 0), "");
+    L.push("## Completion criteria", "");
+    const chk = CA.store.get("chk:completion", {});
+    Array.from(document.querySelectorAll('.checklist[data-id="completion"] label')).forEach((lab, i) => L.push("- [" + (chk[i] ? "x" : " ") + "] " + lab.textContent.trim()));
+    L.push("");
+    mods.forEach((m, i) => {
+      const schema = CW.EVIDENCE[m.id] || { fields: [], output: "" };
+      const ev = CA.evidence(m.id); const st = status(m.id);
+      L.push("## M" + (i + 1) + " · " + m.title, "");
+      L.push("- Lab: " + (st.lab ? "complete" : "not marked complete") + " · Checkpoint: " + (st.quiz ? "passed" : "not passed"));
+      L.push("- Learner output: " + schema.output, "");
+      schema.fields.forEach(([k, label]) => {
+        const v = (ev[k] || "").trim();
+        L.push("**" + label + "**", "", v ? v : "_Not recorded yet_", "");
+      });
+    });
+    L.push("---", "Saved locally in the learner's browser. Fictional Crew Scheduling training scenario.");
+    return L.join("\n");
+  }
+
+  document.getElementById("btn-print").addEventListener("click", () => window.print());
+  document.getElementById("btn-md").addEventListener("click", () => {
+    const blob = new Blob([markdown()], { type: "text/markdown;charset=utf-8" });
+    const a = document.createElement("a");
+    const w = CA.store.get("learner", {});
+    const slug = (w.name || "learner").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "learner";
+    a.href = URL.createObjectURL(blob); a.download = "crew301-completion-record-" + slug + ".md";
+    document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+    CA.toast("Markdown downloaded ✓");
+  });
+  const copyBtn = document.getElementById("btn-copy");
+  copyBtn.addEventListener("click", () => CW.copy(markdown(), copyBtn));
+  window.addEventListener("storage", render);
+})();
+</script>
+</body>
+</html>

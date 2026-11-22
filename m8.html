@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M8 · Make a release decision across tools · Crew Academy 301</title>
+<meta name="description" content="Module 8 of Jira Planning Analytics and Connected Work: produce a concise release recommendation that peers can check against the Jira, planning, test and code records.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/site.css?v=1">
+<link rel="icon" href="assets/img/favicon.svg">
+<style>
+  .m8-decisions { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; margin: 16px 0 22px; }
+  @media (max-width: 760px) { .m8-decisions { grid-template-columns: minmax(0,1fr); } }
+  .m8-decisions .card { padding: 18px; border-top: 6px solid var(--go); }
+  .m8-decisions .card.hold { border-top-color: var(--alert); }
+  .m8-decisions .card.clarify { border-top-color: var(--beacon); }
+  .m8-decisions h3 { font-size: 1.3rem; }
+  .m8-decisions p { font-size: .94rem; color: var(--ink-2); margin: 0 0 .6em; }
+  .m8-tags { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin: 16px 0 20px; }
+  @media (max-width: 900px) { .m8-tags { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+  @media (max-width: 460px) { .m8-tags { grid-template-columns: minmax(0,1fr); } }
+  .m8-tags div { background: var(--white); border: 1px solid var(--line); border-radius: 10px; padding: 12px; font-size: .92rem; color: var(--ink-2); }
+  .m8-tag { display: inline-block; font: 700 .72rem var(--font-body); letter-spacing: .06em; text-transform: uppercase; border-radius: 6px; padding: 3px 8px; margin-bottom: 6px; }
+  .m8-tag.obs { background: var(--go-bg); color: var(--go); }
+  .m8-tag.rep { background: #e7f0ff; color: var(--blue-600); }
+  .m8-tag.asm { background: var(--warn-bg); color: var(--beacon-ink); }
+  .m8-tag.unv { background: var(--alert-bg); color: var(--alert); }
+  .m8-builder { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-2); margin: 18px 0 30px; overflow: hidden; scroll-margin-top: 80px; }
+  .m8-builder-head { background: linear-gradient(90deg, var(--navy-900), var(--blue-600)); color: var(--white); padding: 16px 20px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .m8-builder-head h3 { color: var(--white); margin: 0; }
+  .m8-builder-head .mono { font-family: var(--font-mono); font-size: .78rem; color: var(--beacon); letter-spacing: .08em; }
+  .m8-builder-body { padding: 18px 20px 8px; }
+  .m8-builder label, .m8-builder legend { display: block; font-weight: 600; font-size: .9rem; margin: 10px 0 4px; color: var(--navy-800); }
+  .m8-builder textarea, .m8-builder input[type=text], .m8-builder input[type=date], .m8-builder select { width: 100%; font: inherit; font-size: .95rem; border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; background: var(--ice-50); color: var(--ink); }
+  .m8-builder textarea { min-height: 70px; resize: vertical; }
+  .m8-builder textarea:focus, .m8-builder input:focus, .m8-builder select:focus { outline: 2px solid var(--sky-400); background: var(--white); }
+  .m8-status { display: grid; grid-template-columns: repeat(6, minmax(0,1fr)); gap: 8px; margin: 4px 0 14px; }
+  @media (max-width: 900px) { .m8-status { grid-template-columns: repeat(3, minmax(0,1fr)); } }
+  @media (max-width: 420px) { .m8-status { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+  .m8-status a { display: block; text-decoration: none; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; background: var(--ice-50); color: var(--ink); font-size: .85rem; }
+  .m8-status a b { display: block; font-family: var(--font-display); font-size: 1.05rem; color: var(--navy-900); }
+  .m8-status a.full { border-color: #9fd8bb; background: var(--go-bg); }
+  .m8-status a.part { border-color: #f4d48b; background: var(--warn-bg); }
+  .m8-line { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin: 12px 0; background: var(--white); }
+  .m8-line h4 { margin: 0 0 4px; font-size: .9rem; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .m8-line h4 small { font-family: var(--font-body); text-transform: none; letter-spacing: 0; font-weight: 500; color: var(--ink-3); font-size: .82rem; }
+  .m8-line details { margin: 6px 0; font-size: .88rem; }
+  .m8-line details summary { cursor: pointer; color: var(--blue-600); font-weight: 600; }
+  .m8-line details pre { white-space: pre-wrap; background: var(--ice-50); border-radius: 8px; padding: 8px 10px; margin: 6px 0 0; font-size: .8rem; max-height: 220px; overflow: auto; }
+  .m8-line .m8-meta { display: grid; grid-template-columns: 220px minmax(0,1fr); gap: 10px; }
+  @media (max-width: 640px) { .m8-line .m8-meta { grid-template-columns: minmax(0,1fr); } }
+  .m8-btn { font: 600 .88rem var(--font-body); border: 1.5px solid var(--line); background: var(--white); color: var(--navy-800); border-radius: 999px; padding: 7px 13px; cursor: pointer; }
+  .m8-btn:hover { border-color: var(--sky-400); background: var(--sky-100); }
+  .m8-btn.primary { background: var(--blue-600); border-color: var(--blue-600); color: var(--white); }
+  .m8-btn.primary:hover { background: var(--blue-500); color: var(--white); }
+  .m8-btn.gold { background: var(--beacon); border-color: var(--beacon); color: var(--navy-950); }
+  .m8-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; align-items: center; }
+  .m8-radio { display: flex; flex-wrap: wrap; gap: 10px; }
+  .m8-radio label { display: inline-flex; align-items: center; gap: 6px; border: 1.5px solid var(--line); border-radius: 999px; padding: 6px 14px; margin: 0; cursor: pointer; background: var(--white); }
+  .m8-radio input { accent-color: var(--blue-600); }
+  .m8-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
+  @media (max-width: 760px) { .m8-grid { grid-template-columns: minmax(0,1fr); } }
+  .m8-lint { list-style: none; padding: 0; margin: 10px 0; }
+  .m8-lint li { padding: 7px 10px; border-radius: 8px; margin: 5px 0; font-size: .93rem; }
+  .m8-lint li.ok { background: var(--go-bg); color: #0d5c3f; }
+  .m8-lint li.warn { background: var(--warn-bg); color: var(--beacon-ink); }
+  .m8-lint li.bad { background: var(--alert-bg); color: #8a1426; }
+  #m8b-out { font-family: var(--font-mono); font-size: .82rem; min-height: 260px; }
+  .m8-timer { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; background: var(--navy-900); color: #dbe6f7; border-radius: 12px; padding: 14px 18px; margin: 14px 0; }
+  .m8-clock { font-family: var(--font-mono); font-size: 2.6rem; font-weight: 600; color: var(--beacon); min-width: 5ch; letter-spacing: .04em; }
+  .m8-clock.low { color: #ff8a9b; }
+  .m8-timer .m8-btn { background: rgba(255,255,255,.08); color: #fff; border-color: rgba(255,255,255,.25); }
+  .m8-timer .m8-btn:hover { background: rgba(255,255,255,.18); }
+  .m8-timer .m8-btn[aria-pressed="true"] { background: var(--beacon); color: var(--navy-950); border-color: var(--beacon); }
+  .m8-wsheet td:first-child { font-weight: 700; white-space: nowrap; }
+</style>
+</head>
+<body>
+<header id="site-header"></header>
+<main id="main">
+
+<section class="hero compact module-hero">
+  <div class="clouds" aria-hidden="true"><div class="cloud" style="top:20%;width:220px;height:50px;animation-duration:85s"></div><div class="cloud" style="top:62%;width:150px;height:36px;animation-duration:64s;animation-delay:-28s"></div></div>
+  <div class="wrap">
+    <div class="eyebrow">Module 8 of 8 · Session 2 · Verify AI results and decide</div>
+    <h1>Make a release decision across tools</h1>
+    <p class="lede">Put the forecast, the reconciled measure, the test evidence, the code trace and the checked query on one page. Then say proceed, hold or clarify in three minutes, with links a peer can check.</p>
+    <div class="meta-row"><span class="chip">40 min</span><span class="chip">35 min practice</span><span class="chip gold">Lab: Defend the release recommendation</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap layout">
+    <aside class="toc" aria-label="On this page">
+      <h4>On this page</h4>
+      <ol>
+        <li><a href="#objective">Objective</a></li>
+        <li><a href="#l1">The decision format</a></li>
+        <li><a href="#l2">Observed result or unverified claim?</a></li>
+        <li><a href="#l3">The Crew App 4.2 picture today</a></li>
+        <li><a href="#demo">Instructor demo</a></li>
+        <li><a href="#m8-lab">Lab: Defend the release recommendation</a></li>
+        <li><a href="#builder">Recommendation builder</a></li>
+        <li><a href="#check">Checkpoint</a></li>
+      </ol>
+    </aside>
+
+    <div>
+      <div class="objective-banner" id="objective">
+        <div class="eyebrow">Objective</div>
+        <p>Produce a concise recommendation that can be checked against the underlying Jira, planning, test and code records.</p>
+      </div>
+      <ul class="topics" aria-label="Topics">
+        <li>Delivery forecast</li><li>Reconciled measure</li><li>Quality evidence</li><li>Development traceability</li><li>Verified MCP result</li><li>Query and sources retained</li><li>Next action and accountable role</li><li>Evidence to revisit a decision</li>
+      </ul>
+
+      <div class="callout captain"><strong>The release review</strong>Crew App 4.2 is due on 18 December 2026. Over the last seven modules you have collected evidence that does not agree with itself: Plans shows a capacity risk, two reports give different totals, most tests pass, a code change was linked to the wrong work item and an assistant's query left out a Bug. This module turns that evidence into one recommendation that someone else can verify without asking you a single question.</div>
+
+      <!-- ===================== L1 ===================== -->
+      <article class="lesson" id="l1">
+        <h2><span class="lesson-code">M8.1</span> The decision format</h2>
+        <p>A release recommendation has one job: let the accountable person make a decision and let anyone else check why. That means the answer comes first, every reason points to a record, and the next step has an owner. Long narratives fail that test. So do dashboards with no definitions.</p>
+        <div class="m8-decisions">
+          <div class="card"><h3>Proceed</h3><p>The evidence supports releasing as planned. Every material claim is observed in a source, and the remaining risks are known, small and owned.</p><p><b>Not the same as</b> "nobody objected".</p></div>
+          <div class="card hold"><h3>Hold</h3><p>Observed evidence shows a risk that must be resolved before release: an overloaded sprint, a failing test on a required path, a blocker with no date.</p><p><b>Always name</b> what would lift the hold.</p></div>
+          <div class="card clarify"><h3>Clarify</h3><p>Evidence is missing or conflicts, so nobody can decide yet. Name the exact missing evidence, who supplies it and by when.</p><p><b>Not a polite</b> way of saying "I don't know".</p></div>
+        </div>
+        <h3>The worksheet, line by line</h3>
+        <div class="table-wrap"><table class="data m8-wsheet">
+          <thead><tr><th>Line</th><th>What it must contain</th><th>From</th></tr></thead>
+          <tbody>
+            <tr><td>Decision</td><td>Proceed, hold or clarify, and the release it applies to, in one sentence.</td><td>You</td></tr>
+            <tr><td>Delivery forecast</td><td>The scenario you chose, sprint load for both teams, dependency order and the release marker.</td><td>Module 2 · Plans</td></tr>
+            <tr><td>Reconciled measure</td><td>The number you quote, its definition, the other number and why they differ.</td><td>Module 3 · board and eazyBI</td></tr>
+            <tr><td>Quality evidence</td><td>Coverage gaps, failing or unexecuted tests, the linked Bug and the retest status.</td><td>Module 4 · Zephyr</td></tr>
+            <tr><td>Development traceability</td><td>Which work item the code belongs to, what was wrong and what you corrected.</td><td>Module 5 · Git</td></tr>
+            <tr><td>Verified MCP result</td><td>The query or retrieval, with expected and actual keys and the account it ran as.</td><td>Modules 6 and 7 · Claude</td></tr>
+            <tr><td>Assumptions</td><td>Conditions the decision depends on, and claims you have not verified.</td><td>Everything above</td></tr>
+            <tr><td>Next action</td><td>What happens next, the accountable role, a date, and the evidence that would change the decision.</td><td>You</td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout tip"><strong>Roles, not names</strong>Write "Product Owner", "QA lead" or "Alerts Squad delivery lead", not a person's name. Roles survive holidays and reorganisations, and they tell the reader which decision right is involved.</div>
+      </article>
+
+      <!-- ===================== L2 ===================== -->
+      <article class="lesson" id="l2">
+        <h2><span class="lesson-code">M8.2</span> Observed result or unverified claim?</h2>
+        <p>Every sentence in a recommendation is one of four things. Tag each one, out loud and on the page. Most bad release decisions are not built on wrong data. They are built on an unverified claim that was repeated until it sounded observed.</p>
+        <div class="m8-tags">
+          <div><span class="m8-tag obs">Observed</span><br>You saw it in the source of record and can link to it: a JQL result, a report, a Plans view. Someone else can repeat it.</div>
+          <div><span class="m8-tag rep">Observed in replica</span><br>You saw it in a practice replica or an exported view, not in the live app. Say so, and say how it will be confirmed.</div>
+          <div><span class="m8-tag asm">Assumption</span><br>A condition you are choosing to rely on, stated so others can challenge it: "Swap Squad capacity stays at 15".</div>
+          <div><span class="m8-tag unv">Unverified claim</span><br>Someone said it, or an assistant produced it, and you have not checked. It can be reported. It cannot carry the decision.</div>
+        </div>
+        <div class="callout warn"><strong>Assistants produce claims, not observations</strong>A number Claude gives you is an unverified claim until you have run the query in Jira and compared the keys. That is why Module 7 matters here: only the corrected, re-run query earns the Observed tag.</div>
+        <h3>Practice: tag the statement</h3>
+        <div class="sort-game" data-id="m8-claims" data-miles="150">
+          <div class="sort-card" data-answer="Observed"><p><code>project = CRW AND fixVersion = "Crew App 4.2" AND statusCategory != Done</code> returns 10 work items when run today (link attached).</p><div class="choices"><button>Observed</button><button>Observed in replica</button><button>Assumption</button><button>Unverified claim</button></div><div class="why">A query you ran, with a link anyone can open. That is an observation, valid as of the time you ran it.</div></div>
+          <div class="sort-card" data-answer="Unverified claim"><p>"Claude says Swap Squad delivered 21 points in SWP-2026.q4.2, so the q4.5 load is fine."</p><div class="choices"><button>Observed</button><button>Observed in replica</button><button>Assumption</button><button>Unverified claim</button></div><div class="why">An assistant's number that you haven't checked, and in fact it's wrong: the Velocity report says 18 for q4.2.</div></div>
+          <div class="sort-card" data-answer="Assumption"><p>Swap Squad's capacity for SWP-2026.q4.5 is 15 points.</p><div class="choices"><button>Observed</button><button>Observed in replica</button><button>Assumption</button><button>Unverified claim</button></div><div class="why">This is the planning input you chose in your scenario. State it so someone can challenge it.</div></div>
+          <div class="sort-card" data-answer="Unverified claim"><p>"Vendor Management says the rules vendor sandbox credentials (CRW-46) will arrive before 25 November."</p><div class="choices"><button>Observed</button><button>Observed in replica</button><button>Assumption</button><button>Unverified claim</button></div><div class="why">Someone said it. CRW-46 is still in Development and flagged. Report the claim; don't build the forecast on it.</div></div>
+          <div class="sort-card" data-answer="Observed"><p>The ALR-2026.q4.3 Sprint Report lists CRW-54 and CRW-55 as completed with status Ready for Release.</p><div class="choices"><button>Observed</button><button>Observed in replica</button><button>Assumption</button><button>Unverified claim</button></div><div class="why">You can open the report and see it. The interpretation, that these weren't Done at close, comes from the board mapping you checked in Module 3.</div></div>
+          <div class="sort-card" data-answer="Observed in replica"><p>In the Zephyr practice cycle, the swap-approved email case's latest execution failed and is linked to Bug CRW-62.</p><div class="choices"><button>Observed</button><button>Observed in replica</button><button>Assumption</button><button>Unverified claim</button></div><div class="why">The test execution came from the practice replica. CRW-62 itself is live in Jira and can be linked. Repeat the check in Zephyr once it is installed.</div></div>
+          <div class="sort-card" data-answer="Unverified claim"><p>"The eazyBI number must be right because it's the official reporting tool."</p><div class="choices"><button>Observed</button><button>Observed in replica</button><button>Assumption</button><button>Unverified claim</button></div><div class="why">A tool's authority is not a definition. Without the measure definition and import time, this is an opinion about a number.</div></div>
+          <div class="game-score"></div>
+          <button class="btn btn-sm btn-blue reset" type="button" style="margin-top:8px">Reset</button>
+        </div>
+      </article>
+
+      <!-- ===================== L3 ===================== -->
+      <article class="lesson" id="l3">
+        <h2><span class="lesson-code">M8.3</span> The Crew App 4.2 picture today</h2>
+        <p>Your saved evidence is a snapshot from earlier in the course. Before you defend a decision, re-run the live checks so you are reporting today's state. These queries run on the training site.</p>
+        <pre data-jql data-label="Unresolved work in the release · expect 10">project = CRW AND fixVersion = "Crew App 4.2" AND statusCategory != Done</pre>
+        <pre data-jql data-label="Flagged or blocked, unresolved · expect 5">project = CRW AND (Flagged is not EMPTY OR issueLinkType = "is blocked by") AND statusCategory != Done</pre>
+        <pre data-jql data-label="In the active sprint but invisible to every team board · expect CRW-29">project = CRW AND sprint in openSprints() AND Team is EMPTY</pre>
+        <pre data-jql data-label="Who waits on the eligibility engine · expect CRW-58">issue in linkedIssues(CRW-22, "blocks")</pre>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th>Signal</th><th>What the records show</th><th>Why it matters for 4.2</th></tr></thead>
+          <tbody>
+            <tr><td>Scope still open</td><td>10 unresolved items in Crew App 4.2: CRW-3, CRW-22, CRW-25 to CRW-29, CRW-31, CRW-32, CRW-34.</td><td>That is the remaining release, not just the active sprint.</td></tr>
+            <tr><td>Blocked work</td><td>CRW-25 (submit from the trip board) is flagged and blocked by Impediment CRW-46, credentials needed by 25 Nov. CRW-58 is blocked by CRW-22, which sits in eQE Testing.</td><td>The release's headline story depends on an external party.</td></tr>
+            <tr><td>Hidden work</td><td>CRW-29 (wrong home base) is in SWP-2026.q4.4 and Crew App 4.2 but has no Team, so the SWP board and its reports don't show it.</td><td>Board-based forecasts undercount the release by one item.</td></tr>
+            <tr><td>Unsized work</td><td>CRW-34, a High-priority Bug in 4.2, has no estimate. So does CRW-33.</td><td>The 18 points in SWP-2026.q4.5 understate the real load.</td></tr>
+          </tbody>
+        </table></div>
+        <div class="split">
+          <figure class="shot" style="margin-top:0">
+            <div class="frame"><div class="frame-bar"><i></i><i></i><i></i><span>…/jira/plans/1/scenarios/3/timeline</span></div>
+            <img src="assets/img/crew-plan-release-at-risk.jpg" alt="Plans timeline in the DEMO capacity cut scenario with 2 unsaved changes: the Crew App 4.2 release marker for 18 December 2026 is red, CRW-31 has moved into the next SWP sprint, and CRW-73 stays in ALR-2026.q4.5" loading="lazy"></div>
+            <figcaption>The instructor's demo scenario after moving CRW-31: Swap Squad's sprint now fits, but the Crew App 4.2 marker turns red and CRW-73 is still planned before the rule it depends on. Note "Unsaved changes 2": nothing reached Jira.</figcaption>
+          </figure>
+          <figure class="shot" style="margin-top:0">
+            <div class="frame"><div class="frame-bar"><i></i><i></i><i></i><span>…/CRW/boards/62/reports/sprint-retrospective?sprint=50</span></div>
+            <img src="assets/img/crw-sprint-report-alr-q4-3.jpg" alt="ALR-2026.q4.3 Sprint Report, completed issues: CRW-53 Done 3, CRW-54 Ready for Release 5, CRW-55 Ready for Release 3, CRW-56 Done 3, CRW-57 Done 5; Story Points (19)" loading="lazy"></div>
+            <figcaption>Alerts Squad's "19 completed" includes two items that were Ready for Release at sprint close. The sample eazyBI measure counts 11.</figcaption>
+          </figure>
+        </div>
+        <div class="callout replica"><strong>Two lines of your evidence come from practice replicas</strong>Zephyr and the Git integration aren't installed on the training site, so your Module 4 and Module 5 findings were observed in replicas that use the same CRW records. Tag them "Observed in replica" and name how they will be confirmed when the apps are installed. Bug CRW-62 and work item CRW-25 are live, so link those.</div>
+      </article>
+
+      <!-- ===================== Demo ===================== -->
+      <div class="callout demo" id="demo"><strong>Instructor demo · 5 min</strong>
+        <ol>
+          <li>Show the worksheet format with a deliberately different decision, so you don't hand the room the answer: "Should Swap Squad pull CRW-42 into SWP-2026.q4.4?"</li>
+          <li>Read two sentences aloud and tag them live. "CRW-25 is blocked by CRW-46" (Observed: open the link). "The credentials will come Monday" (Unverified claim: who said it, where is it recorded?).</li>
+          <li>Show what turns a claim into an observation: run <code>project = CRW AND (Flagged is not EMPTY OR issueLinkType = "is blocked by") AND statusCategory != Done</code> and point at the 5 keys.</li>
+          <li>Show a next-action line with a role, a date and a revisit trigger, and one without. Ask which one a sponsor can act on.</li>
+          <li>Start the three-minute timer and model the opening: decision first, three reasons with sources, the ask, the owner.</li>
+        </ol>
+      </div>
+
+      <!-- ===================== Lab ===================== -->
+      <article class="mission" id="m8-lab" data-miles="600">
+        <div class="mission-head">
+          <div><span class="mcode">LAB M8 · 35 MIN · CRW READ-ONLY · PAIRS · YOUR SEAT</span><h3>Defend the release recommendation</h3></div>
+          <span class="turb" title="Difficulty"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i> Turbulence</span>
+        </div>
+        <div class="mission-body">
+          <div class="brief"><b>Brief</b> You present to the Crew App 4.2 release review in three minutes. Your partner's job is to check your sources, not to be polite. <b>CRW is read-only:</b> open items, reports and your plan scenario <code>Lab {SEAT}</code>, but don't edit, comment or transition anything in CRW and never press Save in Plans. The only Jira write in this lab is optional: one comment with your final recommendation on your seat epic <span data-seat-epic></span> (label <code>lab-{SEAT}</code>, prefix <code>L{SEAT} · </code>).</div>
+          <ol class="steps">
+            <li><b>Combine the forecast, the reconciled report and the coverage finding.</b> (12 min)
+              <ol type="a">
+                <li>In the <a href="#builder">recommendation builder</a> below, check the evidence tiles. Any module shown as empty: open it and complete its evidence card, or use the facts in M8.3 and tag them honestly.</li>
+                <li>Select <b>Pull my saved evidence</b>. For the forecast, measure and quality lines, rewrite the pulled notes as one claim of one or two sentences each. Keep the numbers and keys.</li>
+                <li>Tag each line and add its source: a Plans link (<a data-jira="/jira/plans/1/scenarios/1/timeline">Crew Self-Service 2027 ↗</a>, your <code>Lab {SEAT}</code> scenario), a report link (<a data-jira="/jira/software/c/projects/CRW/boards/62/reports/sprint-retrospective?sprint=50">ALR q4.3 Sprint Report ↗</a>) or the JQL you ran.</li>
+                <li>Re-run the two release queries in M8.3. If anything changed since you saved your evidence, update the claim and say so.</li>
+              </ol>
+            </li>
+            <li><b>Add the Jira-to-Git trace and the checked MCP query or retrieval.</b> (8 min)
+              <ol type="a">
+                <li>Trace line: which work item the code belongs to, the key that was missing or wrong, and the correction. Tag it "Observed in replica" and note that the Development panel can't be checked on the training site.</li>
+                <li>MCP line: your corrected Module 7 query with expected and actual keys, or your Module 6 retrieval of <a data-jira="/browse/CRW-25">CRW-25 ↗</a>. Re-run the query in Jira now; only then tag it Observed.</li>
+                <li>Write your assumptions. Move every line you could not verify into them as an unverified claim.</li>
+                <li>Pick proceed, hold or clarify. Write the next action with a role, a date and the evidence that would change your mind. Select <b>Check my worksheet</b> and fix every red item.</li>
+              </ol>
+            </li>
+            <li><b>Give the three-minute recommendation in a peer exchange.</b> (15 min)
+              <ol type="a">
+                <li>Select <b>Generate recommendation</b> and read it once silently. Edit it into words you would say.</li>
+                <li>Partner A presents with the 3:00 timer. Partner B picks <b>two</b> Observed claims and verifies them from the sources in 2:00 (use the verify timer). Swap roles.</li>
+                <li>Record in the <b>Peer check</b> field what your partner verified, what they could not verify, and one question they asked.</li>
+                <li>Select <b>Save to my evidence</b>. Optional: post the recommendation as a comment on your seat epic <span data-seat-epic></span>, then confirm with the check-your-work query.</li>
+              </ol>
+            </li>
+          </ol>
+
+          <!-- ============ Builder ============ -->
+          <div class="m8-builder" id="builder">
+            <div class="m8-builder-head"><h3>Recommendation builder</h3><span class="mono">CREW APP 4.2 · RELEASE REVIEW · 18 DEC 2026</span></div>
+            <div class="m8-builder-body">
+              <p class="muted" style="margin:0 0 6px;font-size:.92rem">Reads the evidence you saved in Modules 2–7 in this browser. Nothing leaves this browser. Your work here autosaves.</p>
+              <div class="m8-status" id="m8b-status" aria-label="Saved evidence by module"></div>
+              <div class="m8-row"><button type="button" class="m8-btn primary" id="m8b-pull">Pull my saved evidence</button><button type="button" class="m8-btn" id="m8b-pull-all">Replace all lines with saved evidence</button></div>
+
+              <fieldset style="border:0;padding:0;margin:8px 0 0">
+                <legend>Decision for Crew App 4.2</legend>
+                <div class="m8-radio" role="radiogroup">
+                  <label><input type="radio" name="m8b-dec" value="Proceed"> Proceed</label>
+                  <label><input type="radio" name="m8b-dec" value="Hold"> Hold</label>
+                  <label><input type="radio" name="m8b-dec" value="Clarify"> Clarify</label>
+                </div>
+              </fieldset>
+              <label for="m8b-headline">One-sentence recommendation</label>
+              <input type="text" id="m8b-headline" placeholder="e.g. Hold the full 4.2 scope for 18 Dec until …">
+
+              <div id="m8b-lines"></div>
+
+              <label for="m8b-assume">Assumptions (conditions you rely on)</label>
+              <textarea id="m8b-assume" placeholder="e.g. Swap Squad capacity is 15 in SWP-2026.q4.5; Alerts Squad stays at 18 …"></textarea>
+
+              <div class="m8-grid">
+                <div><label for="m8b-action">Next action</label><input type="text" id="m8b-action" placeholder="e.g. Decide 4.2 scope: move CRW-30 or retarget CRW-31"></div>
+                <div><label for="m8b-role">Accountable role</label>
+                  <select id="m8b-role"><option value="">Choose a role…</option><option>Product Owner</option><option>Delivery lead</option><option>Scrum Master</option><option>QA lead</option><option>Alerts Squad delivery lead</option><option>Engineering lead</option><option>Reporting author</option><option>Platform or app owner</option></select></div>
+                <div><label for="m8b-by">By when</label><input type="text" id="m8b-by" placeholder="e.g. 4 Dec, before q4.5 planning"></div>
+              </div>
+              <label for="m8b-trigger">Evidence that would change or revisit the decision</label>
+              <input type="text" id="m8b-trigger" placeholder="e.g. CRW-46 resolved, CRW-34 estimated, swap-approved retest passes">
+
+              <div class="m8-row">
+                <button type="button" class="m8-btn" id="m8b-check">Check my worksheet</button>
+                <button type="button" class="m8-btn primary" id="m8b-gen">Generate recommendation</button>
+                <button type="button" class="m8-btn gold" id="m8b-save">Save to my evidence</button>
+                <button type="button" class="m8-btn" id="m8b-copy">Copy</button>
+              </div>
+              <div id="m8b-lint" aria-live="polite"></div>
+              <label for="m8b-out">Your recommendation (edit freely before you present)</label>
+              <textarea id="m8b-out" spellcheck="true"></textarea>
+              <div class="muted" id="m8b-words" style="font-size:.85rem;margin-top:4px" aria-live="polite"></div>
+
+              <div class="m8-timer" role="group" aria-label="Peer exchange timer">
+                <div><div class="stat-l" style="color:#9fb2d3">Peer exchange</div><div class="m8-clock" id="m8-clock" role="timer" aria-live="off">3:00</div></div>
+                <div class="m8-row" style="margin:0">
+                  <button type="button" class="m8-btn" id="m8-t3" aria-pressed="true">Present 3:00</button>
+                  <button type="button" class="m8-btn" id="m8-t2" aria-pressed="false">Verify 2:00</button>
+                  <button type="button" class="m8-btn" id="m8-tgo">Start</button>
+                  <button type="button" class="m8-btn" id="m8-treset">Reset</button>
+                </div>
+                <div class="sr-only" style="position:absolute;left:-9999px" id="m8-tlive" aria-live="assertive"></div>
+              </div>
+            </div>
+          </div>
+
+          <pre data-jql data-label="Check your work: CRW untouched in the last hour (should be empty)">project = CRW AND updated >= -1h ORDER BY updated DESC</pre>
+          <pre data-jql data-label="Check your work: your seat epic, if you posted the recommendation">project = CRP AND issuetype = Epic AND summary ~ "L{SEAT}"</pre>
+
+          <details class="reveal"><summary>Debrief: a model worksheet</summary><div>
+            <p><b>Decision: Hold</b> the full Crew App 4.2 scope for 18 December, and ask the Product Owner to choose a reduced-scope option before SWP-2026.q4.5 planning. Proceed is not supported by the evidence. Clarify is also defensible if you name the missing evidence, its owner and a date. "Clarify" with no owner is not.</p>
+            <div class="table-wrap"><table class="data">
+              <thead><tr><th>Line</th><th>Model claim</th><th>Tag and source</th></tr></thead>
+              <tbody>
+                <tr><td>Forecast</td><td>At capacity 15, SWP-2026.q4.5 is 18/15 (120%). Moving CRW-31 fits (13/15) but turns Crew App 4.2 red and leaves CRW-31 blocking CRW-73 at −25d. Moving CRW-30 (a Crew App 4.3 item) instead fits by arithmetic (10/15) and keeps the CRW-31 → CRW-73 handoff, at the cost of the supervisor queue in the sprint goal. CRW-33 and CRW-34 are unestimated, so all loads are understated.</td><td>Observed in scenario <code>Lab NN</code> (Review changes listed the changes; discarded). The CRW-30 option is arithmetic until you confirm it in the scenario.</td></tr>
+                <tr><td>Measure</td><td>Alerts Squad's ALR-2026.q4.3 shows 19 completed on the board and 11 by the sample measure (Done status category at sprint close). The 8-point gap is CRW-54 (5) and CRW-55 (3), which were Ready for Release at close; the ALR board maps that status into its Done column. CRW-54 is still not Done. Quote 11 for "done", or quote 19 only with the board definition.</td><td>Observed: Sprint Report (sprint 50) and <code>status WAS "Ready for Release"</code> JQL. The eazyBI figure was observed in the replica.</td></tr>
+                <tr><td>Quality</td><td>The swap-approved notification path is not proven. One acceptance criterion has no executed test, one test is Not Executed, and the swap-approved email case failed and links to Bug CRW-62 (High, still in Development), so its retest cannot pass yet. A high pass rate in the other cycle does not cover these.</td><td>Observed in replica; CRW-62 is live in Jira. Confirm in Zephyr once installed.</td></tr>
+                <tr><td>Trace</td><td>CRW-25's branch and pull request carry the right key. One commit carried the wrong key (CRW-26) and one carried none; corrected without rewriting shared history. The Development panel can't be checked on the training site.</td><td>Observed in replica. Unverified in Jira until a Git provider is connected.</td></tr>
+                <tr><td>MCP</td><td>The corrected query returns 2, CRW-33 and CRW-34, in Jira and through Claude as the same account. The assistant's first query omitted the Bug. CRW-34, a High Bug in 4.2, has no estimate, and its description contains an instruction aimed at AI assistants, which was reported and not acted on.</td><td>Observed: JQL re-run today, private filter <code>L{SEAT} · q4.5 missing estimates</code>.</td></tr>
+                <tr><td>Assumptions</td><td>Swap Squad capacity 15 in q4.5; Alerts Squad 18. Unverified claims: rules vendor credentials (CRW-46) arrive by 25 Nov; CRW-34 is small.</td><td>Assumption / Unverified claim</td></tr>
+                <tr><td>Next action</td><td>Product Owner chooses between moving CRW-30 and retargeting CRW-31 with the Alerts Squad delivery lead, by 4 Dec (before q4.5 planning on 7 Dec). Scrum Master gets CRW-33 and CRW-34 estimated in refinement this week. QA lead reruns the swap-approved cases when CRW-62 is fixed. Revisit when CRW-46 is resolved, CRW-34 is estimated and the retest passes.</td><td>Roles, dates, triggers</td></tr>
+              </tbody>
+            </table></div>
+            <p><b>A three-minute shape that works:</b> decision and release (15 s) → the three strongest observed reasons with their sources (90 s) → what you could not verify and why it doesn't change the call (30 s) → the ask, the owner and the date (30 s) → what would change your mind (15 s).</p>
+          </div></details>
+
+          <div class="evidence" data-evidence="m8">
+            <h4>Learner output · Module 8</h4>
+            <p class="hint">A complete release decision worksheet and a short explanation that peers can verify from the source records. The builder fills most of these; edit anything here directly.</p>
+            <label for="m8-decision">Recommendation: proceed, hold or clarify</label><textarea id="m8-decision" data-field="decision"></textarea>
+            <label for="m8-forecast">Delivery forecast (chosen Plan scenario)</label><textarea id="m8-forecast" data-field="forecast"></textarea>
+            <label for="m8-measure">Reconciled measure</label><textarea id="m8-measure" data-field="measure"></textarea>
+            <label for="m8-quality">Quality evidence</label><textarea id="m8-quality" data-field="quality"></textarea>
+            <label for="m8-trace">Development traceability</label><textarea id="m8-trace" data-field="trace"></textarea>
+            <label for="m8-mcp">Verified MCP query or retrieval</label><textarea id="m8-mcp" data-field="mcp"></textarea>
+            <label for="m8-assumptions">Assumptions and unverified claims</label><textarea id="m8-assumptions" data-field="assumptions"></textarea>
+            <label for="m8-next">Next action, accountable role and evidence to revisit</label><textarea id="m8-next" data-field="next"></textarea>
+            <label for="m8-script">Three-minute explanation</label><textarea id="m8-script" data-field="script" style="min-height:140px"></textarea>
+            <label for="m8-peer">Peer check: what your partner verified</label><textarea id="m8-peer" data-field="peer" placeholder="Claims verified, claims they couldn't verify, one question they asked"></textarea>
+          </div>
+        </div>
+        <div class="mission-foot"><span class="miles-tag">+600 mi</span><button class="complete-btn" type="button">Mark lab complete</button></div>
+      </article>
+
+      <div class="callout output"><strong>Your completion record</strong>This worksheet is the last piece of the course evidence. Open <a href="evidence.html">My completion record</a> to review every module's output, print it or download it as Markdown for your team follow-up.</div>
+
+      <!-- ===================== Quiz ===================== -->
+      <section class="quiz" id="check" data-id="m8" data-pass="75" data-miles="200" style="padding:24px">
+        <h2 style="margin-top:0">Checkpoint</h2>
+        <div class="q"><p class="prompt">1. Which statement can be tagged Observed in a release recommendation?</p><div class="opts">
+          <button class="opt" type="button" data-right>"<code>project = CRW AND fixVersion = "Crew App 4.2" AND statusCategory != Done</code> returned 10 items today", with the link.</button>
+          <button class="opt" type="button">"Claude confirmed the release has 8 open items."</button>
+          <button class="opt" type="button">"The team is confident they will finish on time."</button>
+          <button class="opt" type="button">"The sprint should be fine because velocity averages 18.33."</button></div>
+          <div class="why">An observation is something you saw in the source of record and someone else can repeat. An assistant's count, a team's confidence and an inference from an average are claims or assumptions.</div></div>
+        <div class="q"><p class="prompt">2. When is "Clarify" the right decision?</p><div class="opts">
+          <button class="opt" type="button" data-right>When evidence is missing or conflicting, and you can name the missing evidence, who supplies it and by when.</button>
+          <button class="opt" type="button">Whenever you are not sure, because it avoids blame for a hold.</button>
+          <button class="opt" type="button">When every line is observed and every risk is owned.</button>
+          <button class="opt" type="button">Only when a tool is not installed on the site.</button></div>
+          <div class="why">Clarify is a decision with a specific ask. Without the missing evidence, owner and date, it's just a delay.</div></div>
+        <div class="q"><p class="prompt">3. Option A (move CRW-31 to SWP-2026.q4.6) makes Swap Squad's sprint fit. What must your forecast line also say?</p><div class="opts">
+          <button class="opt" type="button" data-right>That the Crew App 4.2 marker turns red and CRW-31 now blocks CRW-73 at −25d, so Alerts Squad's plan breaks.</button>
+          <button class="opt" type="button">Nothing else: a sprint that fits capacity is a green forecast.</button>
+          <button class="opt" type="button">That the change has been saved to Jira, so the teams can see it.</button>
+          <button class="opt" type="button">That Alerts Squad's capacity rises to 20 to absorb the change.</button></div>
+          <div class="why">A forecast checks both teams, dependency order and the release marker. In the course you never save scenario changes; you review and discard them.</div></div>
+        <div class="q"><p class="prompt">4. Alerts Squad's q4.3 shows 19 completed on the board and 11 in the sample eazyBI measure. How do you quote it?</p><div class="opts">
+          <button class="opt" type="button" data-right>Quote the number with its definition, name the other number, and give the reason: CRW-54 and CRW-55 were Ready for Release at close.</button>
+          <button class="opt" type="button">Quote 19, because the board is the source of truth.</button>
+          <button class="opt" type="button">Quote the average, 15, to split the difference.</button>
+          <button class="opt" type="button">Leave the measure out, since the tools disagree.</button></div>
+          <div class="why">Both numbers are correct under their own definitions. A reconciled measure states the definition, the alternative and the source keys.</div></div>
+        <div class="q"><p class="prompt">5. Which next-action line is complete?</p><div class="opts">
+          <button class="opt" type="button" data-right>"Product Owner decides 4.2 scope by 4 Dec; revisit when CRW-46 is resolved, CRW-34 is estimated and the retest passes."</button>
+          <button class="opt" type="button">"Someone should look at the scope soon."</button>
+          <button class="opt" type="button">"Team to fix CRW-62."</button>
+          <button class="opt" type="button">"Ask Claude to move the items so the release goes green."</button></div>
+          <div class="why">A next action needs an accountable role, a date and the evidence that would change the decision. The last option is also an unreviewed bulk write.</div></div>
+        <div class="quiz-score"><span class="msg"></span><span><b>0 / 5</b> <button class="btn btn-sm btn-ghost retry" type="button">Retry</button></span></div>
+      </section>
+
+      <nav class="module-nav" aria-label="Module navigation">
+        <a class="prev" href="m7.html"><small>Previous</small><b>M7 · Validate Claude queries</b></a>
+        <a class="next" href="evidence.html"><small>Next</small><b>My completion record</b></a>
+      </nav>
+    </div>
+  </div>
+</section>
+
+</main>
+<div id="site-footer"></div>
+<script src="assets/js/config.js?v=1"></script>
+<script src="assets/js/site.js?v=1"></script>
+<script src="assets/js/widgets.js?v=1"></script>
+<script>
+(function () {
+  "use strict";
+  var CA = window.CA, CW = window.CW;
+  if (!CA || !CW) return;
+  var esc = CA.esc;
+  function $(id) { return document.getElementById(id); }
+  var KEY = "m8:builder";
+  var state = CA.store.get(KEY, {});
+  state.claims = state.claims || {}; state.tags = state.tags || {}; state.src = state.src || {};
+  function persist() { CA.store.set(KEY, state); }
+
+  var TAGS = ["Observed", "Observed in replica", "Assumption", "Unverified claim"];
+  var LINES = [
+    { f: "forecast", label: "Delivery forecast", mods: ["m2"], from: "Module 2 · Plans", tag: "Observed", ph: "e.g. At capacity 15, SWP-2026.q4.5 is 18/15 (120%). Option …", src: "Plans · Crew Self-Service 2027 · scenario Lab {SEAT}" },
+    { f: "measure", label: "Reconciled measure", mods: ["m3"], from: "Module 3 · board and eazyBI", tag: "Observed", ph: "e.g. ALR-2026.q4.3: 19 on the board, 11 by Done category at close …", src: "Sprint Report ALR-2026.q4.3 (sprint 50) + JQL" },
+    { f: "quality", label: "Quality evidence", mods: ["m4"], from: "Module 4 · Zephyr", tag: "Observed in replica", ph: "e.g. Missing AC coverage …, unexecuted test …, failure linked to CRW-62 …", src: "Zephyr practice replica + CRW-62" },
+    { f: "trace", label: "Development traceability", mods: ["m5"], from: "Module 5 · Git", tag: "Observed in replica", ph: "e.g. CRW-25 branch and PR carry the key; one commit had the wrong key …", src: "Practice repository replica" },
+    { f: "mcp", label: "Verified MCP result", mods: ["m7", "m6"], from: "Modules 6–7 · Claude", tag: "Observed", ph: "e.g. Corrected query returns 2: CRW-33, CRW-34 (Jira and Claude agree) …", src: "Private filter L{SEAT} · q4.5 missing estimates" }
+  ];
+  var seat = CA.seat() || "NN";
+  LINES.forEach(function (l) { l.src = l.src.replace("{SEAT}", seat); });
+
+  function savedText(mod) {
+    var ev = CA.evidence(mod), sch = CW.EVIDENCE[mod];
+    if (!sch) return "";
+    return sch.fields.filter(function (f) { return ev[f[0]] && String(ev[f[0]]).trim(); }).map(function (f) { return f[1] + ": " + String(ev[f[0]]).trim(); }).join("\n");
+  }
+
+  /* ---------- Evidence tiles ---------- */
+  function tiles() {
+    $("m8b-status").innerHTML = ["m2", "m3", "m4", "m5", "m6", "m7"].map(function (m) {
+      var ev = CA.evidence(m), f = CW.EVIDENCE[m].fields, n = f.filter(function (x) { return ev[x[0]] && String(ev[x[0]]).trim(); }).length;
+      var cls = n === f.length ? "full" : n ? "part" : "";
+      return '<a class="' + cls + '" href="' + m + '.html#' + m + '-lab"><b>' + m.toUpperCase() + "</b>" + n + " of " + f.length + " fields saved</a>";
+    }).join("");
+  }
+
+  /* ---------- Lines ---------- */
+  $("m8b-lines").innerHTML = LINES.map(function (l) {
+    return '<div class="m8-line" data-line="' + l.f + '"><h4>' + esc(l.label) + " <small>from " + esc(l.from) + "</small></h4>" +
+      '<details><summary>Show what you saved in ' + l.mods.map(function (m) { return m.toUpperCase(); }).join(" and ") + '</summary><pre id="m8b-saved-' + l.f + '"></pre></details>' +
+      '<label for="m8b-c-' + l.f + '">Claim (one or two sentences, keep keys and numbers)</label><textarea id="m8b-c-' + l.f + '" placeholder="' + esc(l.ph) + '"></textarea>' +
+      '<div class="m8-meta"><div><label for="m8b-t-' + l.f + '">Tag</label><select id="m8b-t-' + l.f + '">' + TAGS.map(function (t) { return "<option>" + t + "</option>"; }).join("") + "</select></div>" +
+      '<div><label for="m8b-s-' + l.f + '">Source (link, report or JQL)</label><input type="text" id="m8b-s-' + l.f + '" placeholder="' + esc(l.src) + '"></div></div></div>';
+  }).join("");
+
+  function refreshSaved() {
+    LINES.forEach(function (l) {
+      var t = l.mods.map(function (m) { var s = savedText(m); return s ? "[" + m.toUpperCase() + "]\n" + s : "[" + m.toUpperCase() + "] nothing saved in this browser yet"; }).join("\n\n");
+      $("m8b-saved-" + l.f).textContent = t;
+    });
+  }
+
+  function restore() {
+    LINES.forEach(function (l) {
+      $("m8b-c-" + l.f).value = state.claims[l.f] || "";
+      $("m8b-t-" + l.f).value = state.tags[l.f] || l.tag;
+      $("m8b-s-" + l.f).value = state.src[l.f] || "";
+    });
+    if (state.decision) { var r = document.querySelector('input[name="m8b-dec"][value="' + state.decision + '"]'); if (r) r.checked = true; }
+    ["headline", "assume", "action", "role", "by", "trigger", "out"].forEach(function (k) { if (state[k] != null) $("m8b-" + k).value = state[k]; });
+    words();
+  }
+
+  function bind() {
+    LINES.forEach(function (l) {
+      $("m8b-c-" + l.f).addEventListener("input", function (e) { state.claims[l.f] = e.target.value; persist(); });
+      $("m8b-t-" + l.f).addEventListener("change", function (e) { state.tags[l.f] = e.target.value; persist(); });
+      $("m8b-s-" + l.f).addEventListener("input", function (e) { state.src[l.f] = e.target.value; persist(); });
+    });
+    document.querySelectorAll('input[name="m8b-dec"]').forEach(function (r) { r.addEventListener("change", function () { state.decision = r.value; persist(); }); });
+    ["headline", "assume", "action", "by", "trigger", "out"].forEach(function (k) { $("m8b-" + k).addEventListener("input", function (e) { state[k] = e.target.value; persist(); if (k === "out") words(); }); });
+    $("m8b-role").addEventListener("change", function (e) { state.role = e.target.value; persist(); });
+  }
+
+  function pull(replace) {
+    var n = 0;
+    LINES.forEach(function (l) {
+      var parts = l.mods.map(savedText).filter(Boolean);
+      if (!parts.length) return;
+      var el = $("m8b-c-" + l.f);
+      if (replace || !el.value.trim()) { el.value = parts.join("\n"); state.claims[l.f] = el.value; n++; }
+    });
+    var asm = [];
+    var m2 = CA.evidence("m2"); if (m2.recommend && /assum/i.test(m2.recommend)) asm.push("From M2: " + m2.recommend.trim());
+    if (asm.length && (replace || !$("m8b-assume").value.trim())) { $("m8b-assume").value = asm.join("\n"); state.assume = $("m8b-assume").value; }
+    persist(); refreshSaved(); tiles();
+    CA.toast(n ? n + " line(s) filled from your saved evidence. Now rewrite each as one claim." : "No saved evidence found in this browser. Complete earlier modules or use the M8.3 facts.");
+  }
+
+  function decision() { var r = document.querySelector('input[name="m8b-dec"]:checked'); return r ? r.value : ""; }
+  function line(l) { return { claim: $("m8b-c-" + l.f).value.trim(), tag: $("m8b-t-" + l.f).value, src: $("m8b-s-" + l.f).value.trim() }; }
+
+  function lint() {
+    var out = [], d = decision();
+    if (!d) out.push(["bad", "Choose proceed, hold or clarify."]);
+    if (!$("m8b-headline").value.trim()) out.push(["warn", "Add a one-sentence recommendation. The answer comes first."]);
+    var unv = 0, rep = 0;
+    LINES.forEach(function (l) {
+      var x = line(l);
+      if (!x.claim) { out.push(["bad", l.label + ": no claim yet."]); return; }
+      if (x.claim.length > 600) out.push(["warn", l.label + ": " + x.claim.length + " characters. Cut it to the one or two sentences you would say."]);
+      if ((x.tag === "Observed" || x.tag === "Observed in replica") && !x.src) out.push(["bad", l.label + " is tagged " + x.tag + " but has no source. Add a link, report or JQL."]);
+      if (x.tag === "Unverified claim") unv++;
+      if (x.tag === "Observed in replica") rep++;
+      if (l.f === "mcp" && x.tag === "Observed" && !/CRW-\d+/i.test(x.claim)) out.push(["warn", "MCP result: name the actual keys, not just a count."]);
+    });
+    if (d === "Proceed" && unv) out.push(["bad", "Proceed rests on " + unv + " unverified claim(s). Verify them, or change the decision."]);
+    if (d === "Proceed" && /fail|CRW-62|not executed|unexecuted/i.test(line(LINES[2]).claim)) out.push(["bad", "Proceed, while your quality line mentions a failing or unexecuted test. Explain why that risk is acceptable, or reconsider."]);
+    if (d === "Proceed" && /120%|over capacity|red|−25d|-25d/i.test(line(LINES[0]).claim)) out.push(["warn", "Proceed, while your forecast shows overload, a red release marker or a broken dependency. Say why the forecast still supports it."]);
+    if (rep) out.push(["warn", rep + " line(s) come from practice replicas. Say how they will be confirmed when the app is installed."]);
+    if (!$("m8b-assume").value.trim()) out.push(["warn", "No assumptions stated. At minimum, state the capacity you planned with."]);
+    if (!$("m8b-action").value.trim()) out.push(["bad", "Add the next action."]);
+    if (!$("m8b-role").value) out.push(["bad", "Choose the accountable role for the next action."]);
+    if (!$("m8b-by").value.trim()) out.push(["warn", "Add a date for the next action."]);
+    if (!$("m8b-trigger").value.trim()) out.push(["warn", "Name the evidence that would change or revisit the decision."]);
+    if (!out.filter(function (x) { return x[0] === "bad"; }).length) out.unshift(["ok", "Worksheet complete: decision, five evidence lines with tags and sources, assumptions and an owned next action."]);
+    $("m8b-lint").innerHTML = '<ul class="m8-lint">' + out.map(function (x) { return '<li class="' + x[0] + '">' + esc(x[1]) + "</li>"; }).join("") + "</ul>";
+    return !out.filter(function (x) { return x[0] === "bad"; }).length;
+  }
+
+  function compose() {
+    var d = decision() || "(decision not chosen)";
+    var s = "RECOMMENDATION: " + d.toUpperCase() + " · Crew App 4.2 (18 Dec 2026)\n" + ($("m8b-headline").value.trim() || "") + "\n\nEVIDENCE\n";
+    var unv = [];
+    LINES.forEach(function (l, i) {
+      var x = line(l);
+      if (x.tag === "Unverified claim") { unv.push(l.label + ": " + (x.claim || "(empty)")); return; }
+      s += (i + 1) + ". " + l.label + " [" + x.tag + "]: " + (x.claim || "(empty)") + (x.src ? "\n   Source: " + x.src : "") + "\n";
+    });
+    s += "\nASSUMPTIONS\n" + ($("m8b-assume").value.trim() || "(none stated)") + "\n";
+    if (unv.length) s += "\nUNVERIFIED CLAIMS (reported, not relied on)\n- " + unv.join("\n- ") + "\n";
+    s += "\nNEXT ACTION\n" + ($("m8b-action").value.trim() || "(action)") + " · Owner: " + ($("m8b-role").value || "(role)") + " · By: " + ($("m8b-by").value.trim() || "(date)") + "\nRevisit when: " + ($("m8b-trigger").value.trim() || "(trigger)") + "\n";
+    return s;
+  }
+
+  function words() {
+    var w = ($("m8b-out").value.match(/\S+/g) || []).length;
+    var mins = w / 140;
+    $("m8b-words").textContent = w ? w + " words · about " + (mins < 1 ? Math.round(mins * 60) + " s" : mins.toFixed(1) + " min") + " spoken at a steady pace" + (mins > 3 ? ". Over three minutes: cut detail, keep the sources." : ".") : "";
+  }
+
+  function save() {
+    var d = decision();
+    CW.saveEvidence("m8", "decision", (d ? d.toUpperCase() + ": " : "") + ($("m8b-headline").value.trim() || ""));
+    var unv = [];
+    LINES.forEach(function (l) {
+      var x = line(l);
+      if (x.tag === "Unverified claim") unv.push(l.label + ": " + x.claim);
+      CW.saveEvidence("m8", l.f, x.claim ? "[" + x.tag + "] " + x.claim + (x.src ? "\nSource: " + x.src : "") : "");
+    });
+    CW.saveEvidence("m8", "assumptions", $("m8b-assume").value.trim() + (unv.length ? "\nUnverified claims (not relied on):\n- " + unv.join("\n- ") : ""));
+    CW.saveEvidence("m8", "next", ($("m8b-action").value.trim() || "") + " · Owner: " + ($("m8b-role").value || "?") + " · By: " + ($("m8b-by").value.trim() || "?") + "\nRevisit when: " + ($("m8b-trigger").value.trim() || "?"));
+    var out = $("m8b-out").value.trim() || compose();
+    CW.saveEvidence("m8", "script", out);
+    if (lint()) CA.awardOnce("widget:m8-builder", 150, "Release worksheet complete");
+    CA.toast("Worksheet saved to your Module 8 evidence");
+  }
+
+  $("m8b-pull").addEventListener("click", function () { pull(false); });
+  $("m8b-pull-all").addEventListener("click", function () { if (window.confirm("Replace every claim with your saved evidence? Your edits to the claims will be lost.")) pull(true); });
+  $("m8b-check").addEventListener("click", lint);
+  $("m8b-gen").addEventListener("click", function () { lint(); $("m8b-out").value = compose(); state.out = $("m8b-out").value; persist(); words(); });
+  $("m8b-save").addEventListener("click", save);
+  $("m8b-copy").addEventListener("click", function (e) { CW.copy($("m8b-out").value || compose(), e.target); });
+
+  tiles(); refreshSaved(); restore(); bind();
+
+  /* ---------- Timer ---------- */
+  var total = 180, left = 180, tick = null;
+  var clock = $("m8-clock"), go = $("m8-tgo"), live = $("m8-tlive");
+  function fmt(s) { return Math.floor(s / 60) + ":" + ("0" + (s % 60)).slice(-2); }
+  function draw() { clock.textContent = fmt(left); clock.classList.toggle("low", left <= 30); }
+  function stop() { if (tick) { clearInterval(tick); tick = null; } go.textContent = left > 0 && left < total ? "Resume" : "Start"; }
+  function setMode(sec, btn) {
+    stop(); total = left = sec; draw(); go.textContent = "Start";
+    [$("m8-t3"), $("m8-t2")].forEach(function (b) { b.setAttribute("aria-pressed", b === btn ? "true" : "false"); });
+  }
+  go.addEventListener("click", function () {
+    if (tick) { stop(); live.textContent = "Paused at " + fmt(left); return; }
+    if (left <= 0) left = total;
+    go.textContent = "Pause"; live.textContent = "Timer started, " + fmt(left);
+    tick = setInterval(function () {
+      left--; draw();
+      if (left === 30) { live.textContent = "30 seconds left"; CA.toast("30 seconds left"); }
+      if (left <= 0) { stop(); left = 0; draw(); live.textContent = "Time is up"; CA.toast("Time. Hand over to your partner."); }
+    }, 1000);
+  });
+  $("m8-treset").addEventListener("click", function () { stop(); left = total; draw(); go.textContent = "Start"; });
+  $("m8-t3").addEventListener("click", function (e) { setMode(180, e.currentTarget); });
+  $("m8-t2").addEventListener("click", function (e) { setMode(120, e.currentTarget); });
+  draw();
+})();
+</script>
+</body>
+</html>

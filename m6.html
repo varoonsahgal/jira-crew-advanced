@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M6 · Connect Claude through Atlassian MCP · Crew Academy 301</title>
+<meta name="description" content="Module 6 of Jira Planning Analytics and Connected Work: verify an approved Claude connection to Jira through Atlassian MCP and explain how identity, site and tool permissions govern its use.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/site.css?v=1">
+<link rel="icon" href="assets/img/favicon.svg">
+<style>
+  .m6-arch { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; margin: 16px 0 22px; box-shadow: var(--shadow-1); }
+  .m6-arch svg { width: 100%; height: auto; display: block; }
+  .m6-layers { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin: 14px 0 20px; }
+  @media (max-width: 760px) { .m6-layers { grid-template-columns: minmax(0,1fr); } }
+  .m6-layers div { background: var(--white); border: 1px solid var(--line); border-top: 4px solid var(--blue-500); border-radius: 10px; padding: 12px 14px; }
+  .m6-layers div:nth-child(2) { border-top-color: var(--beacon); }
+  .m6-layers div:nth-child(3) { border-top-color: var(--go); }
+  .m6-layers b { display: block; font-family: var(--font-display); letter-spacing: .06em; font-size: 1.1rem; color: var(--navy-900); }
+  .m6-layers span { display: block; font-size: .9rem; color: var(--ink-2); margin-top: 4px; }
+  .m6-tool { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow-1); margin: 16px 0 24px; }
+  .m6-tool h4 { margin: 0 0 6px; }
+  .m6-tool label { display: block; font-weight: 600; font-size: .9rem; margin: 8px 0 4px; color: var(--navy-800); }
+  .m6-tool textarea, .m6-tool input[type=text] { width: 100%; font: inherit; font-size: .92rem; border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; background: var(--ice-50); color: var(--ink); resize: vertical; }
+  .m6-tool textarea { min-height: 120px; font-family: var(--font-mono); font-size: .82rem; }
+  .m6-tool .tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .m6-tool .ghost { border-color: var(--line); color: var(--blue-600); background: var(--white); }
+  .m6-out { margin-top: 12px; font-size: .92rem; }
+  .m6-out table { width: 100%; border-collapse: collapse; min-width: 520px; }
+  .m6-out th { text-align: left; font: 600 .72rem var(--font-body); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  .m6-out td { padding: 6px 8px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .m6-out code { font-size: .8rem; }
+  .m6-kind { font-size: .75rem; font-weight: 700; border-radius: 4px; padding: 1px 6px; white-space: nowrap; }
+  .m6-kind.r { background: var(--go-bg); color: var(--go); }
+  .m6-kind.w { background: var(--alert-bg); color: var(--alert); }
+  .m6-kind.o { background: var(--sky-100); color: var(--navy-800); }
+  .m6-res { list-style: none; padding: 0; margin: 10px 0 0; }
+  .m6-res li { padding: 6px 0 6px 28px; position: relative; border-bottom: 1px dashed var(--line); font-size: .93rem; }
+  .m6-res li::before { position: absolute; left: 2px; top: 5px; font-weight: 700; }
+  .m6-res li.pass::before { content: "✓"; color: var(--go); }
+  .m6-res li.warn::before { content: "!"; color: var(--beacon-ink); }
+  .m6-res li.fail::before { content: "✗"; color: var(--alert); }
+  .m6-res li.info::before { content: "i"; color: var(--blue-500); }
+  .m6-site { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; background: var(--ice-50); border: 1px dashed var(--line); border-radius: 8px; padding: 8px 12px; margin: 8px 0 12px; font-size: .92rem; }
+  .m6-site code { overflow-wrap: anywhere; }
+  .m6-tree { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow-1); margin: 16px 0 24px; }
+  .m6-tree .tq { font-weight: 700; margin: 0 0 10px; }
+  .m6-tree .topts { display: flex; flex-wrap: wrap; gap: 8px; }
+  .m6-tree .topts button { font: 600 .9rem var(--font-body); border: 1.5px solid var(--line); background: var(--ice-50); border-radius: 999px; padding: 6px 14px; cursor: pointer; color: var(--ink); text-align: left; }
+  .m6-tree .topts button:hover { border-color: var(--sky-400); background: var(--sky-100); }
+  .m6-tree .trail { font-size: .85rem; color: var(--ink-3); margin: 0 0 10px; }
+  .m6-tree .leaf { background: var(--go-bg); border: 1px solid #b5e6cd; border-radius: 10px; padding: 12px 14px; }
+  .m6-tree .leaf b { display: block; font-family: var(--font-display); letter-spacing: .06em; text-transform: uppercase; color: var(--go); margin-bottom: 4px; }
+  .m6-tree .tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+</style>
+</head>
+<body>
+<header id="site-header"></header>
+<main id="main">
+
+<section class="hero compact module-hero">
+  <div class="clouds" aria-hidden="true"><div class="cloud" style="top:22%;width:190px;height:44px;animation-duration:78s"></div><div class="cloud" style="top:60%;width:150px;height:36px;animation-duration:66s;animation-delay:-35s"></div></div>
+  <div class="wrap">
+    <div class="eyebrow">Module 6 of 8 · Session 2 · Connect Jira to code and Claude</div>
+    <h1>Connect Claude through Atlassian MCP</h1>
+    <p class="lede">Before you trust anything Claude tells you about Jira, prove three things: who it's acting as, which site it's reading, and which tools it's allowed to call.</p>
+    <div class="meta-row"><span class="chip">40 min</span><span class="chip">20 min practice</span><span class="chip gold">Lab: Verify the client site and permissions</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap layout">
+    <aside class="toc" aria-label="On this page">
+      <h4>On this page</h4>
+      <ol>
+        <li><a href="#objective">Objective</a></li>
+        <li><a href="#l1">MCP: identity, site, tools</a></li>
+        <li><a href="#l2">Connect with the approved guide</a></li>
+        <li><a href="#l3">Tools and the permission boundary</a></li>
+        <li><a href="#l4">Rovo or Claude?</a></li>
+        <li><a href="#demo">Instructor demo</a></li>
+        <li><a href="#m6-lab">Lab: Verify the client site and permissions</a></li>
+        <li><a href="#check">Checkpoint</a></li>
+      </ol>
+    </aside>
+
+    <div>
+      <div class="objective-banner" id="objective">
+        <div class="eyebrow">Objective</div>
+        <p>Verify an approved connection and explain how identity, site and tool permissions govern its use.</p>
+      </div>
+      <ul class="topics" aria-label="Topics"><li>Model Context Protocol</li><li>Claude client</li><li>Atlassian server's Jira tools</li><li>Approved setup and authentication</li><li>Correct site selection</li><li>Read, search and write scopes</li><li>Rovo or Claude with MCP</li></ul>
+
+      <div class="callout captain"><strong>Where this fits in the release review</strong>Module 7 asks Claude for a list of items and checks the query. Module 8 puts a Claude result into a release recommendation. Neither is worth anything if Claude was reading the wrong site, as the wrong person, or with tools you didn't know it had. This module is the pre-flight check for both.</div>
+
+      <!-- ============ M6.1 ============ -->
+      <article class="lesson" id="l1">
+        <h2><span class="lesson-code">M6.1</span> MCP in one picture: identity, site, tools</h2>
+        <p>The <b>Model Context Protocol (MCP)</b> is an open standard that lets an AI client call tools on other systems. Atlassian runs a remote MCP server, the <b>Atlassian Rovo MCP Server</b>, that exposes Jira (and Confluence and other Atlassian products) as tools. Claude is the <b>client</b>: in Claude.ai, Claude Desktop or Claude Code, it decides which tool to call, and the server performs the call against your Atlassian site.</p>
+        <div class="m6-arch" role="img" aria-label="Diagram: you prompt Claude; Claude, the MCP client, calls tools on the Atlassian Rovo MCP Server at mcp.atlassian.com/v2/mcp; the server acts as you on the selected Jira site, with your permissions.">
+          <svg viewBox="0 0 900 190" aria-hidden="true">
+            <defs><marker id="m6a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#4a90e2"/></marker></defs>
+            <rect x="10" y="55" width="150" height="80" rx="12" fill="#e3eefb" stroke="#8cbcf0"/>
+            <text x="85" y="88" text-anchor="middle" font-family="Barlow Condensed, sans-serif" font-size="22" font-weight="700" fill="#061a40">You</text>
+            <text x="85" y="112" text-anchor="middle" font-family="Barlow, sans-serif" font-size="14" fill="#3a4a66">prompt + approve</text>
+            <rect x="215" y="45" width="190" height="100" rx="12" fill="#061a40"/>
+            <text x="310" y="82" text-anchor="middle" font-family="Barlow Condensed, sans-serif" font-size="22" font-weight="700" fill="#ffffff">Claude</text>
+            <text x="310" y="104" text-anchor="middle" font-family="Barlow, sans-serif" font-size="14" fill="#8cbcf0">MCP client</text>
+            <text x="310" y="124" text-anchor="middle" font-family="Barlow, sans-serif" font-size="13" fill="#c9d8f2">Claude.ai · Desktop · Code</text>
+            <rect x="460" y="45" width="210" height="100" rx="12" fill="#ffffff" stroke="#1a5fd6" stroke-width="2"/>
+            <text x="565" y="80" text-anchor="middle" font-family="Barlow Condensed, sans-serif" font-size="20" font-weight="700" fill="#061a40">Atlassian Rovo</text>
+            <text x="565" y="102" text-anchor="middle" font-family="Barlow Condensed, sans-serif" font-size="20" font-weight="700" fill="#061a40">MCP Server</text>
+            <text x="565" y="126" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#3a4a66">mcp.atlassian.com/v2/mcp</text>
+            <rect x="725" y="45" width="165" height="100" rx="12" fill="#e3f6ee" stroke="#138a5e"/>
+            <text x="807" y="82" text-anchor="middle" font-family="Barlow Condensed, sans-serif" font-size="20" font-weight="700" fill="#061a40">Jira site</text>
+            <text x="807" y="104" text-anchor="middle" font-family="Barlow, sans-serif" font-size="13" fill="#3a4a66">the one you selected</text>
+            <text x="807" y="124" text-anchor="middle" font-family="Barlow, sans-serif" font-size="13" fill="#3a4a66">CRW · CRP</text>
+            <line x1="162" y1="95" x2="211" y2="95" stroke="#4a90e2" stroke-width="2" marker-end="url(#m6a)"/>
+            <line x1="407" y1="95" x2="456" y2="95" stroke="#4a90e2" stroke-width="2" marker-end="url(#m6a)"/>
+            <line x1="672" y1="95" x2="721" y2="95" stroke="#4a90e2" stroke-width="2" marker-end="url(#m6a)"/>
+            <text x="565" y="172" text-anchor="middle" font-family="Barlow, sans-serif" font-size="14" font-weight="600" fill="#d6203a">acts AS YOU · your permissions · your name in the history</text>
+          </svg>
+        </div>
+        <p>Every question about a Claude result reduces to three checks. Learn them as a pilot learns a callout:</p>
+        <div class="m6-layers">
+          <div><b>Identity</b><span>With OAuth sign-in, every tool call runs as you. Claude sees what your account can see and can change what your account can change. Nothing more, and nothing less.</span></div>
+          <div><b>Site</b><span>Your account may reach several Atlassian sites. A result is only evidence if it came from the training site, and the browse URL proves it.</span></div>
+          <div><b>Tools</b><span>The server exposes read, search and write tools. Which ones Claude has depends on the server version, your organization's settings and the scopes you granted.</span></div>
+        </div>
+        <div class="callout warn"><strong>Tool names change</strong>Names you may see include <code>searchJiraIssuesUsingJql</code>, <code>getJiraIssue</code> and <code>createJiraIssue</code>, but the set and the names vary by server version. Don't memorize them and don't trust a handout's list. Ask Claude: "List the Atlassian tools you have available right now."</div>
+      </article>
+
+      <!-- ============ M6.2 ============ -->
+      <article class="lesson" id="l2">
+        <h2><span class="lesson-code">M6.2</span> Connect with your organization's approved guide</h2>
+        <div class="callout standard"><strong>The approved guide wins</strong>Your organization's approved MCP setup guide names the client you may use, the account you sign in with, the data rules and the escalation route. If it differs from anything on this page, follow the guide. The steps below show the general shape, so you know what to expect and can spot a wrong turn.</div>
+        <div class="split">
+          <div class="vs">
+            <h4>Option A · Claude.ai or Claude Desktop</h4>
+            <ol>
+              <li>Open Claude's settings and find <b>Connectors</b>.</li>
+              <li>Find <b>Atlassian</b> in the connector directory and choose <b>Connect</b>.</li>
+              <li>Sign in to Atlassian with your training account, <b>choose the training site</b>, and read the permissions screen (OAuth) before you approve it.</li>
+              <li>In a new chat, enable the Atlassian connector and ask Claude to list its Atlassian tools.</li>
+            </ol>
+          </div>
+          <div class="vs">
+            <h4>Option B · Claude Code (terminal or IDE)</h4>
+            <pre data-code="Shell">claude mcp add --transport http atlassian https://mcp.atlassian.com/v2/mcp</pre>
+            <pre data-code="In Claude Code">/mcp
+# choose "atlassian" → Authenticate → finish the Atlassian sign-in in your browser</pre>
+            <pre data-code="Shell">claude mcp list</pre>
+          </div>
+        </div>
+        <h3>Endpoint and admin housekeeping</h3>
+        <ul>
+          <li><b>Use <code>https://mcp.atlassian.com/v2/mcp</code></b> for new setups. Older guides show <code>/v1/mcp</code> (still works) or <code>/v1/sse</code>, which stopped being supported after 30 June 2026. If an old configuration uses <code>/v1/sse</code>, remove it and add the v2 endpoint.</li>
+          <li><b>Your organization must allow</b> the Atlassian Rovo MCP Server and the client you use. If the connector isn't offered at all, that's an approval question, not a setting you change.</li>
+          <li><b>API-token authentication</b> (for headless or CI use) must be turned on by an org admin. With a token, the server only exposes tools that match the token's scopes, so "missing" Jira tools usually mean a scope problem.</li>
+          <li><b>Pick the site deliberately.</b> If your account belongs to more than one Atlassian site, the sign-in asks which to authorize. Choosing your day-job site instead of the training site is the most common reason Claude "can't find" CRW-25.</li>
+        </ul>
+        <h4>Pre-flight (saved in this browser)</h4>
+        <ul class="checklist" data-id="m6-preflight">
+          <li><input type="checkbox" id="m6pf1"><label for="m6pf1">I'm using the Claude client my organization's approved guide names, signed in with the right account.</label></li>
+          <li><input type="checkbox" id="m6pf2"><label for="m6pf2">I can open <a data-jira="/browse/CRW-25">CRW-25 ↗</a> in my browser on the training site.</label></li>
+          <li><input type="checkbox" id="m6pf3"><label for="m6pf3">The Atlassian connector is connected (Option A) or <code>claude mcp list</code> shows it authenticated (Option B), using the v2 endpoint.</label></li>
+          <li><input type="checkbox" id="m6pf4"><label for="m6pf4">I authorized the <b>training site</b>, and I read the permissions screen before approving.</label></li>
+          <li><input type="checkbox" id="m6pf5"><label for="m6pf5">I know where my guide says to route a connection or access problem.</label></li>
+        </ul>
+      </article>
+
+      <!-- ============ M6.3 ============ -->
+      <article class="lesson" id="l3">
+        <h2><span class="lesson-code">M6.3</span> Tools and the permission boundary</h2>
+        <p>What Claude can do through MCP is the <b>overlap</b> of three gates. A call succeeds only if all three allow it. That's why "Claude can do it" is never a reason to give someone more access: the gates are what keep it safe.</p>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th>Gate</th><th>Who controls it</th><th>What it decides</th><th>How it fails</th></tr></thead>
+          <tbody>
+            <tr><td><b>1. Organization approval</b></td><td>Org admin and your AI or MCP owner</td><td>Whether this client and the Atlassian MCP server may connect at all, and which authentication methods are allowed</td><td>No connector offered, or sign-in blocked</td></tr>
+            <tr><td><b>2. Authentication scopes</b></td><td>You approve them at sign-in; token scopes are set when a token is issued</td><td>Which tools the server exposes to this connection: read, search, write</td><td>A tool is missing from the list</td></tr>
+            <tr><td><b>3. Your Jira permissions</b></td><td>Jira and space admins</td><td>What your account may see and change in each space: Browse, Create, Edit, Transition, Add comments, Link</td><td>"Does not exist or you do not have permission", or a permission error on a write</td></tr>
+          </tbody>
+        </table></div>
+        <p>In this course the third gate does real work. Learners can <b>browse</b> CRW but not change it, and can create, edit, transition, link and comment only in their CRP seat. So when Claude reads <a data-jira="/browse/CRW-25">CRW-25 ↗</a>, the read is supported by a get or search tool (gate 2) and your Browse permission on CRW (gate 3). If Claude tried to comment on CRW-25 for you, gate 3 would refuse it. That refusal is the boundary working, not a fault to escalate.</p>
+        <div class="callout danger"><strong>"Not found" and "no permission" look the same, on purpose</strong>Jira answers a request for an item you can't browse the same way it answers one for an item that doesn't exist: "does not exist or you do not have permission to see it". So when Claude says CRW-25 doesn't exist, test it yourself: open the link in your browser as yourself. If <em>you</em> can see it, Claude is on another site or account. If you can't, it's your Jira access, and the route is an access request, never someone else's account or token.</div>
+
+        <h3>Try it: classify your tool inventory</h3>
+        <p>Paste the tool list Claude gives you (one per line, or Claude's whole answer). The classifier sorts each tool into read or write, shows the Jira permission it relies on, and tells you whether your connection can change Jira. If you're not connected yet, load the example list: it's a sample, and your server may differ.</p>
+        <div class="m6-tool" id="m6-inventory">
+          <h4>Tool inventory</h4>
+          <label for="m6-tools-in">Claude's answer to "List the Atlassian tools you have available right now"</label>
+          <textarea id="m6-tools-in" spellcheck="false" placeholder="getJiraIssue&#10;searchJiraIssuesUsingJql&#10;…"></textarea>
+          <div class="tools">
+            <button class="btn btn-sm btn-blue" type="button" id="m6-tools-go">Classify</button>
+            <button class="btn btn-sm ghost" type="button" id="m6-tools-example">Load example list</button>
+            <button class="btn btn-sm ghost" type="button" id="m6-tools-save" disabled>Send summary to my evidence</button>
+          </div>
+          <div class="m6-out table-wrap" id="m6-tools-out" aria-live="polite" style="border:0;margin:0"></div>
+        </div>
+
+        <h3>Which gate is it?</h3>
+        <div class="sort-game" data-id="m6-gates" data-miles="150">
+          <p style="margin:0 0 6px">Each card is something learners reported in a pilot. Pick the gate (or the site) responsible.</p>
+          <div class="sort-card" data-answer="Org approval"><p>Claude Desktop doesn't offer an Atlassian connector at all, although a colleague in another organization has one.</p>
+            <div class="choices"><button>Org approval</button><button>Auth scopes</button><button>Jira permission</button><button>Wrong site</button></div>
+            <div class="why">The connector or the MCP server isn't allowed for your organization or client. Route it to the owner named in your guide.</div></div>
+          <div class="sort-card" data-answer="Wrong site"><p>Claude answers questions about another space you work in every day, but says CRW-25 "does not exist". You can open CRW-25 in your browser.</p>
+            <div class="choices"><button>Org approval</button><button>Auth scopes</button><button>Jira permission</button><button>Wrong site</button></div>
+            <div class="why">You can see it, so your permission is fine. Claude is reading the site you authorized at sign-in, which isn't the training site. Reconnect and choose it.</div></div>
+          <div class="sort-card" data-answer="Auth scopes"><p>On an API-token connection, Claude lists search and get tools but no create or comment tools.</p>
+            <div class="choices"><button>Org approval</button><button>Auth scopes</button><button>Jira permission</button><button>Wrong site</button></div>
+            <div class="why">With a token, the server only exposes tools that match the token's scopes. Ask the token's issuer; don't mint a broader token yourself.</div></div>
+          <div class="sort-card" data-answer="Jira permission"><p>Claude reads CRW-25 perfectly, then gets a permission error when asked to add a comment to it.</p>
+            <div class="choices"><button>Org approval</button><button>Auth scopes</button><button>Jira permission</button><button>Wrong site</button></div>
+            <div class="why">Learners are read-only in CRW. The write tool exists; your account isn't allowed to comment there. Working as designed.</div></div>
+          <div class="sort-card" data-answer="Jira permission"><p>You and your partner run the same JQL through Claude on the training site and get different counts.</p>
+            <div class="choices"><button>Org approval</button><button>Auth scopes</button><button>Jira permission</button><button>Wrong site</button></div>
+            <div class="why">Results only include what each connected account can browse. Different access, different count. Module 7 comes back to this.</div></div>
+          <div class="game-score"></div>
+          <button class="btn btn-sm reset" type="button" style="border-color:var(--line);color:var(--blue-600);margin-top:8px">Reset</button>
+        </div>
+      </article>
+
+      <!-- ============ M6.4 ============ -->
+      <article class="lesson" id="l4">
+        <h2><span class="lesson-code">M6.4</span> Rovo or Claude with MCP?</h2>
+        <p>Both are live options in your toolkit. Rovo is on the training site today: Rovo Search, Ask AI in search, and Improve actions on work items. Claude with MCP runs in an approved external client. Pick by <em>where the work happens</em> and <em>what else it needs</em>, not by habit.</p>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th></th><th>Rovo</th><th>Claude with Atlassian MCP</th></tr></thead>
+          <tbody>
+            <tr><td><b>Where it runs</b></td><td>Inside Jira and other Atlassian apps</td><td>In the approved external client: Claude.ai, Desktop or Code</td></tr>
+            <tr><td><b>Identity</b></td><td>You, with your Atlassian permissions</td><td>You, through OAuth (or a scoped token)</td></tr>
+            <tr><td><b>Best for</b></td><td>Searching and asking about Atlassian content in place: natural language to JQL, AI answers in search, improving a description, summarizing an item or comments, your organization's approved agents</td><td>Work that also lives outside Atlassian: Jira context while coding in Claude Code, combining Jira results with material you're allowed to share in the client, multi-step analysis you'll check</td></tr>
+            <tr><td><b>Watch out for</b></td><td>Crowded results on a busy site; AI can't invent missing facts</td><td>Writes from outside Jira; wrong site; data leaving Atlassian under your AI data policy</td></tr>
+            <tr><td><b>Verify by</b></td><td>Running the JQL and opening the items</td><td>Running the JQL in Jira, opening the browse URL, comparing counts</td></tr>
+          </tbody>
+        </table></div>
+        <figure class="shot">
+          <div class="frame"><div class="frame-bar"><i></i><i></i><i></i><span>…atlassian.net/jira/search?text=shift swap</span></div>
+          <img src="assets/img/rovo-search.jpg" alt="Rovo Search results for shift swap: an AI Answer table listing KAN-4 Scheduler cannot complete a shift swap for crew, then CRP-20, CRP-19 and CRP-18 L20, L19, L18 Shift Swap Practice epics, 23 items, with the note Uses AI. Verify results." loading="lazy"></div>
+          <figcaption>Rovo Search for "shift swap" on the training site. Notice what crowds the answer: KAN-4 first, then twenty practice epics (CRP-20, CRP-19, CRP-18…) from the lab seats. The tool is right about what exists; the scope is wrong for a CRW question. Claude would face the same crowd. Scope your question to a space or a key.</figcaption>
+        </figure>
+        <figure class="shot">
+          <div class="frame"><div class="frame-bar"><i></i><i></i><i></i><span>…atlassian.net/issues/?jql=…</span></div>
+          <img src="assets/img/rovo-ask-ai-jql.jpg" alt="Jira Ask AI turning the request stories and bugs in sprint SWP-2026.q4.5 that are missing story point estimates into the JQL issuetype IN (Story, Bug) AND cf[10020] = SWP-2026.q4.5 AND cf[10036] IS EMPTY ORDER BY created DESC, returning CRW-34 and CRW-33, 2 of 2" loading="lazy"></div>
+          <figcaption>Rovo's Ask AI, live on the training site: plain words in, JQL out, results in place. Right answer here (CRW-34 and CRW-33, 2 of 2), but notice the raw field ids <code>cf[10020]</code> (Sprint) and <code>cf[10036]</code> (Story Points) and no project clause. Module 7 checks a Claude-generated query with the same rigor.</figcaption>
+        </figure>
+        <div class="sort-game" data-id="m6-rovo" data-miles="150">
+          <p style="margin:0 0 6px">Which tool suits each task best?</p>
+          <div class="sort-card" data-answer="Rovo"><p>You're in Jira search and want "stories and bugs in SWP-2026.q4.5 missing estimates" as JQL you can run right there.</p>
+            <div class="choices"><button>Rovo</button><button>Claude + MCP</button><button>Neither: open the Jira report</button></div>
+            <div class="why">Ask AI does this in place and runs the query immediately. You still read the JQL it wrote.</div></div>
+          <div class="sort-card" data-answer="Claude + MCP"><p>You're coding the trip-board submit handler in your IDE and want CRW-25's acceptance criteria and blocker without switching windows.</p>
+            <div class="choices"><button>Rovo</button><button>Claude + MCP</button><button>Neither: open the Jira report</button></div>
+            <div class="why">Claude Code with the Atlassian server sits next to the code. Read-only, and branch names carry the key (Module 5).</div></div>
+          <div class="sort-card" data-answer="Rovo"><p>Your seat's vague request needs a cleaner description before refinement.</p>
+            <div class="choices"><button>Rovo</button><button>Claude + MCP</button><button>Neither: open the Jira report</button></div>
+            <div class="why">"Improve description" works on the item in place. Remember: it restructures, it can't invent missing acceptance criteria.</div></div>
+          <div class="sort-card" data-answer="Neither: open the Jira report"><p>You need the official completed points for SWP-2026.q4.2 for the release pack.</p>
+            <div class="choices"><button>Rovo</button><button>Claude + MCP</button><button>Neither: open the Jira report</button></div>
+            <div class="why">Historical velocity comes from the native Velocity report (18 completed), not from a current-state query by any assistant. Module 7 shows why.</div></div>
+          <div class="sort-card" data-answer="Claude + MCP"><p>In an approved client, you want to compare a JQL result with a test log you're allowed to share there, and draft a summary you'll check line by line.</p>
+            <div class="choices"><button>Rovo</button><button>Claude + MCP</button><button>Neither: open the Jira report</button></div>
+            <div class="why">The work combines Jira with material outside Atlassian, in the client your organization approved. Your AI data policy still applies to what you paste.</div></div>
+          <div class="game-score"></div>
+          <button class="btn btn-sm reset" type="button" style="border-color:var(--line);color:var(--blue-600);margin-top:8px">Reset</button>
+        </div>
+      </article>
+
+      <div class="callout demo" id="demo"><strong>Instructor demo · 10 min</strong>
+        <ol>
+          <li><b>Follow the guide on screen.</b> Open your organization's approved MCP setup guide next to Claude. Connect (or show the existing connection) and point at the site picker and the permissions screen during sign-in.</li>
+          <li><b>Inspect the tools.</b> Ask: "List the Atlassian tools you have available right now, grouped by read and write." Paste the answer into the <a href="#m6-inventory">inventory classifier</a>. Say what the write tools mean: this connection can change Jira as me.</li>
+          <li><b>Retrieve a known item.</b> Ask for CRW-25 with the site URL in the prompt (the retrieval prompt in the lab). Open the browse link Claude returns side by side with the answer. Check status Development, 5 points, Swap Squad, SWP-2026.q4.4, flagged, blocked by CRW-46.</li>
+          <li><b>Show an access-denied result without fixing it.</b> With a learner-role test account, ask Claude for an item in a space that account can't browse. Read the "does not exist or you do not have permission" message aloud. Open the same link in the browser as that account: same result. Conclude "Jira permission", name the route, and <em>don't</em> grant access on the spot.</li>
+          <li><b>Show the boundary on a write.</b> Ask Claude, without calling anything, which tool and Jira permission a comment on CRW-25 would need, and whether a learner account has it in CRW. The answer should be: comment tool, Add comments permission, no.</li>
+        </ol>
+      </div>
+
+      <!-- ============ LAB ============ -->
+      <article class="mission" id="m6-lab" data-miles="400">
+        <div class="mission-head">
+          <div><span class="mcode">LAB M6 · 20 MIN · CRW READ-ONLY · YOUR SEAT</span><h3>Verify the client site and permissions</h3></div>
+          <span class="turb" title="Difficulty"><i class="on"></i><i class="on"></i><i></i><i></i> Turbulence</span>
+        </div>
+        <div class="mission-body">
+          <div class="brief"><b>Brief</b> Before the release review accepts any Claude result, the delivery lead wants proof that your connection reads the training site, as you, with known tools. <b>CRW is read-only</b>: Claude may search and read it, but nothing is written there. The only write this lab allows, and only if your instructor designates it, is one comment on your seat epic <b><span data-seat-epic>CRP-(your seat number)</span></b> in the CRP practice space (seat label <code>lab-{SEAT}</code>, summary prefix <code>L{SEAT} · </code>). If your connection isn't approved yet, pair with someone whose is and record what you observed.</div>
+          <div class="m6-site"><span>Training site URL for your prompts:</span> <code id="m6-site-url">…</code> <button class="btn btn-sm" type="button" id="m6-site-copy" style="border-color:var(--line);color:var(--blue-600)">Copy</button></div>
+          <ol class="steps">
+            <li><b>Complete or verify the connection (7 min).</b>
+              <ol>
+                <li>Follow your organization's approved MCP setup guide (shape in <a href="#l2">M6.2</a>). Tick the pre-flight list.</li>
+                <li>In a new chat with the Atlassian connector enabled, ask which sites Claude can reach:
+                  <pre data-code="Prompt 1 · sites">Which Atlassian sites can you access with this connection? List each site's name and URL. Don't call any tool that changes anything.</pre>
+                  Confirm the training site URL above is in the list. If it isn't, stop and use the <a href="#m6-tree">access diagnosis</a>.</li>
+                <li>Ask for the tool inventory and paste the answer into the <a href="#m6-inventory">classifier</a>:
+                  <pre data-code="Prompt 2 · tools">List the Atlassian tools you have available right now, grouped into read and write.</pre></li>
+              </ol>
+            </li>
+            <li><b>Retrieve a known item and check it (7 min).</b>
+              <ol>
+                <li>Paste the site URL into this prompt and run it:
+                  <pre data-code="Prompt 3 · retrieve CRW-25">Read-only. On the Atlassian site &lt;paste the training site URL&gt;, get work item CRW-25 and return: key, summary, status, story points, team, sprint, fix version, priority, whether it is flagged, its blocking links, and the browse URL people open in a browser. Then tell me which tool you called.</pre></li>
+                <li>Open the browse URL Claude gave you. Don't use the link on this page for this check: the point is to test Claude's link. Compare it field by field with the item.</li>
+                <li>Paste Claude's whole answer into the <a href="#m6-verify">retrieval verifier</a> below and resolve every ✗ or !.</li>
+              </ol>
+            </li>
+            <li><b>Explain the permission boundary (6 min).</b>
+              <ol>
+                <li>Ask, without letting Claude call anything:
+                  <pre data-code="Prompt 4 · boundary">Don't call any tools for this. Which of your tools would you need to add a comment to CRW-25, and which Jira permission does that need? Given that my account is read-only in the CRW space, what would happen?</pre></li>
+                <li>Write down which tool and which permission supported your read, and what stops a write to CRW. Run the <a href="#m6-tree">access diagnosis</a> for "a write fails" so you can name the route for a genuine missing-access request.</li>
+                <li><i>Only if your instructor designates it:</i> ask Claude to <b>plan</b> one comment on your seat epic <span data-seat-epic>CRP-(your seat number)</span> ("L{SEAT} · MCP verified: CRW-25 retrieved from the training site"), show you the plan, and write only after you reply "cleared". Then confirm it with the JQL below.</li>
+              </ol>
+            </li>
+          </ol>
+
+          <pre data-jql data-label="Compare with Claude's retrieval (opens CRW-25 in Jira)">key = CRW-25</pre>
+          <pre data-jql data-label="Designated write only: your seat epic was updated">project = CRP AND issuetype = Epic AND summary ~ "L{SEAT}" AND updated >= -1h</pre>
+          <pre data-jql data-label="Room check: should return nothing">project = CRW AND updated >= -1h ORDER BY updated DESC</pre>
+
+          <div class="m6-tool" id="m6-verify">
+            <h4>Retrieval verifier</h4>
+            <p class="muted" style="margin:0 0 6px;font-size:.92rem">Checks Claude's answer against CRW-25 as it stands on the training site, and checks that its link points at the site configured in this page's footer.</p>
+            <label for="m6-answer">Claude's answer to Prompt 3</label>
+            <textarea id="m6-answer" placeholder="Paste Claude's full answer, including the URL it gave you"></textarea>
+            <label for="m6-toolused">Tool Claude says it called (optional)</label>
+            <input type="text" id="m6-toolused" placeholder="e.g. getJiraIssue" autocomplete="off" spellcheck="false">
+            <div class="tools">
+              <button class="btn btn-sm btn-blue" type="button" id="m6-verify-go">Verify</button>
+              <button class="btn btn-sm ghost" type="button" id="m6-verify-save" disabled>Send result to my evidence</button>
+            </div>
+            <ul class="m6-res" id="m6-verify-out" aria-live="polite"></ul>
+          </div>
+
+          <section class="m6-tree" id="m6-tree" aria-labelledby="m6-tree-h">
+            <h4 id="m6-tree-h" style="margin-top:0">Access diagnosis: something didn't work</h4>
+            <div id="m6-tree-body" aria-live="polite"></div>
+            <div class="tools">
+              <button class="btn btn-sm" type="button" id="m6-tree-restart" style="border-color:var(--line);color:var(--blue-600)">Start again</button>
+              <button class="btn btn-sm btn-blue" type="button" id="m6-tree-save" disabled>Send this route to my evidence</button>
+            </div>
+          </section>
+
+          <details class="reveal"><summary>Debrief: what a strong answer looks like</summary><div>
+            <p><b>Retrieval.</b> CRW-25 "Submit a swap request from the trip board": status <b>Development</b>, <b>5</b> story points, Team <b>Swap Squad</b>, sprint <b>SWP-2026.q4.4</b>, fix version <b>Crew App 4.2</b>, priority <b>High</b>, <b>flagged</b>, <b>is blocked by CRW-46</b> "Rules vendor sandbox credentials not issued", parent CRW-3. Claude may show the Team as an id (<code>7ab46d0b-…</code>) rather than the name; that's the same team.</p>
+            <p><b>Source.</b> The browse URL is the training site's address followed by <code>/browse/CRW-25</code>, and opening it shows the same facts. A link to a different host means Claude read a different site, however plausible the answer. An API address (<code>/rest/api/…</code>) isn't a link a reviewer can open: ask for the browse URL.</p>
+            <p><b>Tool and permission.</b> A get-work-item tool (for example <code>getJiraIssue</code>) or a JQL search tool with <code>key = CRW-25</code>. It worked because (1) your organization allows the client and server, (2) the scopes you granted include reading Jira, and (3) your account has <b>Browse</b> permission on CRW. Claude didn't get any access you don't have.</p>
+            <p><b>Boundary.</b> A comment on CRW-25 would need a comment tool and the <b>Add comments</b> permission in CRW. Learner accounts are read-only in CRW, so Jira refuses it. That's the boundary holding, and nobody should "fix" it. If you genuinely lack access you need (say, you can't browse CRW at all), route the request through the owner your guide names, with the item key, the exact message and the tool name. Never use another person's account or token, and never ask Claude to work around a refusal.</p>
+            <p><b>When to use which.</b> Rovo for in-place Jira questions on the training site; Claude with MCP when the work is in the approved external client, such as Claude Code next to the repository from Module 5.</p>
+          </div></details>
+
+          <div class="evidence" data-evidence="m6">
+            <h4>Learner output · Module 6</h4>
+            <p class="hint">A verified item retrieval, source link and an explained permission boundary.</p>
+            <label for="m6-retrieval">Item retrieved: key, status and checked facts</label><textarea id="m6-retrieval" data-field="retrieval" placeholder="CRW-25 · Development · 5 pts · Swap Squad · SWP-2026.q4.4 · flagged · blocked by CRW-46 · checked against the item: …"></textarea>
+            <label for="m6-source">Source link and training site verified</label><textarea id="m6-source" data-field="source" placeholder="The browse URL Claude gave, and how you confirmed it's the training site"></textarea>
+            <label for="m6-tool">Tool that supported the read and the permission behind it</label><textarea id="m6-tool" data-field="tool" placeholder="Tool name, read/write counts from your inventory, scope + Jira permission"></textarea>
+            <label for="m6-boundary">Permission boundary and where to route a missing-access request</label><textarea id="m6-boundary" data-field="boundary" placeholder="What stops a write to CRW, and who you'd ask (from your approved guide) for genuinely missing access"></textarea>
+          </div>
+        </div>
+        <div class="mission-foot"><span class="miles-tag">+400 mi</span><button class="complete-btn" type="button">Mark lab complete</button></div>
+      </article>
+
+      <section class="quiz" id="check" data-id="m6" data-pass="75" data-miles="200" style="padding:24px">
+        <h2 style="margin-top:0">Checkpoint</h2>
+        <div class="q"><p class="prompt">1. Claude says CRW-25 "does not exist or you do not have permission". You open the CRW-25 link in your browser and see it. What's the most likely cause?</p><div class="opts">
+          <button class="opt" type="button" data-right>Claude is connected to a different Atlassian site (or account) than the one you're browsing.</button>
+          <button class="opt" type="button">Your Jira account lacks Browse permission on CRW.</button>
+          <button class="opt" type="button">The MCP server is down.</button>
+          <button class="opt" type="button">CRW-25 is flagged, and flagged items are hidden from tools.</button></div>
+          <div class="why">You can see it, so your permission is fine. Claude acts as the account and site you authorized; check which sites it can reach and reconnect to the training site.</div></div>
+        <div class="q"><p class="prompt">2. What decides what Claude can do in Jira through the Atlassian MCP server?</p><div class="opts">
+          <button class="opt" type="button" data-right>The overlap of organization approval, the scopes granted to the connection, and your own Jira permissions, because it acts as you.</button>
+          <button class="opt" type="button">Claude's own service account, which has read access to every site.</button>
+          <button class="opt" type="button">Only the tools listed in the setup handout.</button>
+          <button class="opt" type="button">Whatever the prompt asks for, as long as the request is polite and specific.</button></div>
+          <div class="why">Each call must pass all three gates. That's why Claude can never see or change more than you can.</div></div>
+        <div class="q"><p class="prompt">3. Claude reads CRW-25 fine, but a comment on CRW-25 fails with a permission error. What should you do?</p><div class="opts">
+          <button class="opt" type="button" data-right>Nothing to fix: learners are read-only in CRW. Note it as the permission boundary and keep writes in your seat.</button>
+          <button class="opt" type="button">Ask the Jira admin to give learners Add comments on CRW so the tool works.</button>
+          <button class="opt" type="button">Create an API token with broader scopes and reconnect.</button>
+          <button class="opt" type="button">Ask Claude to try a different write tool that might not be checked.</button></div>
+          <div class="why">The refusal is the design. Expanding access to make an assistant's write succeed is exactly the wrong direction.</div></div>
+        <div class="q"><p class="prompt">4. Which check best proves a Claude retrieval came from the training site?</p><div class="opts">
+          <button class="opt" type="button" data-right>Its browse URL points at the training site's host, and opening it shows the same status, points, sprint and links.</button>
+          <button class="opt" type="button">Claude says "I retrieved this from the training site".</button>
+          <button class="opt" type="button">The summary text sounds like the Crew Scheduling scenario.</button>
+          <button class="opt" type="button">The answer arrived quickly, so it must be cached from Jira.</button></div>
+          <div class="why">A claim about the source isn't evidence of the source. The link and a field-by-field comparison are.</div></div>
+        <div class="q"><p class="prompt">5. A handout lists a tool named <code>getJiraIssue</code>; Claude's inventory today shows a differently named get tool. What do you trust?</p><div class="opts">
+          <button class="opt" type="button" data-right>What Claude lists now. Tool names and sets vary by server version and by your scopes.</button>
+          <button class="opt" type="button">The handout, and reinstall until the names match.</button>
+          <button class="opt" type="button">Neither: tool names don't matter, so skip the inventory.</button>
+          <button class="opt" type="button">The handout, because the server renames tools only for admins.</button></div>
+          <div class="why">The inventory is how you learn what the connection can actually do, including whether it can write. Re-check it after any reconnect.</div></div>
+        <div class="quiz-score"><span class="msg"></span><span><b>0 / 5</b> <button class="btn btn-sm btn-ghost retry" type="button">Retry</button></span></div>
+      </section>
+
+      <nav class="module-nav" aria-label="Module navigation">
+        <a class="prev" href="m5.html"><small>Previous</small><b>M5 · Connect Jira to Git and verify traceability</b></a>
+        <a class="next" href="m7.html"><small>Next</small><b>M7 · Validate Claude queries and protect metric quality</b></a>
+      </nav>
+    </div>
+  </div>
+</section>
+
+</main>
+<div id="site-footer"></div>
+<script src="assets/js/config.js?v=1"></script>
+<script src="assets/js/site.js?v=1"></script>
+<script src="assets/js/widgets.js?v=1"></script>
+<script>
+(function () {
+  "use strict";
+  var CA = window.CA, CW = window.CW, esc = CA.esc;
+  function $(s, r) { return (r || document).querySelector(s); }
+
+  /* Training site URL for prompts */
+  var site = CA.siteUrl();
+  var siteHost = ""; try { siteHost = new URL(site).host.toLowerCase(); } catch (e) { siteHost = ""; }
+  $("#m6-site-url").textContent = site;
+  $("#m6-site-copy").addEventListener("click", function () { CW.copy(site, this); });
+
+  /* ---------------- Tool inventory classifier ---------------- */
+  var EXAMPLE = ["getAccessibleAtlassianResources", "atlassianUserInfo", "getVisibleJiraProjects", "searchJiraIssuesUsingJql", "getJiraIssue", "getTransitionsForJiraIssue", "lookupJiraAccountId", "createJiraIssue", "editJiraIssue", "transitionJiraIssue", "addCommentToJiraIssue", "getConfluencePage", "searchConfluenceUsingCql"];
+  var WRITE = /(create|edit|update|transition|add|delete|remove|assign|link|log|set|move|post|put)/i;
+  function permFor(n) {
+    var l = n.toLowerCase();
+    if (/accessible|userinfo|user_info/.test(l)) return "None beyond sign-in (tells you which sites and which account)";
+    if (/confluence|page|cql|space/.test(l) && !/jira/.test(l)) return "Confluence space permissions (Confluence isn't on the training site)";
+    if (/transition/.test(l) && !/^get/.test(l)) return "Transition work items";
+    if (/comment/.test(l) && WRITE.test(l)) return "Add comments";
+    if (/create/.test(l)) return "Create work items";
+    if (/(edit|update)/.test(l)) return "Edit work items";
+    if (/link/.test(l) && WRITE.test(l)) return "Link work items";
+    if (/worklog/.test(l) && WRITE.test(l)) return "Work on work items";
+    if (/lookup.*account|account/.test(l)) return "Browse users";
+    return "Browse projects (what your account can see)";
+  }
+  function parseTools(txt) {
+    var found = txt.match(/\b([a-z]+(?:[A-Z][a-z0-9]*)+|[a-z]+(?:_[a-z0-9]+)+)\b/g) || [];
+    var seen = {}, out = [];
+    found.forEach(function (t) { if (!seen[t] && t.length > 5) { seen[t] = 1; out.push(t); } });
+    return out;
+  }
+  var lastInventory = "";
+  function classify() {
+    var tools = parseTools($("#m6-tools-in").value);
+    var out = $("#m6-tools-out");
+    if (!tools.length) { out.innerHTML = '<p class="muted">No tool names found. Paste one name per line (camelCase or snake_case), or load the example list.</p>'; $("#m6-tools-save").disabled = true; return; }
+    var reads = 0, writes = 0;
+    var rows = tools.map(function (t) {
+      var w = WRITE.test(t) && !/^(get|search|list|lookup|fetch|read|find)/i.test(t);
+      if (w) writes++; else reads++;
+      var prod = /confluence|cql|page/i.test(t) ? "Confluence" : /jira|issue|jql|transition|worklog|project/i.test(t) ? "Jira" : "Platform";
+      return "<tr><td><code>" + esc(t) + "</code></td><td>" + prod + '</td><td><span class="m6-kind ' + (w ? "w" : "r") + '">' + (w ? "WRITE" : "READ / SEARCH") + "</span></td><td>" + esc(permFor(t)) + "</td></tr>";
+    });
+    var verdict = writes ? "<b>" + writes + " write tool(s)</b>: this connection can change Jira as you, wherever your account is allowed to. Treat every write as a change you make yourself: plan, confirm, verify." : "<b>No write tools</b>: this connection can only read and search. Good for verification work.";
+    out.innerHTML = '<table><thead><tr><th>Tool</th><th>Product</th><th>Kind</th><th>Jira permission it relies on</th></tr></thead><tbody>' + rows.join("") + "</tbody></table>" +
+      '<p style="margin:10px 0 0">' + reads + " read or search tool(s). " + verdict + "</p>";
+    lastInventory = tools.length + " Atlassian tools listed: " + reads + " read/search, " + writes + " write. Read tools used for CRW-25: " + (tools.filter(function (t) { return /get.*issue|issue.*get|search.*jql|jql/i.test(t); }).join(", ") || "(none recognised)") + ".";
+    $("#m6-tools-save").disabled = false;
+    CA.awardOnce("widget:m6-inventory", 100, "Tool inventory classified");
+  }
+  $("#m6-tools-go").addEventListener("click", classify);
+  $("#m6-tools-example").addEventListener("click", function () { $("#m6-tools-in").value = "# Example inventory: yours may differ by server version and scopes\n" + EXAMPLE.join("\n"); classify(); });
+  $("#m6-tools-save").addEventListener("click", function () { if (lastInventory) { CW.saveEvidence("m6", "tool", lastInventory, true); CA.toast("Added to your Module 6 evidence"); } });
+
+  /* ---------------- Retrieval verifier ---------------- */
+  var FACTS = [
+    ["Key CRW-25", /\bCRW-25\b/],
+    ["Summary: Submit a swap request from the trip board", /submit a swap request from the trip board/i],
+    ["Status: Development", /\bdevelopment\b/i],
+    ["Story points: 5", /(\b5\b\s*(story\s*)?(points?|pts))|(story\s*points?\W{0,6}\s*\b5\b)|(points?\W{0,6}\s*\b5\b)/i],
+    ["Team: Swap Squad", /swap squad|7ab46d0b/i],
+    ["Sprint: SWP-2026.q4.4", /SWP-2026\.q4\.4/i],
+    ["Fix version: Crew App 4.2", /crew app 4\.2/i],
+    ["Priority: High", /\bhigh\b/i],
+    ["Flagged", /flag/i],
+    ["Blocked by CRW-46", /CRW-46/],
+    ["Parent: CRW-3", /\bCRW-3\b/]
+  ];
+  var lastVerify = null;
+  $("#m6-verify-go").addEventListener("click", function () {
+    var txt = $("#m6-answer").value, out = [], ok = 0;
+    if (!txt.trim()) { $("#m6-verify-out").innerHTML = '<li class="fail">Paste Claude\'s answer first.</li>'; return; }
+    FACTS.forEach(function (f) { var hit = f[1].test(txt); if (hit) ok++; out.push([hit ? "pass" : "fail", f[0] + (hit ? "" : ": not found in the answer. Ask Claude for it, or check whether it read a different item.")]); });
+    if (/\b(in progress|to do|ready for eqe|eqe testing|po review|done)\b/i.test(txt) && !/\bdone\b.*CRW-46|CRW-46.*\bdone\b/i.test(txt)) out.push(["warn", "The answer mentions another status. CRW-25 is in Development; check which item or field that status belongs to."]);
+    if (/\b(?:3|8|13)\s*(story\s*)?points?\b/i.test(txt)) out.push(["warn", "Another point value appears. CRW-25 has 5; make sure Claude didn't mix in a linked item."]);
+    var urls = txt.match(/https?:\/\/[^\s)>\]"'`]+/g) || [];
+    var browse = urls.filter(function (u) { return /\/browse\/CRW-25\b/i.test(u); });
+    var srcOk = false, srcNote = "";
+    if (!urls.length) out.push(["fail", "No URL in the answer. Ask for the browse URL: without it, a reviewer can't check the source."]);
+    else if (!browse.length) {
+      if (urls.some(function (u) { return /\/rest\/api\//.test(u); })) out.push(["warn", "Only an API address. Ask for the browse URL (…/browse/CRW-25) that people can open."]);
+      else out.push(["fail", "There's a URL, but it isn't a browse link to CRW-25: " + esc(urls[0])]);
+    } else {
+      var host = ""; try { host = new URL(browse[0]).host.toLowerCase(); } catch (e) { host = ""; }
+      if (siteHost && host === siteHost) { srcOk = true; srcNote = browse[0]; out.push(["pass", "Browse URL is on the training site (" + esc(host) + "). Open it and compare."]); }
+      else out.push(["fail", "Browse URL is on " + esc(host || "an unknown host") + ", not the training site (" + esc(siteHost) + "). Claude read a different site: reconnect and choose the training site."]);
+    }
+    var tool = $("#m6-toolused").value.trim();
+    if (tool) out.push([WRITE.test(tool) && !/^(get|search|list|lookup|fetch|read|find)/i.test(tool) ? "fail" : "pass", "Tool reported: " + esc(tool) + (WRITE.test(tool) && !/^(get|search|list|lookup|fetch|read|find)/i.test(tool) ? ". That's a write tool. A read-only request should never call one: stop and check what changed." : ". A read or search tool, as expected.")]);
+    else out.push(["info", "Ask Claude which tool it called and note it for your evidence."]);
+    var all = ok === FACTS.length && srcOk;
+    out.unshift([all ? "pass" : ok >= 8 && srcOk ? "warn" : "fail", all ? "Verified: every checked fact matches and the source is the training site." : ok + " of " + FACTS.length + " facts found" + (srcOk ? "; source verified." : "; source not verified.")]);
+    $("#m6-verify-out").innerHTML = out.map(function (r) { return '<li class="' + r[0] + '">' + r[1] + "</li>"; }).join("");
+    lastVerify = { ok: ok, all: all, src: srcNote, tool: tool };
+    $("#m6-verify-save").disabled = false;
+    if (all) CA.awardOnce("widget:m6-verify", 150, "Retrieval verified");
+  });
+  $("#m6-verify-save").addEventListener("click", function () {
+    if (!lastVerify) return;
+    CW.saveEvidence("m6", "retrieval", "CRW-25 retrieved via Claude + Atlassian MCP: " + lastVerify.ok + "/" + FACTS.length + " facts matched (status Development, 5 pts, Swap Squad, SWP-2026.q4.4, Crew App 4.2, High, flagged, blocked by CRW-46, parent CRW-3)" + (lastVerify.tool ? "; tool: " + lastVerify.tool : "") + ".");
+    if (lastVerify.src) CW.saveEvidence("m6", "source", lastVerify.src + " (host matches the training site " + siteHost + "; opened and compared in the browser)");
+    CA.toast("Saved to your Module 6 evidence");
+  });
+
+  /* ---------------- Access diagnosis tree ---------------- */
+  var TREE = {
+    start: { q: "What happened?", opts: [
+      ["Claude has no Atlassian tools in this chat", "conn"],
+      ["Claude says CRW-25 doesn't exist or I don't have permission", "browser"],
+      ["Reading works, but a write fails with a permission error", "where"],
+      ["A tool I expected isn't in the inventory", "L_scope"]] },
+    conn: { q: "Is the Atlassian connector enabled for this chat (Claude.ai or Desktop), or listed and authenticated in `claude mcp list` (Claude Code)?", opts: [
+      ["It's not listed, or it's switched off", "L_enable"], ["It's listed, but sign-in fails or is blocked", "L_org"]] },
+    browser: { q: "Open the CRW-25 link in your browser, signed in as yourself. Can you see it?", opts: [
+      ["Yes, I can see it", "sites"], ["No, I get the same message", "L_browse"]] },
+    sites: { q: "Ask Claude which Atlassian sites it can access. Is the training site listed?", opts: [
+      ["No, it lists other sites", "L_site"], ["Yes, it's listed", "L_acct"]] },
+    where: { q: "Where was the write aimed?", opts: [
+      ["At a CRW item", "L_crw"], ["At my own CRP seat", "L_seat"]] },
+    L_enable: { end: true, title: "Turn the connection on", text: "Enable the Atlassian connector in this chat, or add and authenticate the server exactly as your approved guide says (v2 endpoint). Then ask for the tool list again.", owner: "You, following the approved guide" },
+    L_org: { end: true, title: "Organization approval or authentication", text: "Your organization may not allow this client or the MCP server, or your authorization needs renewing. Use the guide's troubleshooting steps, then send the exact error, the client and the time to the owner the guide names. Don't switch to an unapproved client.", owner: "AI or MCP owner named in your approved guide" },
+    L_browse: { end: true, title: "Your Jira access", text: "Your account can't browse CRW, so Claude can't either: Jira deliberately reports 'does not exist or you do not have permission' for both cases. Request Browse on the training space with the item key and the message. Never use another person's account or token.", owner: "Training owner / Jira admin" },
+    L_site: { end: true, title: "Wrong site authorized", text: "Claude is reading a different Atlassian site. Disconnect, reconnect, and choose the training site on the sign-in screen. Put the site URL in your prompt and check the browse URL in the answer.", owner: "You, following the approved guide" },
+    L_acct: { end: true, title: "Different account", text: "The site is reachable, but Claude may be signed in as a different account from the one in your browser (for example a personal account). Ask Claude which account it's using, then reconnect with your training account.", owner: "You, following the approved guide" },
+    L_crw: { end: true, title: "Boundary working as designed", text: "Learner accounts are read-only in CRW, so Jira refused the write. Nothing to escalate: record it as your permission boundary and redirect any designated write to your CRP seat.", owner: "No one: this is the expected boundary" },
+    L_seat: { end: true, title: "Check the seat and the action", text: "Confirm the item is in your seat (label lab-NN, summary prefix LNN ·) and that the action is one learners may do there: create, edit, transition, link, comment. If it still fails, give the instructor the exact error, the tool name and the item key.", owner: "Instructor, then Jira admin if needed" },
+    L_scope: { end: true, title: "Scopes or server version", text: "Your connection's scopes don't include that tool (OAuth consent or API-token scopes), or the server names it differently. Reconnect and list the tools again; if it's still missing, ask the owner who issues tokens or approves scopes. Don't mint a broader token yourself.", owner: "AI or MCP owner named in your approved guide" }
+  };
+  var trail = [], leaf = null;
+  function showNode(id) {
+    var n = TREE[id], body = $("#m6-tree-body");
+    var tr = trail.length ? '<p class="trail">' + trail.map(esc).join(" → ") + "</p>" : "";
+    if (n.end) {
+      leaf = n;
+      body.innerHTML = tr + '<div class="leaf"><b>' + esc(n.title) + "</b>" + esc(n.text) + '<p style="margin:8px 0 0"><strong style="display:inline;font-family:inherit;text-transform:none;letter-spacing:0">Route to:</strong> ' + esc(n.owner) + "</p></div>";
+      $("#m6-tree-save").disabled = false;
+      return;
+    }
+    leaf = null; $("#m6-tree-save").disabled = true;
+    body.innerHTML = tr + '<p class="tq">' + esc(n.q) + '</p><div class="topts"></div>';
+    var box = body.querySelector(".topts");
+    n.opts.forEach(function (o) {
+      var b = document.createElement("button"); b.type = "button"; b.textContent = o[0];
+      b.addEventListener("click", function () { trail.push(o[0]); showNode(o[1]); var f = $("#m6-tree-body button"); if (f) f.focus(); });
+      box.appendChild(b);
+    });
+  }
+  $("#m6-tree-restart").addEventListener("click", function () { trail = []; showNode("start"); });
+  $("#m6-tree-save").addEventListener("click", function () {
+    if (!leaf) return;
+    CW.saveEvidence("m6", "boundary", leaf.title + ": " + leaf.text + " Route to: " + leaf.owner + ". (Case: " + trail.join(" → ") + ")", true);
+    CA.toast("Added to your Module 6 evidence");
+  });
+  showNode("start");
+})();
+</script>
+</body>
+</html>

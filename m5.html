@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M5 · Connect Jira to Git and verify traceability · Crew Academy 301</title>
+<meta name="description" content="Module 5 of Jira Planning Analytics and Connected Work: explain how an approved Git connection works and trace a development change to the correct Jira work item.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/site.css?v=1">
+<link rel="icon" href="assets/img/favicon.svg">
+<style>
+  .m5-repo { font-size: .9rem; }
+  .m5-repo h4 { margin: 14px 0 8px; font-size: .8rem; }
+  .m5-repo h4:first-child { margin-top: 0; }
+  .m5-repo table { width: 100%; border-collapse: collapse; min-width: 640px; }
+  .m5-repo th { text-align: left; font: 600 .72rem var(--font-body); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  .m5-repo td { padding: 8px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .m5-sha { font-family: var(--font-mono); font-size: .8rem; color: var(--blue-600); }
+  .m5-branch { font-family: var(--font-mono); font-size: .8rem; background: #eef2f8; border-radius: 5px; padding: 1px 6px; white-space: nowrap; }
+  .m5-key { font-family: var(--font-mono); font-size: .78rem; font-weight: 600; color: var(--navy-800); background: var(--sky-100); border-radius: 4px; padding: 0 5px; }
+  .m5-nokey { font-family: var(--font-mono); font-size: .78rem; color: var(--alert); }
+  .m5-files { display: block; font-family: var(--font-mono); font-size: .74rem; color: var(--ink-3); margin-top: 2px; }
+  .m5-local { font-size: .72rem; font-weight: 700; color: var(--beacon-ink); background: var(--warn-bg); border-radius: 4px; padding: 1px 6px; }
+  .m5-repo select { font: inherit; font-size: .82rem; padding: 4px 6px; border-radius: 6px; border: 1px solid var(--line); background: var(--white); max-width: 190px; }
+  .m5-verdict { font-size: .82rem; margin-top: 4px; }
+  .m5-verdict.ok { color: var(--go); } .m5-verdict.no { color: var(--alert); }
+  .m5-grid { display: grid; grid-template-columns: minmax(0,1.1fr) minmax(0,.9fr); gap: 16px; margin-top: 14px; }
+  @media (max-width: 860px) { .m5-grid { grid-template-columns: minmax(0,1fr); } }
+  .m5-actions { display: grid; gap: 8px; }
+  .m5-actions button { text-align: left; font: inherit; font-size: .9rem; background: var(--ice-50); border: 1.5px solid var(--line); border-radius: 10px; padding: 9px 12px; cursor: pointer; color: var(--ink); }
+  .m5-actions button:hover { border-color: var(--sky-400); background: var(--sky-100); }
+  .m5-actions button.ok { border-color: var(--go); background: var(--go-bg); }
+  .m5-actions button.no { border-color: var(--alert); background: var(--alert-bg); }
+  .m5-actions button.meh { border-color: var(--beacon); background: var(--warn-bg); }
+  .m5-actions h5 { margin: 8px 0 2px; font: 700 .8rem var(--font-display); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
+  .m5-feedback { font-size: .9rem; border-radius: 8px; padding: 10px 12px; background: var(--ice-50); border: 1px solid var(--line); min-height: 44px; margin-top: 8px; }
+  .m5-dev { border: 1px solid var(--line); border-radius: 10px; background: var(--white); }
+  .m5-dev-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 10px 12px; border-bottom: 1px solid var(--line); background: #f7f9fc; border-radius: 10px 10px 0 0; }
+  .m5-dev-head b { font-family: var(--font-display); letter-spacing: .06em; }
+  .m5-dev-body { padding: 10px 12px; font-size: .88rem; }
+  .m5-dev-row { display: flex; justify-content: space-between; gap: 10px; padding: 6px 0; border-bottom: 1px dashed var(--line); }
+  .m5-dev-row:last-child { border-bottom: 0; }
+  .m5-dev-row span:last-child { font-weight: 700; color: var(--blue-600); }
+  .m5-dev ul { margin: 6px 0 0; padding-left: 18px; }
+  .m5-dev li { margin: 2px 0; overflow-wrap: anywhere; }
+  .m5-checker { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow-1); margin: 16px 0 24px; }
+  .m5-checker label { display: block; font-weight: 600; font-size: .9rem; margin: 8px 0 4px; color: var(--navy-800); }
+  .m5-checker input[type=text], .m5-checker select { width: 100%; font: inherit; font-size: .95rem; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: var(--ice-50); }
+  .m5-checker .row { display: grid; grid-template-columns: 200px minmax(0,1fr); gap: 10px; }
+  @media (max-width: 600px) { .m5-checker .row { grid-template-columns: minmax(0,1fr); } }
+  .m5-results { list-style: none; padding: 0; margin: 12px 0 0; }
+  .m5-results li { padding: 6px 0 6px 28px; position: relative; border-bottom: 1px dashed var(--line); font-size: .93rem; }
+  .m5-results li::before { position: absolute; left: 2px; top: 5px; font-weight: 700; }
+  .m5-results li.pass::before { content: "✓"; color: var(--go); }
+  .m5-results li.warn::before { content: "!"; color: var(--beacon-ink); }
+  .m5-results li.fail::before { content: "✗"; color: var(--alert); }
+  .m5-results li.info::before { content: "i"; color: var(--blue-500); }
+  .m5-tree { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow-1); margin: 16px 0 24px; }
+  .m5-tree .q { border: 0; padding: 0; }
+  .m5-tree .tq { font-weight: 700; margin: 0 0 10px; }
+  .m5-tree .topts { display: flex; flex-wrap: wrap; gap: 8px; }
+  .m5-tree .topts button { font: 600 .9rem var(--font-body); border: 1.5px solid var(--line); background: var(--ice-50); border-radius: 999px; padding: 6px 14px; cursor: pointer; color: var(--ink); }
+  .m5-tree .topts button:hover { border-color: var(--sky-400); background: var(--sky-100); }
+  .m5-tree .trail { font-size: .85rem; color: var(--ink-3); margin: 0 0 10px; }
+  .m5-tree .leaf { background: var(--go-bg); border: 1px solid #b5e6cd; border-radius: 10px; padding: 12px 14px; }
+  .m5-tree .leaf b { display: block; font-family: var(--font-display); letter-spacing: .06em; text-transform: uppercase; color: var(--go); margin-bottom: 4px; }
+  .m5-tree .tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .m5-score { font-family: var(--font-display); font-size: 1.05rem; color: var(--navy-800); margin-top: 10px; }
+</style>
+</head>
+<body>
+<header id="site-header"></header>
+<main id="main">
+
+<section class="hero compact module-hero">
+  <div class="clouds" aria-hidden="true"><div class="cloud" style="top:20%;width:200px;height:46px;animation-duration:80s"></div><div class="cloud" style="top:62%;width:140px;height:34px;animation-duration:64s;animation-delay:-30s"></div></div>
+  <div class="wrap">
+    <div class="eyebrow">Module 5 of 8 · Session 2 · Connect Jira to code and Claude</div>
+    <h1>Connect Jira to Git and verify traceability</h1>
+    <p class="lede">A code change that doesn't carry the right key is invisible to the release review. Learn how the connection works, then find the commit that went to the wrong item and the fix that went nowhere.</p>
+    <div class="meta-row"><span class="chip">45 min</span><span class="chip">20 min practice</span><span class="chip gold">Lab: Restore a missing code link</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap layout">
+    <aside class="toc" aria-label="On this page">
+      <h4>On this page</h4>
+      <ol>
+        <li><a href="#objective">Objective</a></li>
+        <li><a href="#l1">How code reaches a Jira item</a></li>
+        <li><a href="#l2">Keys are the only join</a></li>
+        <li><a href="#l3">Reading the Development panel</a></li>
+        <li><a href="#l4">The practice repository</a></li>
+        <li><a href="#demo">Instructor demo</a></li>
+        <li><a href="#m5-lab">Lab: Restore a missing code link</a></li>
+        <li><a href="#check">Checkpoint</a></li>
+      </ol>
+    </aside>
+
+    <div>
+      <div class="objective-banner" id="objective">
+        <div class="eyebrow">Objective</div>
+        <p>Explain the connection setup and trace a development change to the correct Jira work item.</p>
+      </div>
+      <ul class="topics" aria-label="Topics"><li>Approved Git provider</li><li>Integration permissions</li><li>Repository selection</li><li>Synchronization</li><li>Keys in branches, commits and pull requests</li><li>Development panel</li><li>Missing keys</li><li>Wrong records</li><li>Restricted repositories</li><li>Related app context</li></ul>
+
+      <div class="callout captain"><strong>Why this matters for the release review</strong>The Crew App 4.2 review asks one question of the code: <em>is every change that ships tied to work someone accepted?</em> A change with no key is untested scope nobody can see. A change with the wrong key makes a finished item look busy and an unfinished one look quiet. Either way, the people deciding read the wrong story.</div>
+
+      <!-- ============ M5.1 ============ -->
+      <article class="lesson" id="l1">
+        <h2><span class="lesson-code">M5.1</span> How code activity reaches a Jira item</h2>
+        <p>Jira never reads your repository by itself. An <b>integration app</b> sits between your organization's approved Git provider and one Jira site. For GitHub that's the GitHub for Jira app; GitLab and Bitbucket have their own equivalents. The app watches branch names, commit messages and pull request titles for Jira keys such as <code>CRW-25</code>, then sends what it finds to the matching work item. Jira shows it in the item's <b>Development</b> area: branches, commits, pull requests, and builds or deployments if CI is connected too.</p>
+        <div class="flow" aria-label="Path from a push to the Development panel">
+          <span class="st todo">Developer pushes a branch, commit or PR with a key</span><span class="arr">→</span>
+          <span class="st prog">Git provider</span><span class="arr">→</span>
+          <span class="st prog">Integration app (events + backfill)</span><span class="arr">→</span>
+          <span class="st prog">Connected Jira site</span><span class="arr">→</span>
+          <span class="st done">Development panel on the matching item</span>
+        </div>
+        <p>Three things follow from that path, and every traceability problem in this module comes back to one of them:</p>
+        <ol>
+          <li><b>The key is the only join.</b> The app doesn't guess. No key, no link. Wrong key, wrong link.</li>
+          <li><b>Only what the connection can see gets sent.</b> A repository that isn't included in the connection, a branch that was never pushed, or a sync that hasn't caught up all look the same in Jira: nothing.</li>
+          <li><b>Jira decides who sees it.</b> Development information shows to people who hold the <b>View Development Tools</b> permission in that space. Opening the branch or pull request itself still needs access in the Git provider.</li>
+        </ol>
+
+        <h3>Who sets the connection up</h3>
+        <p>This is not something a learner switches on. In most organizations it spans three owners, and the outline asks you to know who they are so you can route a problem to the right one.</p>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th>Step</th><th>What happens</th><th>Usual owner</th></tr></thead>
+          <tbody>
+            <tr><td>Approve the provider and app</td><td>Security and app review: which Git provider, which integration app, what data it may send to Jira.</td><td>App owner with the Jira org admin</td></tr>
+            <tr><td>Install the app in Jira</td><td>The app is added to the Jira site from the Marketplace or the provider's install flow.</td><td>Jira site admin</td></tr>
+            <tr><td>Connect the Git organization</td><td>The Git organization (or group/workspace) is linked to <em>this</em> Jira site. A second Jira site needs its own connection.</td><td>Git organization owner</td></tr>
+            <tr><td>Select repositories</td><td>"All repositories" or "only selected". A restricted or newly created repository is excluded until someone adds it.</td><td>Git organization owner / repository owner</td></tr>
+            <tr><td>Backfill and ongoing sync</td><td>On connect, the app backfills history; after that, events from each push arrive within minutes. The connection page shows sync status and lets an admin restart a failed backfill.</td><td>App owner</td></tr>
+            <tr><td>Who can see it in Jira</td><td>The <b>View Development Tools</b> space permission controls the Development panel and development JQL.</td><td>Jira admin / space admin</td></tr>
+          </tbody>
+        </table></div>
+
+        <div class="callout warn"><strong>On the training site</strong>No Git provider is connected, and the GitHub for Jira app is not installed. Open <a data-jira="/browse/CRW-25">CRW-25 ↗</a> and you'll find no branches, commits or pull requests: there is nothing connected to send them. That absence is itself a diagnosis you'll use in the lab (no connection, no activity). The practice runs on the replica repository below, built from the same CRW items, and the instructor demo uses a preconnected example from your platform or repository owner.</div>
+      </article>
+
+      <!-- ============ M5.2 ============ -->
+      <article class="lesson" id="l2">
+        <h2><span class="lesson-code">M5.2</span> Keys are the only join: naming conventions</h2>
+        <p>Put the key where the app looks, in the form Jira uses. The same three places work across GitHub, GitLab and Bitbucket. For <a data-jira="/browse/CRW-25">CRW-25 ↗</a> "Submit a swap request from the trip board":</p>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th>Where</th><th>Convention</th><th>Example for CRW-25</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td>Branch</td><td>Key first, then a short slug. No spaces.</td><td><code>CRW-25-trip-board-swap</code></td><td>Links the branch the moment it's pushed, before any commit, so the panel shows work has started.</td></tr>
+            <tr><td>Commit</td><td>Key first, then what changed in the imperative.</td><td><code>CRW-25 Add Swap button to eligible trip cards</code></td><td>Each commit links on its own. Commits are linked by their message, not by the branch they're on.</td></tr>
+            <tr><td>Pull / merge request title</td><td>Key first, then the item's intent.</td><td><code>CRW-25 Submit a swap request from the trip board</code></td><td>The PR is what reviewers and the release review read. Its status (open, merged, declined) shows in the panel.</td></tr>
+          </tbody>
+        </table></div>
+        <ul>
+          <li><b>Use the uppercase key exactly as Jira shows it.</b> Some providers don't match <code>crw-25</code>. Don't gamble on it.</li>
+          <li><b>One work item per branch.</b> A branch that serves two items is usually two pieces of work. Commits may carry two keys when one change truly serves both, and it will then appear on both items.</li>
+          <li><b>A key that's only "related" still links if the app scans that text.</b> Some providers also read PR descriptions. If you want to mention a related item without linking it, write it in words ("same symptom as the Alerts Squad email bug") or check your provider's rules first.</li>
+          <li><b>The key must belong to the connected site.</b> <code>CRW-25</code> on the training site and <code>CRW-25</code> on another site are different items. The app sends to the site its organization is connected to.</li>
+        </ul>
+        <div class="callout danger"><strong>Smart commits under the template</strong>If an admin enables smart commits, a commit such as <code>CRW-25 #comment Ready for review</code> or <code>#time 1h</code> writes to Jira as the committer (the commit email must match a Jira user). Transition commands such as <code>#done</code> move the item. Under the Golden Template, status changes through eQE Testing and PO Review are human decisions with exit criteria. Don't transition work from Git, and never use it to skip quality review: it shows in history and distorts cycle time.</div>
+
+        <h3>Try it: key convention checker</h3>
+        <p>Type a branch name, commit message or PR title. The checker runs the same tests a reviewer would. Your seat's READY story is <b><span data-seat-key="2">CRP-?</span></b> "Show swap eligibility before submitting": write the three names you'd use for it.</p>
+        <div class="m5-checker" id="m5-checker">
+          <div class="row">
+            <div><label for="m5-kind">What are you naming?</label>
+              <select id="m5-kind"><option value="branch">Branch name</option><option value="commit">Commit message</option><option value="pr">Pull request title</option></select></div>
+            <div><label for="m5-name">Text</label><input type="text" id="m5-name" placeholder="e.g. CRW-25-trip-board-swap" autocomplete="off" spellcheck="false"></div>
+          </div>
+          <div class="btn-row" style="margin-top:12px">
+            <button class="btn btn-sm btn-blue" type="button" id="m5-check-btn">Check it</button>
+            <button class="btn btn-sm" type="button" id="m5-suggest-btn" style="border-color:var(--line);color:var(--blue-600)">Suggest names for my seat story</button>
+          </div>
+          <ul class="m5-results" id="m5-check-out" aria-live="polite"></ul>
+        </div>
+      </article>
+
+      <!-- ============ M5.3 ============ -->
+      <article class="lesson" id="l3">
+        <h2><span class="lesson-code">M5.3</span> Reading the Development panel, and what breaks it</h2>
+        <p>When a provider is connected, the right-hand Development area on an item summarises what the app has sent: <b>branches</b>, <b>commits</b>, <b>pull requests</b> with their status, and builds or deployments if CI reports to Jira. Click a count to see the detail. A space's admin can also let people search it with development JQL (it only means something once a provider is connected):</p>
+        <pre data-code="JQL · needs a connected Git provider">project = CRW AND development[pullrequests].open > 0
+project = CRW AND fixVersion = "Crew App 4.2" AND development[commits].all = 0</pre>
+        <p>The second query is the release-review version of this module: items in 4.2 with no code at all. Some are legitimately code-free (a spike, a config change). Others had their commits land on the wrong key.</p>
+
+        <figure class="shot">
+          <div class="frame"><div class="frame-bar"><i></i><i></i><i></i><span>…atlassian.net/browse/CRW-25</span></div>
+          <img src="assets/img/crw-25-story.jpg" alt="CRW-25 Submit a swap request from the trip board: status Development, red flag, acceptance criteria A Swap button appears on every eligible trip and The request form opens with the trip already selected, Story Points 5, component Crew Mobile, sprint SWP-2026.q4.4, Team Swap Squad, fix version Crew App 4.2, priority High, parent CRW-3" loading="lazy"></div>
+          <figcaption>CRW-25 is the item every commit in the practice repository claims to serve. Read its two acceptance criteria and the note "Blocked: needs the rules vendor sandbox to test submission end to end". That's your test for whether a commit belongs here: a commit that builds the submit path belongs to CRW-25; one that explains <em>why a swap isn't eligible</em> belongs to CRW-26.</figcaption>
+        </figure>
+
+        <h3>Symptoms, causes and who to ask</h3>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th>What you see</th><th>Most likely cause</th><th>Check</th><th>Route to</th></tr></thead>
+          <tbody>
+            <tr><td>No development activity on any item in the space</td><td>No provider connected to this site, or you lack View Development Tools</td><td>Ask a colleague with the same role; check the space's permissions page if you can see it</td><td>Jira admin / app owner</td></tr>
+            <tr><td>One commit missing, others fine</td><td>Missing, wrong or lowercase key; commit not pushed</td><td>Read the message in the repository; check it's on the remote</td><td>You (fix the reference)</td></tr>
+            <tr><td>Nothing from one repository</td><td>Repository not selected in the connection, or restricted</td><td>Compare with another repository in the same organization</td><td>Git organization or repository owner</td></tr>
+            <tr><td>Activity appears late or not at all after a push</td><td>Sync lag or failed backfill</td><td>Wait a few minutes; the app's connection page shows sync status</td><td>App owner</td></tr>
+            <tr><td>Activity on the wrong item</td><td>Wrong key in the message. Jira can't unlink it: the panel mirrors the repository.</td><td>Find the commit SHA and its real item</td><td>You and the repository owner (agree how to record it)</td></tr>
+            <tr><td>Counts show in Jira but the link won't open</td><td>Restricted repository: you lack access in the provider</td><td>Try opening the repository directly</td><td>Repository owner</td></tr>
+          </tbody>
+        </table></div>
+
+        <div class="callout tip"><strong>Related app context: design links</strong>The same governance applies to other development context. A design tool integration such as Figma for Jira adds a design link and preview to an item, so the developer, the eQE engineer and the PO look at the same screen. It needs app approval, a connection, and viewers who can open the design file. It isn't installed on the training site either; when it is, check the design link is on the <em>work item</em> (CRW-25), not just on the epic, so the reviewer of the PR can find it.</div>
+
+        <div class="callout standard"><strong>Golden Template diagnosis</strong>Traceability fails quietly in the same ways a board filter does. Look at <a data-jira="/browse/CRW-29">CRW-29 ↗</a> "Swap request shows the wrong home base": it's in sprint SWP-2026.q4.4 and Crew App 4.2, but it has no Team, so it never appears on the SWP sprint board. If its fix also lands without a key, the item is invisible on the board <em>and</em> in the code. That's exactly the trap in the practice repository.</div>
+      </article>
+
+      <!-- ============ M5.4 Replica ============ -->
+      <article class="lesson" id="l4">
+        <h2><span class="lesson-code">M5.4</span> The practice repository</h2>
+        <p>The replica below shows a practice repository, <code>crew-swap-service</code>, as the Swap Squad left it on Friday. Its branches, commits and pull requests reference real CRW items. Your job in the lab is the job a delivery lead or engineer does before a release review: decide whether each piece of activity is linked to the right work, then correct what you're allowed to correct.</p>
+        <div class="callout replica"><strong>Practice replica</strong>Git isn't connected to the training site yet, and the GitHub for Jira app isn't installed. This replica uses the same CRW records (CRW-24, CRW-25, CRW-26 and CRW-29) and behaves like a connected provider: the Development panel on the right rebuilds itself from the keys in branch names, commit messages and PR titles. When your organization's provider is connected, repeat the same checks on a disposable repository.</div>
+
+        <div class="replica-frame" id="m5-replica">
+          <div class="replica-bar"><span>git · crew-swap-service · practice repository</span><span class="tag-rep">PRACTICE REPLICA</span></div>
+          <div class="replica-body m5-repo">
+            <h4>Pull requests</h4>
+            <div id="m5-prs"></div>
+            <h4>Branches</h4>
+            <div id="m5-branches"></div>
+            <h4>Commits (newest first) · classify each one</h4>
+            <div id="m5-commits"></div>
+            <div class="btn-row" style="margin-top:12px">
+              <button class="btn btn-sm btn-blue" type="button" id="m5-classify-check">Check my classification</button>
+            </div>
+            <div class="m5-score" id="m5-classify-score" aria-live="polite"></div>
+
+            <div class="m5-grid">
+              <div>
+                <h4>Corrections you could make</h4>
+                <div class="m5-actions" id="m5-actions"></div>
+                <div class="m5-feedback" id="m5-feedback" aria-live="polite">Choose an action to see whether the practice repository permits it and what it does to the Development panel.</div>
+                <div class="btn-row" style="margin-top:10px"><button class="btn btn-sm" type="button" id="m5-reset" style="border-color:var(--line);color:var(--blue-600)">Reset the repository</button></div>
+              </div>
+              <div>
+                <h4>Development panel (as Jira would show it)</h4>
+                <div class="m5-dev">
+                  <div class="m5-dev-head"><label for="m5-dev-item"><b>Work item</b></label>
+                    <select id="m5-dev-item">
+                      <option value="CRW-25">CRW-25 Submit a swap request from the trip board</option>
+                      <option value="CRW-26">CRW-26 Show why a swap is not eligible</option>
+                      <option value="CRW-29">CRW-29 Swap request shows the wrong home base</option>
+                      <option value="CRW-24">CRW-24 Withdraw a pending swap</option>
+                    </select></div>
+                  <div class="m5-dev-body" id="m5-dev-body" aria-live="polite"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <div class="callout demo" id="demo"><strong>Instructor demo · 10 min</strong>
+        <p>Run this with the platform or repository owner on the call, using your organization's approved provider and a preconnected example. If the live connection fails, switch to the preconnected example and keep going: the teaching point is the trace, not the install.</p>
+        <ol>
+          <li><b>Show the connection, don't build it.</b> Open the integration app's connection page with the owner: connected Git organization, which repositories are selected, and the sync or backfill status. Point out that "only selected repositories" means a new repository is invisible until added.</li>
+          <li><b>Show the permission.</b> Open the space's permission scheme (or a screenshot) and find <b>View Development Tools</b>. Say who holds it.</li>
+          <li><b>Create a branch with a sandbox key.</b> On the disposable repository, create <code>CRP-NN-eligibility-hint</code> from your instructor seat's READY story (never a CRW key: CRW is the read-only reference). Commit <code>CRP-NN Show eligibility before submit</code>, push, and open a PR with the same key in the title.</li>
+          <li><b>Verify in Jira.</b> Refresh the seat item. Show the branch, commit and PR counts in the Development area. Click through to the PR.</li>
+          <li><b>Break it on purpose.</b> Push one more commit with no key. Show it doesn't appear. Ask the room: "Which item does this change belong to, and how would anyone know?"</li>
+          <li><b>Show the release-review view.</b> Show development JQL on the connected example (for instance PRs still open on a release). Then open <a data-jira="/browse/CRW-25">CRW-25 ↗</a> on the training site and show there's nothing connected: the same question, answered "no evidence".</li>
+        </ol>
+      </div>
+
+      <!-- ============ LAB ============ -->
+      <article class="mission" id="m5-lab" data-miles="450">
+        <div class="mission-head">
+          <div><span class="mcode">LAB M5 · 20 MIN · CRW READ-ONLY · YOUR SEAT</span><h3>Restore a missing code link</h3></div>
+          <span class="turb" title="Difficulty"><i class="on"></i><i class="on"></i><i class="on"></i><i></i> Turbulence</span>
+        </div>
+        <div class="mission-body">
+          <div class="brief"><b>Brief</b> The Crew App 4.2 review is next week. The Swap Squad's repository has an open PR for CRW-25 and a quick fix someone pushed for the ORD home-base complaint. The release lead asks you: "Is every change on these branches traced to the right Jira item? If not, fix what you're allowed to fix and tell me what to check if it still doesn't show." <b>CRW is read-only</b>: you read CRW-25, CRW-26, CRW-29 and KAN-4 but never edit them. Your only Jira write is a comment on your own seat story <b><span data-seat-key="2">CRP-?</span></b> (label <code>lab-{SEAT}</code>, summary prefix <code>L{SEAT} · </code>). Repository changes happen in the <a href="#m5-replica">practice replica</a>.</div>
+          <ol class="steps">
+            <li><b>Inspect the seeded activity (7 min).</b>
+              <ol>
+                <li>In the replica, read the two pull requests, the branches and the commit list. Note the files each commit touches.</li>
+                <li>Open the items the activity claims to serve, read-only: <a data-jira="/browse/CRW-25">CRW-25 ↗</a>, <a data-jira="/browse/CRW-26">CRW-26 ↗</a>, <a data-jira="/browse/CRW-29">CRW-29 ↗</a> and the service request <a data-jira="/browse/KAN-4">KAN-4 ↗</a>. Compare summaries, acceptance criteria and descriptions with what each commit actually changes.</li>
+                <li>Classify every commit in the replica (correct key, missing key, wrong key, not pushed yet) and press <b>Check my classification</b>. Write down the SHA of the commit with no key and the commit with the wrong key, and the item each one really belongs to.</li>
+              </ol>
+            </li>
+            <li><b>Correct the permitted reference and verify (8 min).</b>
+              <ol>
+                <li>In <b>Corrections you could make</b>, try the actions. Some are permitted, some rewrite shared history, and one targets the wrong item. Read each response.</li>
+                <li>Apply a permitted correction for the missing key, and the permitted handling for the wrong key. Then switch the Development panel between CRW-25, CRW-26 and CRW-29 and confirm what each now shows. Note what you <em>can't</em> fix from Jira.</li>
+                <li>In <a href="#m5-checker">the key checker</a>, write the branch, commit and PR title you'd use for your seat story <span data-seat-key="2">CRP-?</span>, until all three pass.</li>
+                <li>Open <a data-seat-board="/backlog">your Lab {SEAT} backlog ↗</a>, open <span data-seat-key="2">CRP-?</span> and add one comment: the three names you'd use, plus "Git not connected on the training site: link verified in the practice replica." That's your documented trace.</li>
+              </ol>
+            </li>
+            <li><b>Explain the next check (5 min).</b>
+              <ol>
+                <li>Use <a href="#m5-tree">the "still not showing" diagnosis</a> below for this case: the PR title now carries the key, but CRW-29 still shows nothing in a real connected site.</li>
+                <li>Record the check you'd make, what evidence you'd hand over (repository, SHA, key, push time) and the owner you'd route it to.</li>
+              </ol>
+            </li>
+          </ol>
+
+          <pre data-jql data-label="Check your work: the three items you traced (read-only)">key in (CRW-25, CRW-26, CRW-29) ORDER BY key ASC</pre>
+          <pre data-jql data-label="Check your work: your seat comment landed">project = CRP AND labels = lab-{SEAT} AND updated >= -1d ORDER BY updated DESC</pre>
+          <pre data-jql data-label="Room check: should return nothing">project = CRW AND updated >= -1h ORDER BY updated DESC</pre>
+
+          <section class="m5-tree" id="m5-tree" aria-labelledby="m5-tree-h">
+            <h4 id="m5-tree-h" style="margin-top:0">Diagnosis: the key is right, but the activity still doesn't appear</h4>
+            <div id="m5-tree-body" aria-live="polite"></div>
+            <div class="tools">
+              <button class="btn btn-sm" type="button" id="m5-tree-restart" style="border-color:var(--line);color:var(--blue-600)">Start again</button>
+              <button class="btn btn-sm btn-blue" type="button" id="m5-tree-save" disabled>Send this check to my evidence</button>
+            </div>
+          </section>
+
+          <details class="reveal"><summary>Debrief: what a strong answer looks like</summary><div>
+            <p><b>The wrong key.</b> Commit <code>c58f210</code> "CRW-26 Post the swap request when Submit is pressed on a trip card" changes <code>api/swaps/submitFromTrip.ts</code>. That's CRW-25's work (submit a swap request from the trip board). CRW-26 "Show why a swap is not eligible" is about the ineligibility message. The commit is pushed and part of open PR #41, so <b>don't amend or force-push</b>: that rewrites history everyone else has pulled. Leave it, make sure PR #41's title carries <code>CRW-25</code> (it does), and record the mis-link: in a real team, a short note on CRW-26 naming the SHA and its real item; in class, your evidence card. CRW-26's panel will keep showing one stray commit. Jira can't unlink it, and the release review should know why.</p>
+            <p><b>The missing key.</b> Branch <code>fix/home-base-lookup</code>, commit <code>3f8a6d1</code> "Read home base from the crew profile, not the trip" and PR #42 "Fix home base lookup for ORD crew" carry no key at all. KAN-4 says an ORD-based flight attendant saw DEN as her home base; CRW-29 is the delivery item it was handed to. So the work is <b>CRW-29</b>, not CRW-62. CRW-62 is the Alerts Squad's email bug with the same symptom: mention it in words in the PR description so both teams retest, but don't link the work to it. The permitted fix is to edit PR #42's title to <code>CRW-29 Fix home base lookup for ORD crew</code> (and optionally rename the branch to <code>CRW-29-home-base-lookup</code>). The PR, and the branch if renamed, then appear on CRW-29. Commit <code>3f8a6d1</code> itself stays unlinked: be honest about that in your note.</p>
+            <p><b>The local commit.</b> <code>9be04d7</code> "CRW-25 Show a spinner while the request submits" has the right key but was never pushed. It will never appear in Jira until it is. Push it; don't re-key it.</p>
+            <p><b>Bonus finding.</b> CRW-29 has no Team, so even with the PR linked it's invisible on the SWP sprint board and outside its reports. Raise it with the Swap Squad's Scrum Master; it's a data-quality gap the release review will otherwise miss.</p>
+            <p><b>If the key is right and it still doesn't show:</b> check in order (1) the change is pushed, (2) the repository is included in the connection, (3) sync or backfill has completed since the push, (4) a colleague with the same role can see it (if they can, it's your View Development Tools permission or provider access). Hand the owner the repository, SHA, key and push time. Repository selection goes to the Git organization owner, sync failures to the app owner, Jira permissions to the space or Jira admin. You never install or reconfigure the app yourself.</p>
+          </div></details>
+
+          <div class="evidence" data-evidence="m5">
+            <h4>Learner output · Module 5</h4>
+            <p class="hint">A Jira item with matching development activity, or a documented diagnosis using the captured example.</p>
+            <label for="m5-item">Jira item and the development activity traced to it</label><textarea id="m5-item" data-field="item" placeholder="e.g. CRW-25 ← branch CRW-25-trip-board-swap, PR #41, commits a41c9e2, 7d03b18 (+ c58f210 mis-keyed). My seat story CRP-… comment with branch/commit/PR names."></textarea>
+            <label for="m5-diagnosis">Missing or wrong key found</label><textarea id="m5-diagnosis" data-field="diagnosis" placeholder="SHA, what it says, which item it really belongs to and the evidence (summary, AC, KAN-4…)"></textarea>
+            <label for="m5-fix">Permitted correction and the verified result</label><textarea id="m5-fix" data-field="fix" placeholder="What you changed, what you deliberately didn't change and why, and what the Development panel now shows"></textarea>
+            <label for="m5-check">Access or sync check if activity still doesn't appear</label><textarea id="m5-check" data-field="check" placeholder="The check, the evidence to hand over, and the owner"></textarea>
+          </div>
+        </div>
+        <div class="mission-foot"><span class="miles-tag">+450 mi</span><button class="complete-btn" type="button">Mark lab complete</button></div>
+      </article>
+
+      <section class="quiz" id="check" data-id="m5" data-pass="75" data-miles="200" style="padding:24px">
+        <h2 style="margin-top:0">Checkpoint</h2>
+        <div class="q"><p class="prompt">1. A developer pushes commit <code>Read home base from the crew profile</code> with no key, inside a PR titled the same way. What does the Development panel on CRW-29 show?</p><div class="opts">
+          <button class="opt" type="button" data-right>Nothing from that commit or PR. The app links only through keys in branch names, commit messages and PR titles.</button>
+          <button class="opt" type="button">The commit, because the app matches the words "home base" to CRW-29's summary.</button>
+          <button class="opt" type="button">The commit, as soon as someone links KAN-4 to CRW-29.</button>
+          <button class="opt" type="button">The PR, because PRs are matched to the most recently updated item in the sprint.</button></div>
+          <div class="why">There's no fuzzy matching. The key is the only join, so a change with no key is invisible to Jira, and to anyone reviewing the release from Jira.</div></div>
+        <div class="q"><p class="prompt">2. A pushed commit in an open PR says <code>CRW-26 …</code> but the change belongs to CRW-25. What's the permitted handling?</p><div class="opts">
+          <button class="opt" type="button" data-right>Leave the commit, make sure the PR title carries CRW-25, and record the mis-link (SHA and real item) so the review knows why CRW-26 shows a stray commit.</button>
+          <button class="opt" type="button">Amend the message and force-push the PR branch so the history is clean.</button>
+          <button class="opt" type="button">Remove the commit from CRW-26's Development panel in Jira.</button>
+          <button class="opt" type="button">Move CRW-26 to Done so the commit no longer matters.</button></div>
+          <div class="why">Rewriting pushed, shared history breaks everyone who pulled it, and Jira can't unlink a commit: the panel mirrors the repository. Correct the parts you can (PR title, branch), and document the rest.</div></div>
+        <div class="q"><p class="prompt">3. A colleague in the same role sees branches and PRs on CRW-25; you see no Development activity at all. What's the most likely cause?</p><div class="opts">
+          <button class="opt" type="button" data-right>A permission difference: View Development Tools in the space (or your Git provider access), so route it to the space or Jira admin.</button>
+          <button class="opt" type="button">The repository isn't selected in the connection.</button>
+          <button class="opt" type="button">The commit wasn't pushed.</button>
+          <button class="opt" type="button">The branch name uses the wrong key.</button></div>
+          <div class="why">If the data reached Jira for your colleague, the connection, the push and the key are fine. What differs is who's looking.</div></div>
+        <div class="q"><p class="prompt">4. Which branch name follows the course convention for CRW-25?</p><div class="opts">
+          <button class="opt" type="button" data-right><code>CRW-25-trip-board-swap</code></button>
+          <button class="opt" type="button"><code>feature/trip board swap (CRW-25)</code></button>
+          <button class="opt" type="button"><code>crw25-trip-board-swap</code></button>
+          <button class="opt" type="button"><code>trip-board-swap-CRW-25-and-CRW-26</code></button></div>
+          <div class="why">Uppercase key exactly as Jira shows it, first, no spaces, one item per branch. "crw25" isn't a key at all, and a branch for two items is usually two pieces of work.</div></div>
+        <div class="q"><p class="prompt">5. Someone suggests the smart commit <code>CRW-25 #done</code> to save the PO a click before the review. What's the right response?</p><div class="opts">
+          <button class="opt" type="button" data-right>No. Transitions from Git move work as the committer and skip the template's eQE and PO Review decisions; status changes stay with the people accountable for them.</button>
+          <button class="opt" type="button">Fine, as long as the commit email matches a Jira user.</button>
+          <button class="opt" type="button">Fine, because the Development panel will record who did it.</button>
+          <button class="opt" type="button">Fine, but only on the training site.</button></div>
+          <div class="why">The email match makes it <em>work</em>; it doesn't make it right. A Git-driven "done" also creates a fake, ultra-short cycle time.</div></div>
+        <div class="quiz-score"><span class="msg"></span><span><b>0 / 5</b> <button class="btn btn-sm btn-ghost retry" type="button">Retry</button></span></div>
+      </section>
+
+      <nav class="module-nav" aria-label="Module navigation">
+        <a class="prev" href="m4.html"><small>Previous</small><b>M4 · Evaluate release quality in Zephyr</b></a>
+        <a class="next" href="m6.html"><small>Next</small><b>M6 · Connect Claude through Atlassian MCP</b></a>
+      </nav>
+    </div>
+  </div>
+</section>
+
+</main>
+<div id="site-footer"></div>
+<script src="assets/js/config.js?v=1"></script>
+<script src="assets/js/site.js?v=1"></script>
+<script src="assets/js/widgets.js?v=1"></script>
+<script>
+(function () {
+  "use strict";
+  var CA = window.CA, CW = window.CW;
+  var esc = CA.esc;
+  function $(s, r) { return (r || document).querySelector(s); }
+
+  /* ---------------- Key convention checker ---------------- */
+  var KNOWN = { CRW: 73, CRP: 340, KAN: 4 };
+  function keysIn(text) { var m = text.match(/\b[A-Za-z][A-Za-z0-9]+-\d+\b/g) || []; return m; }
+  function checkName(kind, text) {
+    var out = [], t = text.trim();
+    if (!t) return [["fail", "Type something to check."]];
+    var keys = keysIn(t);
+    var upper = keys.filter(function (k) { return /^[A-Z][A-Z0-9]+-\d+$/.test(k); });
+    var lower = keys.filter(function (k) { return !/^[A-Z][A-Z0-9]+-\d+$/.test(k); });
+    if (!keys.length) { out.push(["fail", "No Jira key. This " + (kind === "branch" ? "branch" : kind === "commit" ? "commit" : "pull request") + " will never appear on a work item."]); }
+    if (lower.length) out.push(["warn", "Lowercase or mixed-case key (" + esc(lower.join(", ")) + "). Use the key exactly as Jira shows it, in uppercase; some providers won't match it."]);
+    var distinct = upper.filter(function (k, i) { return upper.indexOf(k) === i; });
+    distinct.forEach(function (k) {
+      var p = k.split("-")[0], n = +k.split("-")[1];
+      if (!KNOWN[p]) out.push(["warn", esc(k) + ": there's no " + esc(p) + " space on the training site. The app would send it nowhere."]);
+      else if (n < 1 || n > KNOWN[p]) out.push(["warn", esc(k) + " doesn't exist on the training site (" + p + " runs to " + p + "-" + KNOWN[p] + "). The link would point at nothing."]);
+      else out.push(["pass", "Contains the key " + esc(k) + "."]);
+      if (p === "CRW") out.push(["info", "CRW is the read-only reference space. In class, name practice branches after your seat item (CRP-…)."]);
+      if (p === "KAN") out.push(["warn", "KAN-4 is the service request. Code belongs to the delivery item it was handed to (CRW-29), not the request."]);
+    });
+    if (distinct.length > 1) out.push(["warn", "More than one key: the change will appear on every one of them. Only do this when the change truly serves both items."]);
+    if (keys.length && !/^[A-Za-z][A-Za-z0-9]+-\d+/.test(t)) out.push(["info", "Put the key first. Reviewers and the release review scan the start of the line."]);
+    if (kind === "branch") {
+      if (/\s/.test(t)) out.push(["fail", "Branch names can't contain spaces. Use hyphens."]);
+      if (/[~^:?*\[\\]/.test(t)) out.push(["fail", "Git doesn't allow ~ ^ : ? * [ or \\ in branch names."]);
+      if (t.length > 60) out.push(["info", "Long branch name. Keep the slug to a few words."]);
+      if (/^[A-Z][A-Z0-9]+-\d+-[a-z0-9-]+$/.test(t)) out.push(["pass", "Matches the convention: KEY-short-slug."]);
+    } else {
+      var rest = t.replace(/^[A-Za-z][A-Za-z0-9]+-\d+\s*/, "");
+      if (keys.length && rest.split(/\s+/).filter(Boolean).length < 3) out.push(["warn", "Say what changed in a few words after the key."]);
+      if (kind === "commit" && /#(?!comment\b|time\b)[a-z][\w-]*/i.test(t)) out.push(["fail", "Transition smart commit (" + esc((t.match(/#[a-z][\w-]*/i) || [""])[0]) + "). Under the template, don't move status from Git: eQE Testing and PO Review are human decisions."]);
+      if (kind === "commit" && /#comment\b/i.test(t)) out.push(["info", "#comment writes a Jira comment as you, if smart commits are enabled and your commit email matches your Jira account."]);
+      if (kind === "pr" && /#[a-z]/i.test(t)) out.push(["warn", "Smart commit commands belong in commit messages, not PR titles."]);
+    }
+    var mine = CW.seatKey(2);
+    if (mine.indexOf("?") < 0 && distinct.indexOf(mine) > -1) out.push(["pass", "Matches your seat's READY story " + mine + "."]);
+    var fails = out.filter(function (r) { return r[0] === "fail"; }).length, warns = out.filter(function (r) { return r[0] === "warn"; }).length;
+    out.unshift([fails ? "fail" : warns ? "warn" : "pass", fails ? "Won't link reliably. Fix the items marked ✗." : warns ? "Will probably link, but a reviewer would push back. See the notes." : "Good to push."]);
+    return out;
+  }
+  var checkOut = $("#m5-check-out");
+  function runCheck() {
+    var r = checkName($("#m5-kind").value, $("#m5-name").value);
+    checkOut.innerHTML = r.map(function (x) { return '<li class="' + x[0] + '">' + x[1] + "</li>"; }).join("");
+    if (r[0][0] === "pass" && CW.seatKey(2).indexOf("?") < 0 && $("#m5-name").value.indexOf(CW.seatKey(2)) > -1) CA.awardOnce("widget:m5-keys", 100, "Key convention checker");
+  }
+  $("#m5-check-btn").addEventListener("click", runCheck);
+  $("#m5-name").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); runCheck(); } });
+  $("#m5-kind").addEventListener("change", function () {
+    var ph = { branch: "e.g. CRW-25-trip-board-swap", commit: "e.g. CRW-25 Add Swap button to eligible trip cards", pr: "e.g. CRW-25 Submit a swap request from the trip board" };
+    $("#m5-name").placeholder = ph[this.value];
+  });
+  $("#m5-suggest-btn").addEventListener("click", function () {
+    var k = CW.seatKey(2);
+    if (k.indexOf("?") > -1) { CA.toast("Pick your lab seat in the top bar first"); return; }
+    checkOut.innerHTML = '<li class="info">Branch: <code>' + k + '-eligibility-before-submit</code></li>' +
+      '<li class="info">Commit: <code>' + k + ' Show eligibility result before the Submit button</code></li>' +
+      '<li class="info">PR title: <code>' + k + ' Show swap eligibility before submitting</code></li>' +
+      '<li class="info">Now type your own versions and check each one.</li>';
+  });
+
+  /* ---------------- Practice repository replica ---------------- */
+  var BASE = {
+    branches: [
+      { name: "main", note: "default · protected" },
+      { name: "CRW-25-trip-board-swap", note: "open PR #41 · 4 commits ahead" },
+      { name: "fix/home-base-lookup", note: "open PR #42 · 1 commit ahead" }
+    ],
+    prs: [
+      { num: 41, branch: "CRW-25-trip-board-swap", title: "CRW-25 Submit a swap request from the trip board", state: "Open", note: "2 approvals pending" },
+      { num: 42, branch: "fix/home-base-lookup", title: "Fix home base lookup for ORD crew", state: "Open", note: "\"Quick fix for the ORD complaint from the scheduler desk\"" },
+      { num: 38, branch: "CRW-24-withdraw-swap", title: "CRW-24 Withdraw a pending swap", state: "Merged", note: "merged in SWP-2026.q4.3" }
+    ],
+    commits: [
+      { sha: "9be04d7", branch: "CRW-25-trip-board-swap", msg: "CRW-25 Show a spinner while the request submits", files: "web/trip-board/SwapSubmit.tsx", pushed: false, answer: "local" },
+      { sha: "3f8a6d1", branch: "fix/home-base-lookup", msg: "Read home base from the crew profile, not the trip", files: "api/crew/homeBase.ts · test/homeBase.ord.test.ts", pushed: true, answer: "missing" },
+      { sha: "c58f210", branch: "CRW-25-trip-board-swap", msg: "CRW-26 Post the swap request when Submit is pressed on a trip card", files: "api/swaps/submitFromTrip.ts", pushed: true, answer: "wrong" },
+      { sha: "7d03b18", branch: "CRW-25-trip-board-swap", msg: "CRW-25 Open the request form with the trip already selected", files: "web/swap-form/SwapForm.tsx", pushed: true, answer: "ok" },
+      { sha: "a41c9e2", branch: "CRW-25-trip-board-swap", msg: "CRW-25 Add Swap button to eligible trip cards", files: "web/trip-board/TripCard.tsx", pushed: true, answer: "ok" },
+      { sha: "e7720c5", branch: "main", msg: "CRW-24 Withdraw a pending swap from the swap list (#38)", files: "api/swaps/withdraw.ts · web/swaps/SwapList.tsx", pushed: true, answer: "ok" }
+    ]
+  };
+  var state, applied;
+  function reset() { state = JSON.parse(JSON.stringify(BASE)); applied = {}; render(); }
+  var CLASS_OPTS = [["", "Classify…"], ["ok", "Correct key"], ["missing", "Missing key"], ["wrong", "Wrong key"], ["local", "Not pushed yet"]];
+  var choices = {};
+  function keyHtml(text) {
+    var ks = keysIn(text).filter(function (k) { return /^[A-Z]/.test(k); });
+    return ks.length ? ks.map(function (k) { return '<span class="m5-key">' + esc(k) + "</span>"; }).join(" ") : '<span class="m5-nokey">no key</span>';
+  }
+  function render() {
+    $("#m5-prs").innerHTML = '<table><thead><tr><th>PR</th><th>Title</th><th>Branch</th><th>State</th><th>Links to</th></tr></thead><tbody>' +
+      state.prs.map(function (p) { return "<tr><td class=\"m5-sha\">#" + p.num + "</td><td>" + esc(p.title) + '<span class="m5-files">' + esc(p.note) + '</span></td><td><span class="m5-branch">' + esc(p.branch) + "</span></td><td>" + p.state + "</td><td>" + keyHtml(p.title) + "</td></tr>"; }).join("") + "</tbody></table>";
+    $("#m5-branches").innerHTML = '<table><thead><tr><th>Branch</th><th>Status</th><th>Links to</th></tr></thead><tbody>' +
+      state.branches.map(function (b) { return '<tr><td><span class="m5-branch">' + esc(b.name) + "</span></td><td>" + esc(b.note) + "</td><td>" + (b.name === "main" ? '<span class="muted">n/a</span>' : keyHtml(b.name)) + "</td></tr>"; }).join("") + "</tbody></table>";
+    $("#m5-commits").innerHTML = '<table><thead><tr><th>SHA</th><th>Message and files</th><th>Branch</th><th>Your classification</th></tr></thead><tbody>' +
+      state.commits.map(function (c, i) {
+        return '<tr><td class="m5-sha">' + c.sha + (c.pushed ? "" : '<br><span class="m5-local">LOCAL</span>') + "</td><td>" + esc(c.msg) + '<span class="m5-files">' + esc(c.files) + '</span></td><td><span class="m5-branch">' + esc(c.branch) + '</span></td><td><label class="sr" for="m5-c' + i + '" style="position:absolute;left:-9999px">Classify commit ' + c.sha + "</label><select id=\"m5-c" + i + '" data-i="' + i + '">' +
+          CLASS_OPTS.map(function (o) { return '<option value="' + o[0] + '"' + (choices[c.sha] === o[0] ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") + '</select><div class="m5-verdict" id="m5-v' + i + '"></div></td></tr>';
+      }).join("") + "</tbody></table>";
+    Array.prototype.forEach.call(document.querySelectorAll("#m5-commits select"), function (s) {
+      s.addEventListener("change", function () { choices[state.commits[+s.dataset.i].sha] = s.value; });
+    });
+    renderActions(); renderDev();
+  }
+
+  var WHY = {
+    "9be04d7": "Right key, but the commit is local. Nothing unpushed ever reaches the provider, so Jira can't see it. Push it; don't re-key it.",
+    "3f8a6d1": "No key anywhere: not in the message, the branch or the PR title. The files and KAN-4 (ORD crew shown DEN) point to CRW-29.",
+    "c58f210": "Says CRW-26, but it adds the submit handler for a swap started from a trip card. That's CRW-25's scope. CRW-26 is the 'why not eligible' message.",
+    "7d03b18": "Matches CRW-25's second acceptance criterion: the form opens with the trip already selected.",
+    "a41c9e2": "Matches CRW-25's first acceptance criterion: a Swap button on every eligible trip.",
+    "e7720c5": "Merged work for CRW-24 (Done in SWP-2026.q4.3). Correct, and a useful example of a clean trace."
+  };
+  $("#m5-classify-check").addEventListener("click", function () {
+    var right = 0, done = 0;
+    state.commits.forEach(function (c, i) {
+      var v = $("#m5-v" + i), ch = choices[c.sha] || "";
+      if (!ch) { v.className = "m5-verdict"; v.textContent = "Not classified yet."; return; }
+      done++;
+      var ok = ch === c.answer; if (ok) right++;
+      v.className = "m5-verdict " + (ok ? "ok" : "no");
+      v.textContent = (ok ? "✓ " : "✗ Should be '" + CLASS_OPTS.filter(function (o) { return o[0] === c.answer; })[0][1] + "'. ") + WHY[c.sha];
+    });
+    $("#m5-classify-score").textContent = right + " of " + state.commits.length + " correct" + (done < state.commits.length ? " · " + (state.commits.length - done) + " not classified" : "") + (right === state.commits.length ? " · Clean trace ✈" : "");
+    if (right === state.commits.length) CA.awardOnce("widget:m5-classify", 100, "Repository trace");
+  });
+
+  var ACTIONS = [
+    { group: "The fix with no key (3f8a6d1 · PR #42)", id: "pr42", label: "Edit PR #42's title to \"CRW-29 Fix home base lookup for ORD crew\"", kind: "ok",
+      msg: "Permitted. PR titles can be edited at any time and nothing in history changes. PR #42 now appears on CRW-29. Commit 3f8a6d1 still has no key, so it stays unlinked: say so in your note.",
+      apply: function () { state.prs[1].title = "CRW-29 Fix home base lookup for ORD crew"; } },
+    { group: null, id: "rename42", label: "Rename branch fix/home-base-lookup to CRW-29-home-base-lookup", kind: "ok",
+      msg: "Permitted on this unprotected feature branch: the provider retargets PR #42 to the new name. The branch now appears on CRW-29. Tell anyone who has it checked out.",
+      apply: function () { state.branches[2].name = "CRW-29-home-base-lookup"; state.branches[2].note = "open PR #42 · renamed"; state.prs[1].branch = "CRW-29-home-base-lookup"; state.commits[1].branch = "CRW-29-home-base-lookup"; } },
+    { group: null, id: "amend42", label: "Amend 3f8a6d1's message to start with CRW-29 and force-push", kind: "no",
+      msg: "Not permitted. The commit is pushed and under review in PR #42. Amending changes its SHA, so everyone who pulled the branch now has a different history, and review comments can detach. The practice repository protects pushed history.",
+      apply: null },
+    { group: null, id: "crw62", label: "Put CRW-62 in PR #42's title: it's the same 'wrong home base' symptom", kind: "no",
+      msg: "Wrong item. CRW-62 is the Alerts Squad's bug in the swap-approved email. This change fixes the swap request form's home-base lookup that KAN-4 reported and handed to CRW-29. Mention the shared symptom in words in the PR description so the Alerts Squad retests CRW-62, but link the work to CRW-29.",
+      apply: null },
+    { group: "The commit with the wrong key (c58f210 · PR #41)", id: "leave26", label: "Leave c58f210 as it is, confirm PR #41's title carries CRW-25, and record the mis-link (SHA and real item)", kind: "ok",
+      msg: "Permitted, and the right call. PR #41 already links CRW-25, and the record explains why CRW-26 shows one stray commit. In a real team the note goes on CRW-26; in class CRW is read-only, so it goes in your evidence card.",
+      apply: function () { applied.note26 = true; } },
+    { group: null, id: "amend26", label: "Amend c58f210 to say CRW-25 and force-push the PR branch", kind: "no",
+      msg: "Not permitted, for the same reason: it's pushed and under review. Rewriting it to fix a label costs more than the label is worth.",
+      apply: null },
+    { group: null, id: "revert26", label: "Revert c58f210 and recommit the same change as \"CRW-25 …\"", kind: "meh",
+      msg: "Possible, but heavy. It doubles the change in history, re-triggers review, and CRW-26 still keeps the original commit (and gains the revert). Use it only if your team's policy demands every commit carry the right key.",
+      apply: null },
+    { group: null, id: "unlink26", label: "Remove the commit from CRW-26's Development panel in Jira", kind: "no",
+      msg: "Not possible. Jira has no 'unlink commit' action: the panel mirrors what's in the repository. That's exactly why the record matters.",
+      apply: null },
+    { group: "The local commit (9be04d7)", id: "push", label: "Push the CRW-25 branch so 9be04d7 reaches the remote", kind: "ok",
+      msg: "Permitted. It's your own branch, so a normal push is fine. The commit now appears on CRW-25.",
+      apply: function () { state.commits[0].pushed = true; } }
+  ];
+  function renderActions() {
+    var box = $("#m5-actions"); box.innerHTML = "";
+    ACTIONS.forEach(function (a) {
+      if (a.group) { var h = document.createElement("h5"); h.textContent = a.group; box.appendChild(h); }
+      var b = document.createElement("button"); b.type = "button"; b.textContent = a.label;
+      if (applied["btn:" + a.id]) b.className = a.kind;
+      b.addEventListener("click", function () {
+        applied["btn:" + a.id] = true;
+        if (a.apply && !applied["do:" + a.id]) { applied["do:" + a.id] = true; a.apply(); }
+        var lead = a.kind === "ok" ? "✓ " : a.kind === "meh" ? "! " : "✗ ";
+        render();
+        $("#m5-feedback").textContent = lead + a.msg;
+        if (applied["do:pr42"] || applied["do:rename42"]) { if (applied.note26) CA.awardOnce("widget:m5-fix", 150, "Code link restored"); }
+      });
+      box.appendChild(b);
+    });
+  }
+  function renderDev() {
+    var item = $("#m5-dev-item").value;
+    var has = function (t) { return keysIn(t).indexOf(item) > -1; };
+    var br = state.branches.filter(function (b) { return b.name !== "main" && has(b.name); });
+    if (item === "CRW-24") br = br.concat([{ name: "CRW-24-withdraw-swap", note: "merged · deleted after merge" }]);
+    var cm = state.commits.filter(function (c) { return c.pushed && has(c.msg); });
+    var pr = state.prs.filter(function (p) { return has(p.title); });
+    var list = function (arr, f) { return arr.length ? "<ul>" + arr.map(f).join("") + "</ul>" : ""; };
+    var html =
+      '<div class="m5-dev-row"><span>Branches</span><span>' + br.length + "</span></div>" + list(br, function (b) { return '<li><span class="m5-branch">' + esc(b.name) + "</span></li>"; }) +
+      '<div class="m5-dev-row"><span>Commits</span><span>' + cm.length + "</span></div>" + list(cm, function (c) { return '<li><span class="m5-sha">' + c.sha + "</span> " + esc(c.msg) + "</li>"; }) +
+      '<div class="m5-dev-row"><span>Pull requests</span><span>' + pr.length + "</span></div>" + list(pr, function (p) { return "<li>#" + p.num + " " + esc(p.title) + " <b>" + p.state.toUpperCase() + "</b></li>"; });
+    if (!br.length && !cm.length && !pr.length) html += '<p class="muted" style="margin:8px 0 0">No development activity references ' + item + ".</p>";
+    if (item === "CRW-26" && cm.length) html += '<p style="margin:8px 0 0;font-size:.85rem;color:var(--alert)">This commit isn\'t CRW-26\'s work.' + (applied.note26 ? " Mis-link recorded: c58f210 belongs to CRW-25." : " Nobody has recorded that yet.") + "</p>";
+    if (item === "CRW-29") html += '<p style="margin:8px 0 0;font-size:.85rem;color:var(--ink-3)">Remember: CRW-29 has no Team, so it doesn\'t show on the SWP sprint board either.</p>';
+    if (item === "CRW-25" && !state.commits[0].pushed) html += '<p style="margin:8px 0 0;font-size:.85rem;color:var(--ink-3)">One local CRW-25 commit isn\'t pushed, so it isn\'t here.</p>';
+    $("#m5-dev-body").innerHTML = html;
+  }
+  $("#m5-dev-item").addEventListener("change", renderDev);
+  $("#m5-reset").addEventListener("click", function () { choices = {}; reset(); $("#m5-feedback").textContent = "Repository reset to Friday's state."; $("#m5-classify-score").textContent = ""; });
+  reset();
+
+  /* ---------------- "Still not showing" decision tree ---------------- */
+  var TREE = {
+    start: { q: "The key is now correct. Was the change (commit, branch or PR update) pushed to the remote repository?", opts: [["Yes, it's on the remote", "repo"], ["Not sure / it's local", "L_push"]] },
+    repo: { q: "Is the repository included in the provider connection to this Jira site? (Other repositories from the same organization show activity.)", opts: [["Yes, others work and this one used to", "sync"], ["No, or this repository never shows anything", "L_repo"]] },
+    sync: { q: "Has the connection synced since the push? (Allow a few minutes; the app's connection page shows sync or backfill status.)", opts: [["Yes, sync shows complete", "peer"], ["It's failing or stuck", "L_sync"], ["I can't see the status", "L_sync"]] },
+    peer: { q: "Can a colleague with the same role see the activity on the item?", opts: [["Yes, only I can't", "L_perm"], ["No, nobody can", "L_site"]] },
+    L_push: { end: true, title: "Push it", text: "Local commits and unpushed branches never reach the provider, so the app has nothing to send. Push, wait a minute, refresh the item. No owner needed.", owner: "You" },
+    L_repo: { end: true, title: "Repository not in the connection", text: "The connection probably uses 'only selected repositories', or the repository is restricted. Ask for it to be added; don't install or reconfigure the app yourself. Hand over: repository name, an example SHA, the key, and when you pushed.", owner: "Git organization or repository owner" },
+    L_sync: { end: true, title: "Sync or backfill problem", text: "Ask the app owner to check the connection's sync status and restart the backfill if it failed. Hand over: repository, SHA, key, push time and the item URL. Don't re-push or re-key the commit hoping it will help.", owner: "App owner" },
+    L_perm: { end: true, title: "Your access, not the data", text: "The data reached Jira, because your colleague sees it. You're missing View Development Tools in the space, or access to the repository in the provider. Request the permission through the normal access route with the item key and what you expected to see.", owner: "Space or Jira admin (Jira side) / repository owner (provider side)" },
+    L_site: { end: true, title: "Check the key's site and the connection's site", text: "If nobody sees it and the repository and sync look healthy, check that the Git organization is connected to this Jira site (not another one) and that the key exists here. Then hand the evidence to the app owner.", owner: "App owner" }
+  };
+  var trail = [], leaf = null;
+  function showNode(id) {
+    var n = TREE[id], body = $("#m5-tree-body");
+    var tr = trail.length ? '<p class="trail">' + trail.map(esc).join(" → ") + "</p>" : "";
+    if (n.end) {
+      leaf = n;
+      body.innerHTML = tr + '<div class="leaf"><b>' + esc(n.title) + "</b>" + esc(n.text) + '<p style="margin:8px 0 0"><strong style="display:inline;font-family:inherit;text-transform:none;letter-spacing:0">Route to:</strong> ' + esc(n.owner) + "</p></div>";
+      $("#m5-tree-save").disabled = false;
+      return;
+    }
+    leaf = null; $("#m5-tree-save").disabled = true;
+    body.innerHTML = tr + '<p class="tq">' + esc(n.q) + '</p><div class="topts"></div>';
+    var box = body.querySelector(".topts");
+    n.opts.forEach(function (o) {
+      var b = document.createElement("button"); b.type = "button"; b.textContent = o[0];
+      b.addEventListener("click", function () { trail.push(o[0]); showNode(o[1]); var f = $("#m5-tree-body button, #m5-tree-body .leaf"); if (f && f.focus) f.focus(); });
+      box.appendChild(b);
+    });
+  }
+  $("#m5-tree-restart").addEventListener("click", function () { trail = []; showNode("start"); });
+  $("#m5-tree-save").addEventListener("click", function () {
+    if (!leaf) return;
+    CW.saveEvidence("m5", "check", leaf.title + ": " + leaf.text + " Route to: " + leaf.owner + ". (Path: " + trail.join(" → ") + ")", true);
+    CA.toast("Added to your Module 5 evidence");
+  });
+  showNode("start");
+})();
+</script>
+</body>
+</html>

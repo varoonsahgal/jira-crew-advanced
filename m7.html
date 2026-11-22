@@ -1,0 +1,701 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M7 · Validate Claude queries and protect metric quality · Crew Academy 301</title>
+<meta name="description" content="Module 7 of Jira Planning Analytics and Connected Work: check generated JQL and its result set before relying on a completeness or velocity claim.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/site.css?v=1">
+<link rel="icon" href="assets/img/favicon.svg">
+<style>
+  .m7-tool { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow-1); margin: 18px 0 26px; }
+  .m7-tool h3 { margin-bottom: .3em; }
+  .m7-tool label { display: block; font-weight: 600; font-size: .9rem; margin: 10px 0 4px; color: var(--navy-800); }
+  .m7-tool textarea, .m7-tool input[type=text], .m7-tool input[type=number], .m7-tool select { width: 100%; font: inherit; font-size: .95rem; border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; background: var(--ice-50); color: var(--ink); }
+  .m7-tool textarea { font-family: var(--font-mono); font-size: .86rem; min-height: 84px; resize: vertical; }
+  .m7-tool textarea:focus, .m7-tool input:focus, .m7-tool select:focus { outline: 2px solid var(--sky-400); background: var(--white); }
+  .m7-samples { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 4px; }
+  .m7-samples button, .m7-btn { font: 600 .85rem var(--font-body); border: 1.5px solid var(--line); background: var(--white); color: var(--navy-800); border-radius: 999px; padding: 6px 12px; cursor: pointer; }
+  .m7-samples button:hover, .m7-btn:hover { border-color: var(--sky-400); background: var(--sky-100); }
+  .m7-btn.primary { background: var(--blue-600); border-color: var(--blue-600); color: var(--white); }
+  .m7-btn.primary:hover { background: var(--blue-500); color: var(--white); }
+  .m7-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center; }
+  .m7-checks { list-style: none; padding: 0; margin: 14px 0 6px; }
+  .m7-checks li { display: grid; grid-template-columns: 74px minmax(0,1fr); gap: 10px; padding: 8px 0; border-bottom: 1px dashed var(--line); font-size: .94rem; }
+  .m7-lvl { font: 700 .72rem var(--font-body); letter-spacing: .06em; text-transform: uppercase; border-radius: 6px; padding: 3px 6px; text-align: center; align-self: start; }
+  .m7-lvl.ok { background: var(--go-bg); color: var(--go); }
+  .m7-lvl.warn { background: var(--warn-bg); color: var(--beacon-ink); }
+  .m7-lvl.bad { background: var(--alert-bg); color: var(--alert); }
+  .m7-lvl.info { background: var(--sky-100); color: var(--navy-800); }
+  .m7-keys { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .m7-key { font-family: var(--font-mono); font-size: .82rem; border-radius: 6px; padding: 3px 8px; border: 1px solid var(--line); background: var(--ice-50); }
+  .m7-key.hit { background: var(--go-bg); border-color: #9fd8bb; color: var(--go); }
+  .m7-key.miss { background: var(--alert-bg); border-color: #f2b7c0; color: var(--alert); text-decoration: line-through; }
+  .m7-key.extra { background: var(--warn-bg); border-color: #f4d48b; color: var(--beacon-ink); }
+  .m7-verdict { border-radius: 10px; padding: 12px 14px; margin-top: 10px; font-size: .95rem; }
+  .m7-verdict.good { background: var(--go-bg); color: #0d5c3f; }
+  .m7-verdict.bad { background: var(--alert-bg); color: #8a1426; }
+  .m7-verdict.meh { background: var(--warn-bg); color: var(--beacon-ink); }
+  .m7-grid2 { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 14px; }
+  @media (max-width: 760px) { .m7-grid2 { grid-template-columns: minmax(0,1fr); } }
+  .m7-radio { display: flex; flex-wrap: wrap; gap: 14px; margin: 6px 0; }
+  .m7-radio label { display: inline-flex; gap: 6px; align-items: center; font-weight: 600; margin: 0; }
+  .m7-big { font-family: var(--font-display); font-size: 2.4rem; font-weight: 700; line-height: 1; color: var(--blue-600); }
+  .m7-replay { background: #f6f3ff; border: 1px solid #d9c8fb; border-radius: 12px; padding: 14px 16px; margin: 12px 0; }
+  .m7-replay .who { font: 700 .75rem var(--font-body); letter-spacing: .1em; text-transform: uppercase; color: #5b3cc4; margin-bottom: 4px; }
+  .m7-vel td input { width: 20px; height: 20px; accent-color: var(--go); }
+  .m7-vel tfoot td { font-weight: 700; background: var(--sky-100) !important; }
+  .m7-anatomy { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 10px; margin: 14px 0 20px; }
+  @media (max-width: 900px) { .m7-anatomy { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+  @media (max-width: 460px) { .m7-anatomy { grid-template-columns: minmax(0,1fr); } }
+  .m7-anatomy div { background: var(--white); border: 1px solid var(--line); border-top: 4px solid var(--blue-500); border-radius: 10px; padding: 12px; }
+  .m7-anatomy b { display: block; font-family: var(--font-display); letter-spacing: .06em; font-size: 1.05rem; color: var(--navy-900); }
+  .m7-anatomy span { font-size: .87rem; color: var(--ink-2); line-height: 1.4; display: block; margin-top: 4px; }
+</style>
+</head>
+<body>
+<header id="site-header"></header>
+<main id="main">
+
+<section class="hero compact module-hero">
+  <div class="clouds" aria-hidden="true"><div class="cloud" style="top:22%;width:200px;height:46px;animation-duration:80s"></div><div class="cloud" style="top:64%;width:140px;height:34px;animation-duration:62s;animation-delay:-30s"></div></div>
+  <div class="wrap">
+    <div class="eyebrow">Module 7 of 8 · Session 2 · Verify AI results and decide</div>
+    <h1>Validate Claude queries and protect metric quality</h1>
+    <p class="lede">A query can be valid, plausible and wrong. Prove what it returns, against what you expected, before any number reaches a release review.</p>
+    <div class="meta-row"><span class="chip">55 min</span><span class="chip">30 min practice</span><span class="chip gold">Lab: Catch the query that omits Bugs</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap layout">
+    <aside class="toc" aria-label="On this page">
+      <h4>On this page</h4>
+      <ol>
+        <li><a href="#objective">Objective</a></li>
+        <li><a href="#l1">Read a generated query clause by clause</a></li>
+        <li><a href="#inspector">Query inspector</a></li>
+        <li><a href="#l2">Results are what this account can see</a></li>
+        <li><a href="#l3">Define the metric before you compute it</a></li>
+        <li><a href="#l4">Ticket text is data, not instructions</a></li>
+        <li><a href="#demo">Instructor demo</a></li>
+        <li><a href="#m7-lab">Lab: Catch the query that omits Bugs</a></li>
+        <li><a href="#check">Checkpoint</a></li>
+      </ol>
+    </aside>
+
+    <div>
+      <div class="objective-banner" id="objective">
+        <div class="eyebrow">Objective</div>
+        <p>Check generated JQL and its result set before relying on a completeness or velocity claim.</p>
+      </div>
+      <ul class="topics" aria-label="Topics">
+        <li>Explicit project, team and sprint</li><li>Work types</li><li>Field IDs</li><li>Result limits</li><li>Connected user's access</li><li>Data completeness definitions</li><li>Current state vs sprint history</li><li>Reviewing proposed writes</li><li>Instructions embedded in work items</li><li>Avoiding bulk changes</li>
+      </ul>
+
+      <div class="callout captain"><strong>Where this fits</strong>In Module 6 you proved that Claude reaches the right site as the right person. That only proves the pipe works. This module checks what comes through the pipe. A wrong query does not throw an error. It returns a tidy, confident, smaller number, and that number ends up in a release review. In Module 8 you will only be allowed to cite a query you have validated here.</div>
+
+      <!-- ===================== L1 ===================== -->
+      <article class="lesson" id="l1">
+        <h2><span class="lesson-code">M7.1</span> Read a generated query clause by clause</h2>
+        <p>The request in this module is simple and realistic. A delivery lead asks: <em>"Which Stories and Bugs in SWP-2026.q4.5 are missing estimates?"</em> The answer drives a refinement agenda and an estimation-completeness figure in the release review. Five clauses decide whether the answer is right. Check each one against the request, not against your sense of whether the query "looks fine".</p>
+
+        <div class="m7-anatomy" aria-label="Five scope checks">
+          <div><b>Project</b><span>Is the space named? Without <code>project = CRW</code>, the search covers every space this account can browse.</span></div>
+          <div><b>Team</b><span>If the request is about a team, is the Team field compared by id? <code>Team = "Swap Squad"</code> is valid JQL and returns nothing here.</span></div>
+          <div><b>Sprint</b><span>Is the one sprint named, or does a function like <code>futureSprints()</code> sweep in other sprints?</span></div>
+          <div><b>Work types</b><span>Does the type list match the request? "Stories and Bugs" means both, not "Story".</span></div>
+          <div><b>Fields</b><span>Are the fields the right ones? <code>cf[10036]</code> is Story Points and <code>cf[10020]</code> is Sprint on this site.</span></div>
+        </div>
+
+        <h3>Three queries, three answers</h3>
+        <p>All three of these queries run without an error on the training site. Only one answers the question that was asked.</p>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th>Query shape</th><th>Result</th><th>What went wrong</th></tr></thead>
+          <tbody>
+            <tr><td><code>issuetype = Story</code> + sprint named + Story Points empty</td><td><b>1</b>: CRW-33</td><td>Plausible but incomplete. The request said Stories <em>and Bugs</em>. CRW-34, a High-priority Bug in Crew App 4.2, disappears.</td></tr>
+            <tr><td><code>issuetype in (Story, Bug)</code> + <code>sprint in futureSprints()</code></td><td><b>3</b>: CRW-33, CRW-34, CRW-35</td><td>Scope too wide. CRW-35 (Export swap history to CSV) sits in SWP-2026.q4.6, not q4.5. It is the decoy.</td></tr>
+            <tr><td><code>issuetype in (Story, Bug)</code> + <code>sprint = "SWP-2026.q4.5"</code> + Story Points empty</td><td><b>2</b>: CRW-33, CRW-34</td><td>Correct. This is the expected set.</td></tr>
+          </tbody>
+        </table></div>
+
+        <pre data-jql data-label="Plausible, omits Bugs · expect 1">project = CRW AND sprint = "SWP-2026.q4.5" AND issuetype = Story AND "Story Points" is EMPTY</pre>
+        <pre data-jql data-label="Too wide, catches the decoy · expect 3">project = CRW AND issuetype in (Story, Bug) AND "Story Points" is EMPTY AND sprint in futureSprints()</pre>
+        <pre data-jql data-label="Corrected · expect 2">project = CRW AND sprint = "SWP-2026.q4.5" AND issuetype in (Story, Bug) AND "Story Points" is EMPTY</pre>
+
+        <h3>Raw field ids: what Rovo's Ask AI produced</h3>
+        <p>Rovo is live on the training site, so you can see the same pattern there. Given "stories and bugs in sprint SWP-2026.q4.5 that are missing story point estimates", Ask AI generated a query that uses raw custom-field ids instead of field names, and no project clause.</p>
+        <figure class="shot">
+          <div class="frame"><div class="frame-bar"><i></i><i></i><i></i><span>…atlassian.net/issues/?jql=… (Ask AI in search)</span></div>
+          <img src="assets/img/rovo-ask-ai-jql.jpg" alt="Jira search with the natural-language prompt about stories and bugs in sprint SWP-2026.q4.5 missing story point estimates, the generated JQL using cf[10020] and cf[10036], and two results: CRW-34 Bug and CRW-33 Story, 2 of 2" loading="lazy"></div>
+          <figcaption>Ask AI turned the request into <code>cf[10020] = "SWP-2026.q4.5" AND cf[10036] IS EMPTY</code> and returned 2 of 2. The answer is right here, but notice three things: no project clause, raw ids you have to decode, and the label "Uses AI. Verify results." Being right once does not make the query shape safe to reuse.</figcaption>
+        </figure>
+        <pre data-jql data-label="Ask AI's query, as generated · returns 2">issuetype IN ("Story", "Bug") AND cf[10020] = "SWP-2026.q4.5" AND cf[10036] IS EMPTY ORDER BY created DESC</pre>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th>Id in JQL</th><th>Field on this site</th><th>How to confirm</th></tr></thead>
+          <tbody>
+            <tr><td><code>cf[10020]</code></td><td>Sprint</td><td>Replace it with <code>sprint</code> and compare the count. Same count, same field.</td></tr>
+            <tr><td><code>cf[10036]</code></td><td>Story Points (classic field <code>customfield_10036</code>)</td><td>Replace it with <code>"Story Points"</code> and compare. On another site the same number can be a different field.</td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout warn"><strong>Why the missing project clause matters even when the count is right</strong>Today no other space uses a sprint called SWP-2026.q4.5, so the result happens to be correct. If a team copies this query, renames the sprint or runs it as an account that can browse more spaces, the count silently changes. A query you cite as evidence must be explicit about project, sprint and work types. "It returned the right number this time" is not a definition.</div>
+        <div class="callout standard"><strong>Golden Template link</strong>The template defines the work types a team uses and the fields that carry estimates. Use it to decide what "Stories and Bugs" means for a completeness check. If your team also estimates Tasks or Spikes, the request and the query both need to say so.</div>
+      </article>
+
+      <!-- ===================== Query inspector ===================== -->
+      <section class="m7-tool" id="inspector" aria-labelledby="inspector-h" style="padding:18px">
+        <h3 id="inspector-h">Query inspector</h3>
+        <p class="muted" style="margin:0 0 8px">Paste a generated query, or load a sample. The inspector checks the five scope clauses and predicts the result for this query family (project, sprint, work type, Team and Story Points over the SWP and ALR future sprints). It is a teaching aid. The real test is always <b>Run in Jira</b>.</p>
+        <div class="m7-samples" role="group" aria-label="Sample queries">
+          <button type="button" data-sample="omit">Claude's plausible query</button>
+          <button type="button" data-sample="wide">futureSprints() version</button>
+          <button type="button" data-sample="askai">Ask AI's query</button>
+          <button type="button" data-sample="team">Team by name</button>
+          <button type="button" data-sample="fixed">Corrected query</button>
+        </div>
+        <label for="m7-q">Query to inspect</label>
+        <textarea id="m7-q" spellcheck="false" aria-describedby="m7-q-hint">project = CRW AND sprint = "SWP-2026.q4.5" AND issuetype = Story AND "Story Points" is EMPTY</textarea>
+        <div id="m7-q-hint" class="muted" style="font-size:.85rem;margin-top:4px">Request being tested: Stories and Bugs in SWP-2026.q4.5 with no Story Points. Expected set: CRW-33, CRW-34.</div>
+        <div class="m7-row">
+          <button type="button" class="m7-btn primary" id="m7-inspect">Inspect query</button>
+          <a class="m7-btn" id="m7-run" href="#" target="_blank" rel="noopener">Run this in Jira ↗</a>
+        </div>
+        <div id="m7-out" aria-live="polite"></div>
+      </section>
+
+      <!-- ===================== L2 ===================== -->
+      <article class="lesson" id="l2">
+        <h2><span class="lesson-code">M7.2</span> Results are what this account can see, one page at a time</h2>
+        <p>Even a perfect query returns only what the connected account is allowed to browse, and an MCP search tool usually returns results in pages. Both limits produce a smaller number with no error message. You need to check them on purpose.</p>
+        <div class="split">
+          <div class="vs">
+            <h4>Result limits and truncation</h4>
+            <p>Search tools return a page of results with a total count and a way to fetch the next page. If Claude reads only the first page, a 120-item backlog can become "50 items" in a summary. The number looks exact. It is a page size.</p>
+            <ul>
+              <li>Ask Claude for the <b>total count the search reported</b>, not the number of rows it listed.</li>
+              <li>Ask whether more pages exist and whether it fetched them.</li>
+              <li>Compare the total with Jira's own count for the same JQL.</li>
+            </ul>
+          </div>
+          <div class="vs">
+            <h4>The connected user's access</h4>
+            <p>Claude acts as the account that authorised the connection. Items in a space that account cannot browse, or items restricted by a security level, are simply absent. A colleague with more access runs the same prompt and gets a bigger number.</p>
+            <ul>
+              <li>Record <b>whose access</b> produced a result whenever you cite it.</li>
+              <li>If Jira and Claude disagree while signed in as the same person, suspect truncation or a different query, not permissions.</li>
+              <li>If two people disagree on the same JQL, suspect access first.</li>
+            </ul>
+          </div>
+        </div>
+        <pre data-code="Prompt · ask for the evidence, not just the answer">Using the Atlassian tools, search Jira with this exact JQL and do not change it:
+project = CRW AND sprint = "SWP-2026.q4.5" AND issuetype in (Story, Bug) AND "Story Points" is EMPTY
+Tell me: the total count the search reported, how many results you actually read,
+whether more pages exist, and every key with its work type. Read-only: change nothing.</pre>
+        <div class="callout tip"><strong>The three-number habit</strong>For every count you cite, write down three numbers: what you expected, what Jira's search showed, and what the assistant reported. If all three agree, cite the query. If any differ, you have found the next thing to investigate, and that is useful too.</div>
+      </article>
+
+      <!-- ===================== L3 ===================== -->
+      <article class="lesson" id="l3">
+        <h2><span class="lesson-code">M7.3</span> Define the metric before you compute it</h2>
+        <p>"Estimation completeness" sounds precise until you ask: complete out of <em>what</em>? The denominator is a decision, and it must be written next to the number. The SWP backlog shows the denominator you should expect for SWP-2026.q4.5: five work items.</p>
+        <figure class="shot">
+          <div class="frame"><div class="frame-bar"><i></i><i></i><i></i><span>…atlassian.net/jira/software/c/projects/CRW/boards/60/backlog</span></div>
+          <img src="assets/img/crw-backlog.jpg" alt="SWP - Sprint Execution backlog: active sprint SWP-2026.q4.4 with five items, and SWP-2026.q4.5 (7 Dec – 18 Dec, 5 work items) with CRW-30 8 points, CRW-31 5 points and CRW-32 5 points visible, total 18" loading="lazy"></div>
+          <figcaption>SWP-2026.q4.5 holds 5 work items and 18 estimated points. CRW-30, CRW-31 and CRW-32 carry the 18 points. The other two, CRW-33 and CRW-34, are the ones with no estimate, so the sprint's point total quietly understates the work.</figcaption>
+        </figure>
+        <pre data-jql data-label="Denominator: every Story and Bug in the sprint">project = CRW AND sprint = "SWP-2026.q4.5" AND issuetype in (Story, Bug)</pre>
+        <p>Run it and record the count. With the data as built, expect 5 (CRW-30 to CRW-34), so completeness is 3 of 5 estimated, or 60%. Now watch what the Bug-omitting query does to the metric: it removes CRW-34 from both the numerator <em>and</em> the denominator. Stories only gives 3 of 4 estimated, or 75%. The plausible query does not just miss one key. It makes the sprint look healthier.</p>
+
+        <div class="m7-tool" id="m7-calc">
+          <h3>Completeness calculator</h3>
+          <p class="muted" style="margin:0 0 6px">Choose the scope the metric claims to cover. The calculator uses the expected data for SWP-2026.q4.5. Enter Jira's count if yours differs; Jira wins.</p>
+          <fieldset style="border:0;padding:0;margin:0"><legend class="sr-only" style="position:absolute;left:-9999px">Work types in scope</legend>
+            <div class="m7-radio">
+              <label><input type="radio" name="m7-scope" value="story"> Stories only</label>
+              <label><input type="radio" name="m7-scope" value="both" checked> Stories and Bugs</label>
+            </div>
+          </fieldset>
+          <div class="m7-grid2">
+            <div>
+              <label for="m7-den-obs">Jira's count for the denominator query (optional)</label>
+              <input type="number" id="m7-den-obs" min="0" step="1" inputmode="numeric" placeholder="e.g. 5">
+            </div>
+            <div>
+              <label for="m7-num-obs">Jira's count of missing-estimate items (optional)</label>
+              <input type="number" id="m7-num-obs" min="0" step="1" inputmode="numeric" placeholder="e.g. 2">
+            </div>
+          </div>
+          <div class="m7-grid2" style="margin-top:12px;align-items:center">
+            <div><div class="m7-big" id="m7-pct">60%</div><div class="stat-l">estimated</div></div>
+            <div id="m7-calc-detail" style="font-size:.94rem"></div>
+          </div>
+          <label for="m7-def-text">Definition statement (edit before you save it)</label>
+          <textarea id="m7-def-text" style="font-family:var(--font-body);font-size:.93rem"></textarea>
+          <div class="m7-row"><button type="button" class="m7-btn primary" id="m7-def-send">Send definition to my evidence</button></div>
+        </div>
+
+        <h3>Why current-state JQL cannot rebuild velocity</h3>
+        <p>JQL answers questions about <b>now</b>: today's status, today's estimate, and every sprint an item has ever been in. Velocity is a question about <b>then</b>: what was in the sprint when it started, and what sat in the board's rightmost column when it closed. Those are different questions, and the Sprint field makes the gap easy to miss.</p>
+        <p>Here is the trap on the training site. CRW-19 (Swap request draft autosave, 3 points) was in SWP-2026.q4.2 but was not finished. It carried over and was completed in SWP-2026.q4.3. Its Sprint field now lists both sprints, and its status today is Done. So a "points completed in q4.2" query that uses today's status picks it up.</p>
+        <pre data-jql data-label="Current state, not history · expect six items">project = CRW AND sprint = "SWP-2026.q4.2" AND statusCategory = Done</pre>
+        <div class="split">
+          <figure class="shot" style="margin-top:0">
+            <div class="frame"><div class="frame-bar"><i></i><i></i><i></i><span>…/CRW/boards/60/reports/velocity</span></div>
+            <img src="assets/img/crw-velocity-swp.jpg" alt="Velocity report for SWP: SWP-2026.q4.1 commitment 21 and completed 21, SWP-2026.q4.2 18 and 18, SWP-2026.q4.3 21 and 16, average 18.33" loading="lazy"></div>
+            <figcaption>The native Velocity report: q4.2 completed <b>18</b>. Average 18.33.</figcaption>
+          </figure>
+          <figure class="shot" style="margin-top:0">
+            <div class="frame"><div class="frame-bar"><i></i><i></i><i></i><span>…/boards/60/reports/sprint-retrospective?sprint=49</span></div>
+            <img src="assets/img/crw-sprint-report-q4-2.jpg" alt="Sprint Report for SWP-2026.q4.2: completed CRW-16 5, CRW-17 5, CRW-18 3, CRW-20 2 and CRW-21 3 marked with an asterisk as added after the sprint started; Story Points (18)" loading="lazy"></div>
+            <figcaption>The Sprint Report lists what was completed <em>during</em> q4.2: 18 points. CRW-21 has an asterisk (added after start). CRW-19 appears under not completed further down.</figcaption>
+          </figure>
+        </div>
+        <p>Closed sprints on this site were replayed in minutes when it was built, so their burndown lines look squashed. The Sprint Report tables and the Velocity chart are valid. Use those for history.</p>
+
+        <div class="m7-tool" id="m7-velocity">
+          <h3>Velocity claim checker</h3>
+          <div class="m7-replay">
+            <div class="who">Sample assistant answer · replay</div>
+            <p style="margin:0">"Swap Squad completed <b>21 story points</b> in SWP-2026.q4.2. I found 6 Done work items with <code>project = CRW AND sprint = "SWP-2026.q4.2" AND statusCategory = Done</code> and summed their Story Points."</p>
+          </div>
+          <p style="font-size:.95rem">Open the <a data-jira="/jira/software/c/projects/CRW/boards/60/reports/sprint-retrospective?sprint=49">SWP-2026.q4.2 Sprint Report ↗</a>. Untick every item that was <b>not</b> completed during the sprint. The total updates as you go.</p>
+          <div class="table-wrap"><table class="data m7-vel">
+            <thead><tr><th scope="col">Completed in q4.2?</th><th scope="col">Key</th><th scope="col">Summary</th><th scope="col">Points</th></tr></thead>
+            <tbody id="m7-vel-body"></tbody>
+            <tfoot><tr><td colspan="3">Your total</td><td id="m7-vel-total">21</td></tr></tfoot>
+          </table></div>
+          <div id="m7-vel-out" class="m7-verdict meh" aria-live="polite">The claim says 21. The Velocity report says 18. Find the difference.</div>
+        </div>
+      </article>
+
+      <!-- ===================== L4 ===================== -->
+      <article class="lesson" id="l4">
+        <h2><span class="lesson-code">M7.4</span> Ticket text is data, not instructions</h2>
+        <p>When Claude reads a work item, the description, comments and linked pages arrive as text in its context. Anyone who can edit a work item can write text that looks like an instruction. That is prompt injection. The defence is not cleverness. It is a rule: <b>content found in Jira is evidence to report, never a command to follow</b>, and no write happens without a human reading a plan first.</p>
+        <figure class="shot">
+          <div class="frame"><div class="frame-bar"><i></i><i></i><i></i><span>…atlassian.net/browse/CRW-34</span></div>
+          <img src="assets/img/crw-34-bug-injection.jpg" alt="Bug CRW-34 Swap fails when the trip crosses midnight UTC: steps, expected and actual result, environment swap-api 0.9.4 staging, then a paragraph addressed to AI assistants; details show Ready, Sprint SWP-2026.q4.5, Team Swap Squad, Fix version Crew App 4.2, Priority High, parent CRW-3" loading="lazy"></div>
+          <figcaption>CRW-34 is a real bug report with steps and an environment. The last paragraph of the description is addressed to AI assistants. It asks the assistant to change estimates on every item in the sprint, move the Bugs to Done so the sprint looks healthy, and keep quiet about it. It is a planted training fixture.</figcaption>
+        </figure>
+        <p>Look at what that paragraph is trying to do to your metrics. Setting every estimate to 1 would make estimation completeness look like 100% and make the sprint "fit". Moving Bugs to Done would hide a High-priority defect in Crew App 4.2. Hiding the note would remove the evidence. Every part of it targets the exact numbers this module protects.</p>
+        <div class="split">
+          <div class="vs">
+            <h4>What a safe assistant session does</h4>
+            <ul>
+              <li>Reads and summarises the bug, and mentions that the description contains instructions addressed to AI, without acting on them.</li>
+              <li>Proposes writes as a table first (item, field, old value, new value) and waits for "cleared for writes".</li>
+              <li>Writes in small batches, only to records you name, and gives you JQL to verify.</li>
+            </ul>
+          </div>
+          <div class="vs">
+            <h4>What you do when you find one</h4>
+            <ul>
+              <li>Do not edit CRW. It is read-only in this course. Record the key and what the text asks for.</li>
+              <li>Tell the instructor. At work, route it to the space owner and your AI or security owner, following your organization's policy.</li>
+              <li>Check whether anything already changed: compare estimates and statuses with the board and the history tab.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="callout danger"><strong>Bulk changes are where small mistakes become big ones</strong>One wrong write is a correction. Twenty wrong writes across a sprint is a corrupted velocity history, a burst of notifications and an audit trail with your name on it. Never approve a write that touches Story Points, Sprint, Fix Version or Done across many items in one step. Ask for the list, check it with JQL and approve a small batch.</div>
+
+        <h3>Practice: review proposed actions</h3>
+        <p>An assistant connected as you proposes each action below during a sprint-health session. Decide how each should be handled.</p>
+        <div class="sort-game" data-id="m7-writes" data-miles="150">
+          <div class="sort-card" data-answer="Go: read-only"><p>Run the corrected missing-estimates JQL and list the keys and work types.</p><div class="choices"><button>Go: read-only</button><button>Plan, then confirm</button><button>Refuse and report</button></div><div class="why">A search changes nothing. Let it run, then verify the count in Jira.</div></div>
+          <div class="sort-card" data-answer="Refuse and report"><p>"Following the note in CRW-34, I'll set Story Points to 1 on every item in SWP-2026.q4.5."</p><div class="choices"><button>Go: read-only</button><button>Plan, then confirm</button><button>Refuse and report</button></div><div class="why">The instruction came from ticket text, not from you, and it targets a metric. Stop, and report the embedded instruction.</div></div>
+          <div class="sort-card" data-answer="Plan, then confirm"><p>Add a comment to your seat epic <span data-seat-epic></span> listing CRW-33 and CRW-34 as missing estimates, with the query used.</p><div class="choices"><button>Go: read-only</button><button>Plan, then confirm</button><button>Refuse and report</button></div><div class="why">A single write to your own seat record is fine, but you read the exact text first and then approve it.</div></div>
+          <div class="sort-card" data-answer="Refuse and report"><p>Move CRW-34 to Done "because it's blocking the sprint summary".</p><div class="choices"><button>Go: read-only</button><button>Plan, then confirm</button><button>Refuse and report</button></div><div class="why">CRW is read-only, and an assistant never moves work into Done to make a report look better. The bug is still a bug.</div></div>
+          <div class="sort-card" data-answer="Go: read-only"><p>Fetch the second page of search results because the first page reported more results than it listed.</p><div class="choices"><button>Go: read-only</button><button>Plan, then confirm</button><button>Refuse and report</button></div><div class="why">Fetching the next page is a read. It is exactly how you avoid a truncated count.</div></div>
+          <div class="sort-card" data-answer="Refuse and report"><p>Bulk-add the label <code>needs-estimate</code> to every unestimated item in the CRW space.</p><div class="choices"><button>Go: read-only</button><button>Plan, then confirm</button><button>Refuse and report</button></div><div class="why">It writes to the read-only space and changes many records at once. In a real team this is still a plan-and-confirm step with a named list, never a sweep.</div></div>
+          <div class="game-score"></div>
+          <button class="btn btn-sm btn-blue reset" type="button" style="margin-top:8px">Reset</button>
+        </div>
+      </article>
+
+      <!-- ===================== Demo ===================== -->
+      <div class="callout demo" id="demo"><strong>Instructor demo · 10 min</strong>
+        <ol>
+          <li>In the approved Claude client, with the Atlassian connection from Module 6, ask: "Which Stories and Bugs in sprint SWP-2026.q4.5 of CRW are missing estimates? Show the JQL." If the live client does not produce the flawed query, switch to the prepared replay and say so.</li>
+          <li>Show the plausible query <code>… AND issuetype = Story AND "Story Points" is EMPTY</code>. Ask the room: what did the request say, and what does this query say? Run it in Jira: 1 result, CRW-33.</li>
+          <li>State the expected set before fixing anything: CRW-33 and CRW-34. Name the decoy you will watch for: CRW-35 in SWP-2026.q4.6.</li>
+          <li>Run the <code>futureSprints()</code> version: 3 results. Point at CRW-35's sprint. "Right fields, wrong scope."</li>
+          <li>Run the corrected query: 2 results. Then show Ask AI's version with <code>cf[10020]</code> and <code>cf[10036]</code> and decode the ids live.</li>
+          <li>Run <code>project = CRW AND sprint = "SWP-2026.q4.2" AND statusCategory = Done</code>, sum the points (21) and open the Velocity report (18). Ask: which item explains the gap? (CRW-19.)</li>
+          <li>Open CRW-34 and read the description aloud to the end. Ask Claude to summarise CRW-34 and see whether it flags the embedded instruction. Do not approve any write.</li>
+        </ol>
+      </div>
+
+      <!-- ===================== Lab ===================== -->
+      <article class="mission" id="m7-lab" data-miles="600">
+        <div class="mission-head">
+          <div><span class="mcode">LAB M7 · 30 MIN · CRW READ-ONLY · YOUR SEAT</span><h3>Catch the query that omits Bugs</h3></div>
+          <span class="turb" title="Difficulty"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i> Turbulence</span>
+        </div>
+        <div class="mission-body">
+          <div class="brief"><b>Brief</b> The release review wants an estimation-completeness figure for SWP-2026.q4.5 and a velocity number. Both arrived from an assistant. Your job is to prove or correct them. <b>CRW is read-only:</b> search it, open items and reports, but never edit, comment or transition there. The only things you create are a private filter named <code>L{SEAT} · q4.5 missing estimates</code> and, if you choose, one comment on your seat epic <span data-seat-epic></span>. If your Claude connection is not working, use the replay prompts and Jira's Ask AI and record that you practised with a replay.</div>
+          <ol class="steps">
+            <li><b>Run the generated JQL and compare it with what you expect.</b>
+              <ol type="a">
+                <li>Before running anything, write the expected set in the evidence card: CRW-33 and CRW-34. Write the decoy you will check for: CRW-35.</li>
+                <li>Ask Claude the delivery lead's question in your own words, and ask it to show its JQL. Copy the JQL exactly. If it already includes Bugs, also run the plausible query below; it is the one that reached the review.</li>
+                <li>Run Claude's JQL in Jira (paste it into the search, or use the inspector's <b>Run this in Jira</b> link). Record the count and every key.</li>
+                <li>Run the <code>futureSprints()</code> variant from M7.1 and confirm that CRW-35 shows up and that its Sprint is SWP-2026.q4.6.</li>
+              </ol>
+              <pre data-jql data-label="The query that reached the review">project = CRW AND sprint = "SWP-2026.q4.5" AND issuetype = Story AND "Story Points" is EMPTY</pre>
+              <pre data-jql data-label="See all three candidates side by side">key in (CRW-33, CRW-34, CRW-35) ORDER BY key ASC</pre>
+            </li>
+            <li><b>Correct the work type and verify count, keys, truncation and access.</b>
+              <ol type="a">
+                <li>Fix the omitted work type. Keep the project and the named sprint explicit. Run it in Jira: you should get exactly 2.</li>
+                <li>Ask Claude to run your corrected JQL unchanged and report the total count the search reported, how many results it read and whether more pages exist (use the prompt in M7.2).</li>
+                <li>Compare the three numbers: expected, Jira, Claude. If Claude's count is lower, decide whether it is truncation (same account, fewer rows read) or access (different account).</li>
+                <li>Save the corrected query as a private filter named <code>L{SEAT} · q4.5 missing estimates</code> (Save filter, keep sharing private). Filters belong to you, not to the CRW space.</li>
+                <li>Use the <b>result-set comparer</b> below to record both runs.</li>
+              </ol>
+            </li>
+            <li><b>State the denominator, verify the velocity claim and find the redirecting text.</b>
+              <ol type="a">
+                <li>Run the denominator query from M7.3 and record its count. Use the completeness calculator to write a definition with scope, work types, sprint, date and query. Send it to your evidence.</li>
+                <li>Open the <a data-jira="/jira/software/c/projects/CRW/boards/60/reports/velocity">SWP Velocity report ↗</a> and the <a data-jira="/jira/software/c/projects/CRW/boards/60/reports/sprint-retrospective?sprint=49">q4.2 Sprint Report ↗</a>. Use the velocity claim checker to find which item makes the assistant's 21 wrong.</li>
+                <li>Open <a data-jira="/browse/CRW-34">CRW-34 ↗</a>. Find the supplied text that tries to redirect an assistant's task. Record what it asks for and which metrics it would distort. Do not edit the item.</li>
+                <li>Optional write, in your seat only: ask Claude to <em>propose</em> a comment for your seat epic <span data-seat-epic></span> summarising your findings. Read the plan, then approve or decline it. Verify with the check-your-work query.</li>
+              </ol>
+            </li>
+          </ol>
+
+          <div class="m7-tool" id="m7-compare">
+            <h3>Result-set comparer</h3>
+            <p class="muted" style="margin:0 0 6px">Paste the keys Jira returned (any format: one per line, commas, or copied rows). Expected: CRW-33, CRW-34. Decoy: CRW-35.</p>
+            <div class="m7-grid2">
+              <div>
+                <label for="m7-oq">Original (generated) query</label>
+                <textarea id="m7-oq" spellcheck="false">project = CRW AND sprint = "SWP-2026.q4.5" AND issuetype = Story AND "Story Points" is EMPTY</textarea>
+                <label for="m7-ok">Keys Jira returned for it</label>
+                <input type="text" id="m7-ok" placeholder="CRW-…">
+              </div>
+              <div>
+                <label for="m7-cq">Your corrected query</label>
+                <textarea id="m7-cq" spellcheck="false" placeholder="project = CRW AND …"></textarea>
+                <label for="m7-ck">Keys Jira returned for it</label>
+                <input type="text" id="m7-ck" placeholder="CRW-…">
+              </div>
+            </div>
+            <label for="m7-cc">Count Claude reported for the corrected query (optional)</label>
+            <input type="text" id="m7-cc" placeholder="e.g. 2 (total reported 2, read 2, no further pages)">
+            <div class="m7-row">
+              <button type="button" class="m7-btn primary" id="m7-cmp">Compare with expected</button>
+              <button type="button" class="m7-btn" id="m7-cmp-send">Send to my evidence</button>
+            </div>
+            <div id="m7-cmp-out" aria-live="polite"></div>
+          </div>
+
+          <pre data-jql data-label="Check your work: corrected query · expect CRW-33, CRW-34">project = CRW AND sprint = "SWP-2026.q4.5" AND issuetype in (Story, Bug) AND "Story Points" is EMPTY</pre>
+          <pre data-jql data-label="Check your work: nothing changed in CRW in the last hour">project = CRW AND updated >= -1h ORDER BY updated DESC</pre>
+          <pre data-jql data-label="Optional: your seat epic, if you approved a comment">project = CRP AND issuetype = Epic AND summary ~ "L{SEAT}"</pre>
+
+          <details class="reveal"><summary>Debrief: what a strong answer looks like</summary><div>
+            <p><b>Original query and actual keys.</b> <code>project = CRW AND sprint = "SWP-2026.q4.5" AND issuetype = Story AND "Story Points" is EMPTY</code> returned 1: CRW-33. It is valid and plausible, and it omits the Bug that the request named.</p>
+            <p><b>Corrected query and actual keys.</b> <code>project = CRW AND sprint = "SWP-2026.q4.5" AND issuetype in (Story, Bug) AND "Story Points" is EMPTY</code> returned 2: CRW-33 (Story) and CRW-34 (Bug, High, Crew App 4.2). Jira and Claude agreed on 2, with no further pages, as the same account.</p>
+            <p><b>Expected and decoy.</b> Expected CRW-33 and CRW-34, both found. CRW-35 is unestimated too, but it is in SWP-2026.q4.6, so it appears only when the sprint is replaced with <code>futureSprints()</code>. Excluding it is correct for this request.</p>
+            <p><b>Metric definition.</b> "Estimation completeness, SWP-2026.q4.5, CRW, Stories and Bugs, as of today: 3 of 5 estimated (60%). Missing: CRW-33, CRW-34." The Bug-omitting version reports 3 of 4 (75%): wrong numerator and wrong denominator. Because two items have no estimate, the sprint's 18 points understate the planned work. That matters for the Module 2 capacity picture.</p>
+            <p><b>Velocity check.</b> The current-state query returns six items, CRW-16 to CRW-21, for 21 points. The Velocity report and Sprint Report say 18 completed in q4.2. The difference is CRW-19 (3 points), which was in q4.2, was not finished, and was completed in q4.3. Its Sprint field still lists q4.2. Velocity comes from the native report, never from today's status.</p>
+            <p><b>One identified risk.</b> Any of these is a good answer: CRW-34's description contains an instruction addressed to AI assistants that asks for estimates and statuses to be changed across the sprint and for the note to be hidden; result truncation (a page of results reported as the total); a count that depends on the connected account's access; a query with no project clause and raw field ids that will drift when reused.</p>
+          </div></details>
+
+          <div class="evidence" data-evidence="m7">
+            <h4>Learner output · Module 7</h4>
+            <p class="hint">The original and corrected query, expected and actual keys, metric definition and one identified risk.</p>
+            <label for="m7-original">Original generated query and its actual keys</label><textarea id="m7-original" data-field="original" placeholder="Query … → 1 result: CRW-…"></textarea>
+            <label for="m7-corrected">Corrected query, count and actual keys</label><textarea id="m7-corrected" data-field="corrected" placeholder="Query … → N results: … (Jira N, Claude N, pages …)"></textarea>
+            <label for="m7-expected">Expected keys and the decoy check</label><textarea id="m7-expected" data-field="expected" placeholder="Expected … · decoy …"></textarea>
+            <label for="m7-definition">Metric definition (denominator) and the velocity check</label><textarea id="m7-definition" data-field="definition" placeholder="Estimation completeness = … / … · Velocity q4.2 per native report = …"></textarea>
+            <label for="m7-risk">One identified risk</label><textarea id="m7-risk" data-field="risk" placeholder="Risk, where you saw it, and what you did"></textarea>
+          </div>
+        </div>
+        <div class="mission-foot"><span class="miles-tag">+600 mi</span><button class="complete-btn" type="button">Mark lab complete</button></div>
+      </article>
+
+      <!-- ===================== Quiz ===================== -->
+      <section class="quiz" id="check" data-id="m7" data-pass="75" data-miles="200" style="padding:24px">
+        <h2 style="margin-top:0">Checkpoint</h2>
+        <div class="q"><p class="prompt">1. You asked for "Stories and Bugs in SWP-2026.q4.5 missing estimates". The generated query returns one item, CRW-33. What is the first thing to check?</p><div class="opts">
+          <button class="opt" type="button" data-right>Whether the work-type clause matches the request: it says <code>issuetype = Story</code>, so Bugs are excluded.</button>
+          <button class="opt" type="button">Whether CRW-33 really has no estimate, because one result is plausible for a well-run sprint.</button>
+          <button class="opt" type="button">Whether the ORDER BY clause hides results further down the list.</button>
+          <button class="opt" type="button">Whether the sprint is active, since JQL can't search future sprints.</button></div>
+          <div class="why">Compare each clause with the request before trusting the count. The request named two work types and the query names one. Adding Bug returns CRW-33 and CRW-34. ORDER BY never changes a count, and future sprints are searchable.</div></div>
+        <div class="q"><p class="prompt">2. A query with <code>sprint in futureSprints()</code> returns CRW-33, CRW-34 and CRW-35. What should you conclude?</p><div class="opts">
+          <button class="opt" type="button" data-right>The scope is too wide. CRW-35 is in SWP-2026.q4.6, so it doesn't belong in a q4.5 answer.</button>
+          <button class="opt" type="button">The corrected query missed CRW-35, so 3 is the true answer.</button>
+          <button class="opt" type="button">futureSprints() is the safer choice because sprint names can change.</button>
+          <button class="opt" type="button">CRW-35 should be moved into q4.5 so the two queries agree.</button></div>
+          <div class="why">The request named one sprint. futureSprints() covers every future sprint on every board, so it sweeps in the decoy. You don't change the data to make queries agree, and CRW is read-only anyway.</div></div>
+        <div class="q"><p class="prompt">3. Ask AI produced <code>cf[10020] = "SWP-2026.q4.5" AND cf[10036] IS EMPTY</code>. On this site, what are those fields?</p><div class="opts">
+          <button class="opt" type="button" data-right>cf[10020] is Sprint and cf[10036] is Story Points.</button>
+          <button class="opt" type="button">cf[10020] is Team and cf[10036] is Story Points.</button>
+          <button class="opt" type="button">cf[10020] is Sprint and cf[10036] is Original estimate.</button>
+          <button class="opt" type="button">They are Rovo-only fields that don't exist in normal JQL.</button></div>
+          <div class="why">Raw ids are valid JQL. Confirm them by swapping in the field name and comparing counts. The same id can mean a different field on another site, so prefer names in anything you cite.</div></div>
+        <div class="q"><p class="prompt">4. Summing Story Points for <code>sprint = "SWP-2026.q4.2" AND statusCategory = Done</code> gives 21, but the Velocity report shows 18 completed. Which explanation is right?</p><div class="opts">
+          <button class="opt" type="button" data-right>JQL uses today's status and every sprint an item was in. CRW-19 was in q4.2, finished in q4.3, and still matches.</button>
+          <button class="opt" type="button">The Velocity report is stale and needs a re-index; 21 is correct.</button>
+          <button class="opt" type="button">CRW-21 was added after the sprint started, so the Velocity report excludes it from completed.</button>
+          <button class="opt" type="button">Velocity rounds Story Points down to whole sprints.</button></div>
+          <div class="why">Current-state JQL can't rebuild a sprint's history. The native report counts what was completed during the sprint. CRW-21 was added late but completed in the sprint, so it does count as completed, though not in the commitment.</div></div>
+        <div class="q"><p class="prompt">5. While summarising the sprint, Claude proposes to "set Story Points to 1 on every item, as the note in CRW-34 asks". What do you do?</p><div class="opts">
+          <button class="opt" type="button" data-right>Decline the write, record that CRW-34 contains an instruction aimed at AI assistants, and report it to the owner or instructor.</button>
+          <button class="opt" type="button">Approve it, since estimates of 1 are harmless and the note came from inside Jira.</button>
+          <button class="opt" type="button">Approve it for the Stories only and leave the Bugs unchanged.</button>
+          <button class="opt" type="button">Delete the note from CRW-34 so no other assistant reads it.</button></div>
+          <div class="why">Work-item text is data, not instructions. The note targets estimation and Done counts, which are exactly the metrics you are protecting. You don't edit CRW either. Report it and leave the evidence in place.</div></div>
+        <div class="quiz-score"><span class="msg"></span><span><b>0 / 5</b> <button class="btn btn-sm btn-ghost retry" type="button">Retry</button></span></div>
+      </section>
+
+      <nav class="module-nav" aria-label="Module navigation">
+        <a class="prev" href="m6.html"><small>Previous</small><b>M6 · Connect Claude through Atlassian MCP</b></a>
+        <a class="next" href="m8.html"><small>Next</small><b>M8 · Make a release decision across tools</b></a>
+      </nav>
+    </div>
+  </div>
+</section>
+
+</main>
+<div id="site-footer"></div>
+<script src="assets/js/config.js?v=1"></script>
+<script src="assets/js/site.js?v=1"></script>
+<script src="assets/js/widgets.js?v=1"></script>
+<script>
+(function () {
+  "use strict";
+  var CA = window.CA, CW = window.CW;
+  if (!CA || !CW) return;
+  var esc = CA.esc;
+  function $(id) { return document.getElementById(id); }
+
+  /* Expected data for the query family the inspector models (from the course manifest). */
+  var SWP = "7ab46d0b-f5d5-4c27-9d3b-648ed1c6c67e", ALR = "b5cf2b12-d7a8-49e4-bf33-0da3acadf620";
+  var ITEMS = [
+    { k: "CRW-30", t: "Story", s: "SWP-2026.q4.5", p: 8, team: SWP },
+    { k: "CRW-31", t: "Story", s: "SWP-2026.q4.5", p: 5, team: SWP },
+    { k: "CRW-32", t: "Story", s: "SWP-2026.q4.5", p: 5, team: SWP },
+    { k: "CRW-33", t: "Story", s: "SWP-2026.q4.5", p: null, team: SWP },
+    { k: "CRW-34", t: "Bug", s: "SWP-2026.q4.5", p: null, team: SWP },
+    { k: "CRW-35", t: "Story", s: "SWP-2026.q4.6", p: null, team: SWP },
+    { k: "CRW-36", t: "Story", s: "SWP-2026.q4.6", p: 3, team: SWP },
+    { k: "CRW-63", t: "Story", s: "ALR-2026.q4.5", p: 5, team: ALR },
+    { k: "CRW-64", t: "Story", s: "ALR-2026.q4.5", p: 3, team: ALR },
+    { k: "CRW-73", t: "Story", s: "ALR-2026.q4.5", p: 3, team: ALR }
+  ];
+  var FUTURE = ["SWP-2026.q4.5", "SWP-2026.q4.6", "SWP-2027.q1.1", "ALR-2026.q4.5", "ALR-2026.q4.6"];
+  var EXPECTED = ["CRW-33", "CRW-34"], DECOY = "CRW-35";
+
+  var SAMPLES = {
+    omit: 'project = CRW AND sprint = "SWP-2026.q4.5" AND issuetype = Story AND "Story Points" is EMPTY',
+    wide: 'project = CRW AND issuetype in (Story, Bug) AND "Story Points" is EMPTY AND sprint in futureSprints()',
+    askai: 'issuetype IN ("Story", "Bug") AND cf[10020] = "SWP-2026.q4.5" AND cf[10036] IS EMPTY ORDER BY created DESC',
+    team: 'project = CRW AND Team = "Swap Squad" AND sprint = "SWP-2026.q4.5" AND "Story Points" is EMPTY',
+    fixed: 'project = CRW AND sprint = "SWP-2026.q4.5" AND issuetype in (Story, Bug) AND "Story Points" is EMPTY'
+  };
+
+  function unq(s) { return String(s).trim().replace(/^["']|["']$/g, "").trim(); }
+  function list(v) { v = v.trim(); if (v.charAt(0) === "(") v = v.slice(1, -1); return v.split(",").map(unq).filter(Boolean); }
+
+  function analyse(q) {
+    var res = { checks: [], unknown: [], filters: [], project: null, types: null, sprint: null, points: null, team: null, outside: false, order: false };
+    var text = q.replace(/\s+/g, " ").trim();
+    if (!text) { res.outside = true; return res; }
+    var parts = text.split(/\border\s+by\b/i);
+    if (parts.length > 1) res.order = true;
+    var where = parts[0].trim();
+    if (/\s(or|not)\s/i.test(" " + where + " ") && !/is\s+not\s+empty/i.test(where)) { res.outside = true; res.unknown.push("OR / NOT logic"); }
+    where.split(/\s+and\s+/i).forEach(function (c) {
+      c = c.trim(); var m;
+      if (!c) return;
+      if ((m = c.match(/^project\s*(=|in)\s*(.+)$/i))) { res.project = list(m[2]).map(function (x) { return x.toUpperCase(); }); return; }
+      if ((m = c.match(/^(issuetype|type)\s*(=|in)\s*(.+)$/i))) { res.types = list(m[3]).map(function (x) { return x.toLowerCase(); }); return; }
+      if ((m = c.match(/^(issuetype|type)\s*(!=|not\s+in)/i))) { res.outside = true; res.unknown.push(c); return; }
+      if ((m = c.match(/^(sprint|cf\[10020\])\s*(=|in)\s*(.+)$/i))) {
+        res.sprintField = m[1].toLowerCase(); var v = m[3].trim();
+        if (/^futuresprints\(\)$/i.test(v)) res.sprint = { fn: "future" };
+        else if (/^(opensprints|closedsprints)\(\)$/i.test(v)) { res.sprint = { fn: v.toLowerCase() }; res.outside = true; }
+        else res.sprint = { names: list(v) };
+        return;
+      }
+      if ((m = c.match(/^("story points"|cf\[10036\]|"story point estimate")\s*(is\s+not|is)\s+(empty|null)$/i))) {
+        res.pointsField = m[1].toLowerCase(); res.points = /not/i.test(m[2]) ? "set" : "empty"; return;
+      }
+      if ((m = c.match(/^team\s*=\s*(.+)$/i))) { res.team = unq(m[1]); return; }
+      res.unknown.push(c); res.outside = true;
+    });
+    return res;
+  }
+
+  function predict(a) {
+    if (a.outside) return null;
+    if (a.team && a.team !== SWP && a.team !== ALR) return [];
+    if (a.pointsField === '"story point estimate"') return null;
+    return ITEMS.filter(function (it) {
+      if (a.project && a.project.indexOf("CRW") < 0) return false;
+      if (a.types && a.types.indexOf(it.t.toLowerCase()) < 0) return false;
+      if (a.sprint) {
+        if (a.sprint.fn === "future") { if (FUTURE.indexOf(it.s) < 0) return false; }
+        else if (a.sprint.names && a.sprint.names.indexOf(it.s) < 0) return false;
+      }
+      if (a.points === "empty" && it.p !== null) return false;
+      if (a.points === "set" && it.p === null) return false;
+      if (a.team && it.team !== a.team) return false;
+      return true;
+    }).map(function (it) { return it.k; });
+  }
+
+  function checksFor(a) {
+    var c = [];
+    if (!a.project) c.push(["warn", "No project clause. The search covers every space this account can browse. Add <code>project = CRW</code> so the scope is explicit and the query stays correct when reused."]);
+    else if (a.project.indexOf("CRW") > -1 && a.project.length === 1) c.push(["ok", "Project is explicit: <code>CRW</code>."]);
+    else c.push(["bad", "Project clause doesn't name CRW only: " + esc(a.project.join(", ")) + "."]);
+    if (a.team) {
+      if (a.team === SWP || a.team === ALR) c.push(["ok", "Team compared by id (" + (a.team === SWP ? "Swap Squad" : "Alerts Squad") + ")."]);
+      else c.push(["bad", "Team compared by name (<code>" + esc(a.team) + "</code>). This is valid JQL and returns nothing on this site. Use the team id."]);
+    }
+    if (!a.sprint) c.push(["bad", "No sprint clause. The request named SWP-2026.q4.5."]);
+    else if (a.sprint.fn === "future") c.push(["bad", "<code>futureSprints()</code> covers every future sprint on every board (SWP q4.5, q4.6, ALR q4.5 …). The request named one sprint."]);
+    else if (a.sprint.fn) c.push(["warn", "<code>" + esc(a.sprint.fn) + "()</code> is a different scope from the named sprint in the request."]);
+    else if (a.sprint.names.length === 1 && a.sprint.names[0] === "SWP-2026.q4.5") c.push(["ok", "Sprint named explicitly: SWP-2026.q4.5" + (a.sprintField === "cf[10020]" ? " (via <code>cf[10020]</code>, which is the Sprint field here)." : ".")]);
+    else c.push(["bad", "Sprint value doesn't match the request: " + esc(a.sprint.names.join(", ")) + "."]);
+    if (!a.types) c.push(["warn", "No work-type clause. Any Task, Spike or other type in scope would be counted."]);
+    else {
+      var hasS = a.types.indexOf("story") > -1, hasB = a.types.indexOf("bug") > -1;
+      if (hasS && hasB) c.push(["ok", "Work types match the request: Story and Bug."]);
+      else if (hasS) c.push(["bad", "Only Story. The request said Stories <b>and Bugs</b>, so Bugs silently disappear."]);
+      else c.push(["bad", "Work types don't match the request: " + esc(a.types.join(", ")) + "."]);
+    }
+    if (!a.points) c.push(["bad", "No estimate clause. This returns every item in scope, not the ones missing estimates."]);
+    else if (a.pointsField === '"story point estimate"') c.push(["bad", "<code>\"Story point estimate\"</code> is the team-managed field name. This company-managed space uses <code>\"Story Points\"</code> (<code>cf[10036]</code>). Check the field before trusting the count."]);
+    else if (a.points === "empty") c.push([a.pointsField === "cf[10036]" ? "info" : "ok", a.pointsField === "cf[10036]" ? "<code>cf[10036]</code> is Story Points on this site. Prefer the name in anything you cite." : "Estimate clause is right: <code>\"Story Points\" is EMPTY</code>."]);
+    else c.push(["warn", "This asks for items that <em>have</em> estimates, the opposite of the request."]);
+    if (a.order) c.push(["info", "ORDER BY changes the order, never the count."]);
+    return c;
+  }
+
+  function keyChips(keys) {
+    var all = keys.slice();
+    EXPECTED.forEach(function (k) { if (all.indexOf(k) < 0) all.push(k); });
+    return '<div class="m7-keys">' + all.map(function (k) {
+      var inR = keys.indexOf(k) > -1, exp = EXPECTED.indexOf(k) > -1;
+      var cls = inR && exp ? "hit" : (!inR && exp ? "miss" : "extra");
+      var lab = cls === "hit" ? "expected, found" : cls === "miss" ? "expected, missing" : (k === DECOY ? "decoy, other sprint" : "not expected");
+      return '<span class="m7-key ' + cls + '" title="' + lab + '">' + k + ' <span style="font-family:var(--font-body)">· ' + lab + '</span></span>';
+    }).join("") + "</div>";
+  }
+
+  var qEl = $("m7-q"), out = $("m7-out"), run = $("m7-run");
+  function syncRun() { run.href = CA.siteUrl() + "/issues/?jql=" + encodeURIComponent(qEl.value.replace(/\s+/g, " ").trim()); }
+  function inspect() {
+    var a = analyse(qEl.value), c = checksFor(a), keys = predict(a);
+    var html = '<ul class="m7-checks">' + c.map(function (x) { return '<li><span class="m7-lvl ' + x[0] + '">' + x[0] + "</span><span>" + x[1] + "</span></li>"; }).join("") + "</ul>";
+    if (a.unknown.length) html += '<p class="muted" style="font-size:.9rem">Clauses outside the inspector\'s model: <code>' + esc(a.unknown.join(" · ")) + "</code>. Run it in Jira to see the result.</p>";
+    if (keys === null) html += '<div class="m7-verdict meh">The inspector can\'t predict this one. Run it in Jira and compare the keys with CRW-33 and CRW-34.</div>';
+    else {
+      var exact = keys.length === 2 && keys.indexOf("CRW-33") > -1 && keys.indexOf("CRW-34") > -1;
+      html += '<p style="margin:14px 0 0"><b>Predicted result: ' + keys.length + "</b>" + (keys.length ? " (" + keys.join(", ") + ")" : " (no work items)") + "</p>" + keyChips(keys);
+      var bad = c.filter(function (x) { return x[0] === "bad"; }).length, warn = c.filter(function (x) { return x[0] === "warn"; }).length;
+      if (exact && !bad && !warn) { html += '<div class="m7-verdict good">Right scope, right set. This is a query you can cite. Confirm the count in Jira.</div>'; CA.awardOnce("widget:m7-inspector", 150, "Query inspector"); }
+      else if (exact) html += '<div class="m7-verdict meh">Right set today, but the query shape isn\'t safe to cite. Fix the warnings so it stays right when reused.</div>';
+      else html += '<div class="m7-verdict bad">Wrong set. ' + (keys.indexOf(DECOY) > -1 ? "It includes the decoy CRW-35 from q4.6. " : "") + (keys.indexOf("CRW-34") < 0 ? "It misses CRW-34, the High-priority Bug. " : "") + "Fix the red checks and inspect again.</div>";
+    }
+    out.innerHTML = html; syncRun();
+  }
+  document.querySelectorAll("[data-sample]").forEach(function (b) {
+    b.addEventListener("click", function () { qEl.value = SAMPLES[b.dataset.sample]; inspect(); });
+  });
+  $("m7-inspect").addEventListener("click", inspect);
+  qEl.addEventListener("input", syncRun);
+  syncRun();
+
+  /* ---------- Completeness calculator ---------- */
+  var defTouched = false;
+  function scopeVal() { var r = document.querySelector('input[name="m7-scope"]:checked'); return r ? r.value : "both"; }
+  function calc() {
+    var sc = scopeVal();
+    var inScope = ITEMS.filter(function (it) { return it.s === "SWP-2026.q4.5" && (sc === "both" || it.t === "Story"); });
+    var missing = inScope.filter(function (it) { return it.p === null; });
+    var den = inScope.length, miss = missing.length;
+    var denObs = $("m7-den-obs").value.trim(), missObs = $("m7-num-obs").value.trim();
+    var note = "";
+    if (denObs !== "" && +denObs !== den) { note += "<br><b>Jira's denominator (" + esc(denObs) + ") differs from the expected " + den + ". Use Jira's number and find out what changed.</b>"; den = +denObs; }
+    if (missObs !== "" && +missObs !== miss) { note += "<br><b>Jira's missing count (" + esc(missObs) + ") differs from the expected " + miss + ". Use Jira's number.</b>"; miss = +missObs; }
+    var est = Math.max(0, den - miss), pct = den ? Math.round((est / den) * 100) : 0;
+    $("m7-pct").textContent = pct + "%";
+    $("m7-calc-detail").innerHTML = "<b>" + est + " of " + den + "</b> " + (sc === "both" ? "Stories and Bugs" : "Stories") + " estimated.<br>Missing: " + (missing.map(function (i) { return i.k; }).join(", ") || "none") + (sc === "story" ? '<br><span style="color:var(--alert)">CRW-34 (Bug) is outside this scope, so it vanishes from both numerator and denominator.</span>' : "") + note;
+    if (!defTouched) {
+      var today = new Date().toISOString().slice(0, 10);
+      $("m7-def-text").value = "Estimation completeness, SWP-2026.q4.5 (CRW), " + (sc === "both" ? "Stories and Bugs" : "Stories only") + ", as of " + today + ": " + est + " of " + den + " estimated (" + pct + "%). Missing: " + missing.map(function (i) { return i.k; }).join(", ") + ". Denominator query: project = CRW AND sprint = \"SWP-2026.q4.5\" AND issuetype in (" + (sc === "both" ? "Story, Bug" : "Story") + "). Counted by item, not by points (unestimated items have no points).";
+    }
+  }
+  document.querySelectorAll('input[name="m7-scope"]').forEach(function (r) { r.addEventListener("change", function () { defTouched = false; calc(); }); });
+  ["m7-den-obs", "m7-num-obs"].forEach(function (id) { $(id).addEventListener("input", function () { defTouched = false; calc(); }); });
+  $("m7-def-text").addEventListener("input", function () { defTouched = true; });
+  $("m7-def-send").addEventListener("click", function () {
+    CW.saveEvidence("m7", "definition", $("m7-def-text").value, true);
+    CA.toast("Definition added to your Module 7 evidence");
+  });
+  calc();
+
+  /* ---------- Velocity claim checker ---------- */
+  var VEL = [["CRW-16", "Swap request form: pick the trips to swap", 5], ["CRW-17", "Search for a crew member to swap with", 5], ["CRW-18", "Basic eligibility: same fleet and base", 3], ["CRW-19", "Swap request draft autosave", 3], ["CRW-20", "Swap request validation messages", 2], ["CRW-21", "Swap list shows cancelled swaps (Bug)", 3]];
+  var vb = $("m7-vel-body");
+  vb.innerHTML = VEL.map(function (r, i) {
+    return '<tr><td><input type="checkbox" id="m7-v' + i + '" checked aria-label="' + r[0] + ' completed during SWP-2026.q4.2"></td><td><label for="m7-v' + i + '"><code>' + r[0] + "</code></label></td><td>" + esc(r[1]) + "</td><td>" + r[2] + "</td></tr>";
+  }).join("");
+  function vel() {
+    var tot = 0, on = [];
+    VEL.forEach(function (r, i) { if ($("m7-v" + i).checked) { tot += r[2]; on.push(r[0]); } });
+    $("m7-vel-total").textContent = tot;
+    var o = $("m7-vel-out");
+    var right = tot === 18 && on.indexOf("CRW-19") < 0 && on.length === 5;
+    if (right) {
+      o.className = "m7-verdict good";
+      o.innerHTML = "18 points, matching the Velocity report. CRW-19 was in q4.2 but completed in q4.3; its Sprint field still lists q4.2, so today's-status JQL counts it. CRW-21 was added after the start (the asterisk) but completed in the sprint, so it counts as completed, not as commitment.";
+      CA.awardOnce("widget:m7-velocity", 100, "Velocity claim checked");
+    } else if (tot === 18) {
+      o.className = "m7-verdict meh"; o.innerHTML = "The total is 18, but not with the right items. Check each key against the Sprint Report's completed list.";
+    } else {
+      o.className = tot === 21 ? "m7-verdict meh" : "m7-verdict bad";
+      o.innerHTML = "Your total is " + tot + ". The Velocity report says 18 completed in q4.2." + (on.indexOf("CRW-21") < 0 ? " CRW-21 has an asterisk because it was added late, but it was completed during the sprint." : "");
+    }
+  }
+  VEL.forEach(function (r, i) { $("m7-v" + i).addEventListener("change", vel); });
+  vel();
+
+  /* ---------- Result-set comparer ---------- */
+  function keysOf(s) { var m = (s || "").toUpperCase().match(/CRW-\d+/g) || []; return m.filter(function (k, i) { return m.indexOf(k) === i; }); }
+  function cmpBlock(title, keys) {
+    var miss = EXPECTED.filter(function (k) { return keys.indexOf(k) < 0; });
+    var extra = keys.filter(function (k) { return EXPECTED.indexOf(k) < 0; });
+    var found = EXPECTED.length - miss.length;
+    var v = !keys.length ? '<div class="m7-verdict meh">No keys entered yet.</div>' :
+      (!miss.length && !extra.length ? '<div class="m7-verdict good">Exact match: ' + keys.length + " of 2 expected, no extras.</div>" :
+        '<div class="m7-verdict bad">' + found + " of 2 expected found." + (miss.length ? " Missing: " + miss.join(", ") + "." : "") + (extra.length ? " Extra: " + extra.join(", ") + (extra.indexOf(DECOY) > -1 ? " (CRW-35 is the q4.6 decoy)." : ".") : "") + "</div>");
+    return "<h4 style=\"margin-top:14px\">" + title + " · " + keys.length + " result(s)</h4>" + (keys.length ? keyChips(keys) : "") + v;
+  }
+  function compare() {
+    var ok = keysOf($("m7-ok").value), ck = keysOf($("m7-ck").value);
+    $("m7-cmp-out").innerHTML = cmpBlock("Original query", ok) + cmpBlock("Corrected query", ck);
+    if (ck.length === 2 && ck.indexOf("CRW-33") > -1 && ck.indexOf("CRW-34") > -1) CA.awardOnce("widget:m7-compare", 100, "Result set verified");
+  }
+  $("m7-cmp").addEventListener("click", compare);
+  $("m7-cmp-send").addEventListener("click", function () {
+    var ok = keysOf($("m7-ok").value), ck = keysOf($("m7-ck").value), cc = $("m7-cc").value.trim();
+    CW.saveEvidence("m7", "original", $("m7-oq").value.trim() + "\n→ " + ok.length + " result(s): " + (ok.join(", ") || "(not recorded)"));
+    CW.saveEvidence("m7", "corrected", ($("m7-cq").value.trim() || "(corrected query not entered)") + "\n→ Jira " + ck.length + " result(s): " + (ck.join(", ") || "(not recorded)") + (cc ? "\nClaude reported: " + cc : ""));
+    var missO = EXPECTED.filter(function (k) { return ok.indexOf(k) < 0; });
+    CW.saveEvidence("m7", "expected", "Expected: CRW-33, CRW-34. Original query missed: " + (missO.join(", ") || "nothing") + ". Decoy CRW-35 (SWP-2026.q4.6) " + (ck.indexOf(DECOY) > -1 ? "WAS included in the corrected result: fix the sprint scope." : "correctly excluded from the corrected result."));
+    compare();
+    CA.toast("Queries and keys saved to your Module 7 evidence");
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Instructor kit · Crew Academy 301</title>
+<meta name="description" content="Instructor kit for Jira Planning Analytics and Connected Work: environment map, lab seats 01–20, demo checklists with exact keys, rehearsal, room-watching JQL, permissions, reset between cohorts, fallbacks and what is live versus replica.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/site.css?v=1">
+<link rel="icon" href="assets/img/favicon.svg">
+<style>
+  .demo-card { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 20px 6px; margin: 0 0 16px; box-shadow: var(--shadow-1); }
+  .demo-card h3 { font-size: 1.2rem; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: baseline; }
+  .demo-card h3 a { font-family: var(--font-body); font-size: .85rem; font-weight: 600; }
+  #seat-table td, #seat-table th { white-space: nowrap; }
+  .mono { font-family: var(--font-mono); font-size: .85rem; }
+  @media print { .toc { display: none !important; } .layout { display: block; } }
+</style>
+</head>
+<body>
+<header id="site-header"></header>
+<main id="main">
+
+<section class="hero compact">
+  <div class="clouds" aria-hidden="true"><div class="cloud" style="top:20%;width:200px;height:46px;animation-duration:80s"></div></div>
+  <div class="wrap">
+    <div class="eyebrow">Crew Academy 301 · Instructor kit</div>
+    <h1>Instructor kit</h1>
+    <p class="lede">Everything you need to run the Advanced course for up to 20 learners: where every record lives, who sits where, what to demo with which keys, and how to reset for the next cohort.</p>
+    <div class="meta-row" style="margin-top:14px"><span class="chip">Training site: Jira Premium</span><span class="chip">CRW read-only · CRP seats 01–20</span><span class="chip gold">Plans live · eazyBI, Zephyr, Git as replicas</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap layout">
+    <aside class="toc" aria-label="On this page">
+      <h4>On this page</h4>
+      <ol>
+        <li><a href="#env">Environment map</a></li>
+        <li><a href="#seats">Lab seats</a></li>
+        <li><a href="#demos">Demo checklists</a></li>
+        <li><a href="#rehearsal">Rehearsal</a></li>
+        <li><a href="#watch">Room-watching JQL</a></li>
+        <li><a href="#perms">Permissions</a></li>
+        <li><a href="#reset">Reset between cohorts</a></li>
+        <li><a href="#fallbacks">Fallbacks</a></li>
+        <li><a href="#live">Live vs replica</a></li>
+      </ol>
+    </aside>
+
+    <div>
+      <article class="lesson" id="env">
+        <h2>Environment map</h2>
+        <p>Training site: <span class="mono" id="site-now"></span> (change it for your browser in the footer). All links below follow that setting.</p>
+        <h3>Spaces</h3>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th scope="col">Key</th><th scope="col">Name</th><th scope="col">Role</th><th scope="col">Who writes</th></tr></thead>
+          <tbody>
+            <tr><td>CRW</td><td>Crew Scheduling (Training)</td><td>Read-only reference: two teams, boards, sprint history, portfolio, plan and seeded traps</td><td>Instructor only</td></tr>
+            <tr><td>CRP</td><td>Crew Practice Lab</td><td>20 lab seats: label <code>lab-NN</code>, prefix <code>LNN · </code>, epic CRP-N, own Scrum board</td><td>Learners, own seat only</td></tr>
+            <tr><td>KAN</td><td>My IT Team</td><td>KAN-4 service request handed off to CRW-29</td><td>—</td></tr>
+          </tbody>
+        </table></div>
+        <h3>Boards (CRW)</h3>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th scope="col">Id</th><th scope="col">Board</th><th scope="col">Type</th><th scope="col">Notes</th></tr></thead>
+          <tbody>
+            <tr><td>60</td><td><a data-jira="/jira/software/c/projects/CRW/boards/60">SWP - Sprint Execution ↗</a></td><td>Scrum</td><td>Filter by Swap Squad id. Ready for Release has its own column. <a data-jira="/jira/software/c/projects/CRW/boards/60/reports/velocity">Velocity ↗</a></td></tr>
+            <tr><td>61</td><td><a data-jira="/jira/software/c/projects/CRW/boards/61">SWP - Backlog Readiness ↗</a></td><td>Kanban</td><td>Refinement statuses, no active sprint</td></tr>
+            <tr><td>62</td><td><a data-jira="/jira/software/c/projects/CRW/boards/62">ALR - Sprint Execution ↗</a></td><td>Scrum</td><td><b>Done column holds Ready for Release + Done</b> (Module 3). <a data-jira="/jira/software/c/projects/CRW/boards/62/reports/velocity">Velocity ↗</a> · <a data-jira="/jira/software/c/projects/CRW/boards/62/reports/sprint-retrospective?sprint=50">q4.3 Sprint Report ↗</a></td></tr>
+            <tr><td>63</td><td><a data-jira="/jira/software/c/projects/CRW/boards/63">ALR - Backlog Readiness ↗</a></td><td>Kanban</td><td></td></tr>
+            <tr><td>64</td><td><a data-jira="/jira/software/c/projects/CRW/boards/64">Crew Portfolio ↗</a></td><td>Kanban</td><td>Initiatives and Epics; sub-filter cleared so released CRW-5 shows</td></tr>
+          </tbody>
+        </table></div>
+        <h3>Teams, sprints and releases</h3>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th scope="col">Item</th><th scope="col">Details</th></tr></thead>
+          <tbody>
+            <tr><td>Swap Squad (SWP)</td><td>Team id <span class="mono">7ab46d0b-f5d5-4c27-9d3b-648ed1c6c67e</span> · plan capacity 20 · velocity 21/21, 18/18, 21/16, average 18.33</td></tr>
+            <tr><td>Alerts Squad (ALR)</td><td>Team id <span class="mono">b5cf2b12-d7a8-49e4-bf33-0da3acadf620</span> · plan capacity 18 · velocity 13/13, 16/13, 19/19</td></tr>
+            <tr><td>Closed sprints</td><td>SWP q4.1 (46), q4.2 (49), q4.3 (51) · ALR q4.1 (47), q4.2 (48), q4.3 (50). Replayed on 22 Nov 2026, so burndowns look squashed; Sprint Reports and Velocity are valid.</td></tr>
+            <tr><td>Active sprints</td><td>SWP-2026.q4.4 (53) and ALR-2026.q4.4 (52), 22 Nov – 4 Dec, 18 points each on the board. CRW-29 (2 pts, no Team) is in SWP q4.4 but hidden from the board.</td></tr>
+            <tr><td>Future sprints</td><td>SWP q4.5 (56, 7–18 Dec), q4.6 (57, 21 Dec – 1 Jan), 2027.q1.1 (58) · ALR q4.5 (54, 7–18 Dec), q4.6 (55, empty)</td></tr>
+            <tr><td>Releases</td><td>Crew App 4.1 (released 30 Oct 2026) · <b>Crew App 4.2 (18 Dec 2026)</b> · Notify 2.0 (22 Jan 2027) · Crew App 4.3 (26 Feb 2027)</td></tr>
+          </tbody>
+        </table></div>
+        <h3>Plan and scenarios</h3>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th scope="col">Item</th><th scope="col">Details</th></tr></thead>
+          <tbody>
+            <tr><td>Plan</td><td><a data-jira="/jira/plans/1/scenarios/1/timeline">Crew Self-Service 2027 ↗</a> · sources boards 60, 62 and CRW · Story points · Target start/end · auto-scheduler on</td></tr>
+            <tr><td>Baseline (scenario 1)</td><td>SWP q4.5 18/20 (CRW-30 8, CRW-31 5, CRW-32 5; CRW-33 and CRW-34 unestimated) · ALR q4.5 11/18 (CRW-63 5, CRW-64 3, CRW-73 3)</td></tr>
+            <tr><td>DEMO capacity cut (SWP 15) (scenario 3)</td><td>Instructor demo only, never saved</td></tr>
+            <tr><td>Program board</td><td><a data-jira="/jira/plans/1/scenarios/1/program/1">Holiday PI (Nov 2026 – Jan 2027) ↗</a></td></tr>
+            <tr><td>Learner scenarios</td><td><code>Lab NN</code>, a copy of Baseline, one per learner or pair. Never saved. Deleted after class.</td></tr>
+          </tbody>
+        </table></div>
+      </article>
+
+      <article class="lesson" id="seats">
+        <h2>Lab seats 01–20</h2>
+        <p>Seat NN owns board 64 + NN, epic CRP-N and 16 items starting at CRP-(21 + (N − 1) × 16). Offset 2 is the Ready story “Show swap eligibility before submitting” (used in Module 5); offset 14 is mislabeled <code>lab-NN-swaps</code>, so it's missing from the seat board; offset 15 is the Done reference story. Pairs share the lower seat number. If the cohort is smaller than 20, keep the highest free seat for your own demos.</p>
+        <div class="table-wrap"><table class="data" id="seat-table">
+          <thead><tr><th scope="col">Seat</th><th scope="col">Board</th><th scope="col">Epic</th><th scope="col">Items</th><th scope="col">Ready story</th><th scope="col">Mislabeled</th><th scope="col">Plan scenario</th><th scope="col">Learner</th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+        <p class="muted">Learner names you type here are saved only in this browser.</p>
+      </article>
+
+      <article class="lesson" id="demos">
+        <h2>Demo checklists</h2>
+        <p>Each module page has the full numbered demo script. These are the keys and screens to have open before you start.</p>
+        <div class="demo-card"><h3>M1 · Portfolio and outcomes <a href="m1.html#demo">Script →</a></h3><ul class="checklist" data-id="ins-d1">
+          <li><input type="checkbox" id="d11"><label for="d11">Crew Portfolio board 64; CRW-1 (XL, PPM-2027-014, Lean Canvas, LeadershipRequest); CRW-5 Monitored with empty Outcome Evidence; CRW-9 Canceled with its reason.</label></li>
+          <li><input type="checkbox" id="d12"><label for="d12"><code>issue in portfolioChildIssuesOf("CRW-1") AND issuetype = Epic</code> → 6; <code>parent = CRW-1</code> for contrast.</label></li>
+          <li><input type="checkbox" id="d13"><label for="d13">Impediment CRW-46 (flagged, escalated, needed by 25 Nov) → blocks CRW-25. Risks CRW-69..72.</label></li>
+          <li><input type="checkbox" id="d14"><label for="d14">An instructor practice item in CRP for the LeadershipRequest label demo; remove the label afterwards.</label></li>
+        </ul></div>
+        <div class="demo-card"><h3>M2 · Plans scenarios <a href="m2.html#demo">Script →</a></h3><ul class="checklist" data-id="ins-d2">
+          <li><input type="checkbox" id="d21"><label for="d21">Plan open in Baseline; scenario “DEMO capacity cut (SWP 15)” has no unsaved changes before you start.</label></li>
+          <li><input type="checkbox" id="d22"><label for="d22">Capacity 20 → 15 on SWP-2026.q4.5 → “18 / 15 points allocated, 120%”.</label></li>
+          <li><input type="checkbox" id="d23"><label for="d23">Move CRW-31 to q4.6 → 13/15, Crew App 4.2 marker red, CRW-31 → CRW-73 at −25d. Also show CRW-22 → CRW-58 (−13d).</label></li>
+          <li><input type="checkbox" id="d24"><label for="d24">Review changes shows exactly 2 rows → <b>Discard</b>. Never Save.</label></li>
+        </ul></div>
+        <div class="demo-card"><h3>M3 · Reconcile metrics <a href="m3.html#demo">Script →</a></h3><ul class="checklist" data-id="ins-d3">
+          <li><input type="checkbox" id="d31"><label for="d31">ALR q4.3 Sprint Report (sprint 50): 19 points, CRW-54 and CRW-55 shown as Ready for Release.</label></li>
+          <li><input type="checkbox" id="d32"><label for="d32">ALR board 62 column mapping next to SWP board 60.</label></li>
+          <li><input type="checkbox" id="d33"><label for="d33">Module 3 eazyBI replica: definition B → 11; drill through to CRW-53, 56, 57. Definition C with the import toggle: 11 vs 14.</label></li>
+          <li><input type="checkbox" id="d34"><label for="d34">CRW-55 history (Done later) and CRW-54 (still Ready for Release).</label></li>
+        </ul></div>
+        <div class="demo-card"><h3>M4 · Release quality <a href="m4.html#demo">Script →</a></h3><ul class="checklist" data-id="ins-d4">
+          <li><input type="checkbox" id="d41"><label for="d41">Module 4 Zephyr replica: Cycle 1 (13 of 14) and Cycle 2 (every criterion, 4 of 7).</label></li>
+          <li><input type="checkbox" id="d42"><label for="d42">Bug CRW-62 (High, Development) open in Jira; CRW-58 blocked by CRW-22 (eQE Testing).</label></li>
+          <li><input type="checkbox" id="d43"><label for="d43">CRW-29 for the same home-base symptom; Risk CRW-71 (Mitigated) for the uncovered criterion.</label></li>
+        </ul></div>
+        <div class="demo-card"><h3>M5 · Jira and Git <a href="m5.html#demo">Script →</a></h3><ul class="checklist" data-id="ins-d5">
+          <li><input type="checkbox" id="d51"><label for="d51">Platform or repository owner booked for the call, with the approved provider and a preconnected example.</label></li>
+          <li><input type="checkbox" id="d52"><label for="d52">Disposable repository ready; your demo seat's Ready story key for the branch (never a CRW key).</label></li>
+          <li><input type="checkbox" id="d53"><label for="d53">Module 5 replica open as the fallback; CRW-25 open to show “no development evidence” on the training site.</label></li>
+        </ul></div>
+        <div class="demo-card"><h3>M6 · Claude and MCP <a href="m6.html#demo">Script →</a></h3><ul class="checklist" data-id="ins-d6">
+          <li><input type="checkbox" id="d61"><label for="d61">Your organization's approved MCP setup guide on screen; Claude connected to the training site.</label></li>
+          <li><input type="checkbox" id="d62"><label for="d62">Tool list prompt ready; CRW-25 browse link open for comparison.</label></li>
+          <li><input type="checkbox" id="d63"><label for="d63">A learner-role test account for the access-denied demo. Don't grant access during class.</label></li>
+        </ul></div>
+        <div class="demo-card"><h3>M7 · Validate queries <a href="m7.html#demo">Script →</a></h3><ul class="checklist" data-id="ins-d7">
+          <li><input type="checkbox" id="d71"><label for="d71">Prepared replay of the Bug-omitting query, in case the live answer differs.</label></li>
+          <li><input type="checkbox" id="d72"><label for="d72">Expected: CRW-33 and CRW-34. Decoy: CRW-35 (q4.6). Ask AI screenshot for cf[10020]/cf[10036].</label></li>
+          <li><input type="checkbox" id="d73"><label for="d73">SWP Velocity report (q4.2 completed 18) and the q4.2 current-state query (21 with CRW-19).</label></li>
+          <li><input type="checkbox" id="d74"><label for="d74">CRW-34 description with the planted instruction. Approve no writes.</label></li>
+        </ul></div>
+        <div class="demo-card"><h3>M8 · Release decision <a href="m8.html#demo">Script →</a></h3><ul class="checklist" data-id="ins-d8">
+          <li><input type="checkbox" id="d81"><label for="d81">Worksheet format shown on a different decision (pulling CRW-42 into q4.4), so the room's answer stays their own.</label></li>
+          <li><input type="checkbox" id="d82"><label for="d82">Blockers query (5 keys) and Crew App 4.2 open-work query (10 keys) ready.</label></li>
+          <li><input type="checkbox" id="d83"><label for="d83">Pairs and the three-minute timer; who presents first.</label></li>
+        </ul></div>
+      </article>
+
+      <article class="lesson" id="rehearsal">
+        <h2>Rehearsal</h2>
+        <ul class="checklist" data-id="ins-rehearsal">
+          <li><input type="checkbox" id="r1"><label for="r1">Obtain your organization's approved MCP setup guide before finalizing the setup walkthrough, and distribute it before and after class.</label></li>
+          <li><input type="checkbox" id="r2"><label for="r2">Five business days before the pilot, rehearse with a <b>learner account</b>: the MCP connection, Git synchronization (or the replica fallback) and the report reconciliation.</label></li>
+          <li><input type="checkbox" id="r3"><label for="r3">With the learner account, create a scenario <code>Lab 01</code> in the plan, make one change, open Review changes and Discard. Confirm the account can't change Baseline by accident.</label></li>
+          <li><input type="checkbox" id="r4"><label for="r4">Run every “expect” query in the answer key with the learner account and confirm the counts (CRW-33/34, decoy CRW-35, ALR q4.3 Ready for Release, blockers 5, Crew App 4.2 open 10).</label></li>
+          <li><input type="checkbox" id="r5"><label for="r5">Reset the lab and refresh Plans sources, test links and repository examples (or the replicas) before the cohort.</label></li>
+          <li><input type="checkbox" id="r6"><label for="r6">Confirm the false query and the report discrepancy reproduce consistently with learner permissions.</label></li>
+          <li><input type="checkbox" id="r7"><label for="r7">Check that CRW has no updates in the last day (room-watching query below).</label></li>
+        </ul>
+      </article>
+
+      <article class="lesson" id="watch">
+        <h2>Room-watching JQL</h2>
+        <p>Keep these open in tabs during labs.</p>
+        <pre data-jql data-label="Seat activity in the last 15 minutes">project = CRP AND updated >= -15m ORDER BY updated DESC</pre>
+        <pre data-jql data-label="Should stay empty: writes to the reference space">project = CRW AND updated >= -1h ORDER BY updated DESC</pre>
+        <pre data-jql data-label="Items outside any seat label">project = CRP AND labels is EMPTY AND created >= -1d</pre>
+        <pre data-jql data-label="Seat 07 example: everything in one seat">project = CRP AND labels = lab-07 ORDER BY updated DESC</pre>
+        <div class="callout warn"><strong>If CRW changes</strong>Find the item and the user in its History, revert the field by hand, and tell the room which rule was broken without naming anyone. Re-check the answer-key queries for that item before the next demo.</div>
+      </article>
+
+      <article class="lesson" id="perms">
+        <h2>Permissions to set</h2>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th scope="col">Where</th><th scope="col">Learner permission</th></tr></thead>
+          <tbody>
+            <tr><td>CRW</td><td>Browse only. No create, edit, transition, link, comment or flag. Learners must be able to open boards, reports and the work item History.</td></tr>
+            <tr><td>CRP</td><td>Browse, create, edit, transition, link, comment and schedule within their own seat (by convention: label <code>lab-NN</code>).</td></tr>
+            <tr><td>Plans</td><td>Can view and edit the plan so they can create their own scenario <code>Lab NN</code>. They never press Save; the plan's sources are the read-only CRW space.</td></tr>
+            <tr><td>Development tools</td><td>View Development Tools in the space, once a Git provider is connected.</td></tr>
+            <tr><td>Rovo</td><td>Rovo Search, Ask AI and Improve actions available.</td></tr>
+            <tr><td>MCP</td><td>Training-site authorization through the approved client and guide. Read and search work for every learner; any designated write is limited to the learner's CRP seat.</td></tr>
+          </tbody>
+        </table></div>
+      </article>
+
+      <article class="lesson" id="reset">
+        <h2>Reset between cohorts</h2>
+        <p>Non-destructive: nothing is deleted from CRP, so a learner's evidence links keep working.</p>
+        <ol>
+          <li>Relabel each used seat's items from <code>lab-NN</code> to <code>archived-lab-NN</code> (bulk edit with <code>project = CRP AND labels = lab-NN</code>).</li>
+          <li>Recreate the seat's items from the manifest pattern (offsets 0–15, summary prefix <code>LNN · </code>, label <code>lab-NN</code>, the mislabeled offset 14 as <code>lab-NN-swaps</code>). New keys follow the last key in CRP, so update the seat table formula if you recreate rather than reuse.</li>
+          <li>Delete every <code>Lab NN</code> scenario in the plan. Confirm Baseline shows no unsaved changes and the DEMO scenario is back to its starting state.</li>
+          <li>Remove any comments learners added to seat epics if you want a clean epic, or leave them as history.</li>
+          <li>Run the rehearsal answer-key queries again.</li>
+        </ol>
+      </article>
+
+      <article class="lesson" id="fallbacks">
+        <h2>Fallbacks for access gaps</h2>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th scope="col">Gap</th><th scope="col">Fallback</th><th scope="col">Learner records</th></tr></thead>
+          <tbody>
+            <tr><td>Can't create a plan scenario</td><td>Pair with a learner who can; or follow the instructor's DEMO scenario and use the Module 2 comparer.</td><td>Practiced (pair) or observed (demo)</td></tr>
+            <tr><td>eazyBI not installed</td><td>Module 3 replica plus the live Sprint Report, Velocity and history JQL.</td><td>Observed in Jira; measure observed in replica</td></tr>
+            <tr><td>Zephyr not installed</td><td>Module 4 replica; Bug CRW-62 and related items live in Jira.</td><td>Observed in replica</td></tr>
+            <tr><td>No Git connection</td><td>Preconnected demo, or the Module 5 replica as the captured example.</td><td>Documented diagnosis using the captured example</td></tr>
+            <tr><td>MCP won't authorize</td><td>MCP replay from the instructor's screen; learner validates the same query in Jira.</td><td>Query validated in Jira; retrieval observed, not practiced</td></tr>
+            <tr><td>Rovo not enabled for a learner</td><td>Use the Ask AI screenshot in Module 7.</td><td>Observed</td></tr>
+          </tbody>
+        </table></div>
+        <p>Always record “observed” versus “practiced” honestly on the completion record. It's part of the course's lesson.</p>
+      </article>
+
+      <article class="lesson" id="live">
+        <h2>What's live versus replica</h2>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th scope="col">Module</th><th scope="col">Live on the training site</th><th scope="col">Practice replica</th></tr></thead>
+          <tbody>
+            <tr><td>M1</td><td>Portfolio board, CRW-1, CRW-5, risks, LeadershipRequest JQL, portfolioChildIssuesOf</td><td>Stage-gate inspector (decision aid)</td></tr>
+            <tr><td>M2</td><td>Plan, scenarios, capacity, dependencies, release marker, Review changes</td><td>Scenario comparer (arithmetic aid)</td></tr>
+            <tr><td>M3</td><td>Sprint Report, Velocity, board columns, history JQL</td><td>eazyBI report, measures, drill-through, import time</td></tr>
+            <tr><td>M4</td><td>Bug CRW-62, CRW-58, CRW-22, CRW-29, Risk CRW-71</td><td>Zephyr cycles, executions, coverage, retest history</td></tr>
+            <tr><td>M5</td><td>CRW-25 and its links (no Development data)</td><td>Practice repository, branches, commits, pull requests, Development panel</td></tr>
+            <tr><td>M6</td><td>CRW-25 via the learner's own approved Claude connection; Rovo</td><td>Tool inventory and retrieval checkers (paste-in)</td></tr>
+            <tr><td>M7</td><td>All JQL, Ask AI, CRW-34, Velocity report</td><td>Query inspector and calculators</td></tr>
+            <tr><td>M8</td><td>Release and blocker queries</td><td>Recommendation builder</td></tr>
+          </tbody>
+        </table></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+</main>
+<div id="site-footer"></div>
+<script src="assets/js/config.js?v=1"></script>
+<script src="assets/js/site.js?v=1"></script>
+<script src="assets/js/widgets.js?v=1"></script>
+<script>
+(function () {
+  "use strict";
+  const CA = window.CA, CW = window.CW, esc = CA.esc;
+  document.getElementById("site-now").textContent = CA.siteUrl();
+  const body = document.querySelector("#seat-table tbody");
+  const names = CA.store.get("ins:names", {});
+  let html = "";
+  for (let n = 1; n <= 20; n++) {
+    const nn = String(n).padStart(2, "0");
+    const first = 21 + (n - 1) * 16;
+    const site = CA.siteUrl();
+    html += "<tr><td><b>" + nn + "</b></td>" +
+      '<td><a href="' + CA.seatBoardUrl(nn) + '" target="_blank" rel="noopener">Lab ' + nn + " · board " + (64 + n) + " ↗</a></td>" +
+      '<td><a href="' + site + "/browse/CRP-" + n + '" target="_blank" rel="noopener">CRP-' + n + "</a></td>" +
+      "<td>CRP-" + first + " – CRP-" + (first + 15) + "</td>" +
+      '<td><a href="' + site + "/browse/" + CW.seatKey(2, nn) + '" target="_blank" rel="noopener">' + CW.seatKey(2, nn) + "</a></td>" +
+      '<td><a href="' + site + "/browse/" + CW.seatKey(14, nn) + '" target="_blank" rel="noopener">' + CW.seatKey(14, nn) + "</a></td>" +
+      "<td><code>Lab " + nn + "</code></td>" +
+      '<td><label class="skip" for="seat-name-' + nn + '">Learner on seat ' + nn + '</label><input type="text" id="seat-name-' + nn + '" data-seat="' + nn + '" value="' + esc(names[nn] || "") + '" style="font:inherit;font-size:.9rem;border:1px solid var(--line);border-radius:6px;padding:4px 8px;min-width:140px"></td></tr>';
+  }
+  body.innerHTML = html;
+  body.querySelectorAll("input[data-seat]").forEach(inp => inp.addEventListener("input", () => {
+    const s = CA.store.get("ins:names", {}); s[inp.dataset.seat] = inp.value; CA.store.set("ins:names", s);
+  }));
+})();
+</script>
+</body>
+</html>

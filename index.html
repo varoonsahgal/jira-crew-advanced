@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jira Planning Analytics and Connected Work · Crew Academy 301</title>
+<meta name="description" content="Crew Academy 301 · Advanced: make release decisions when forecasts, reports and test results disagree. Trace the underlying Jira records and use approved Git and Claude MCP connections to check the evidence.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/site.css?v=1">
+<link rel="icon" href="assets/img/favicon.svg">
+<style>
+  .hero-pass { max-width: 450px; justify-self: end; width: 100%; }
+  @media (max-width: 880px) { .hero-pass { justify-self: start; } }
+  .hero-pass .pass { transform: rotate(2deg); }
+  .hero-pass .pass:hover { transform: rotate(0deg) translateY(-4px); }
+  .logbook { display: grid; grid-template-columns: minmax(0,1.2fr) minmax(0,.8fr); gap: 28px; align-items: center; }
+  @media (max-width: 820px) { .logbook { grid-template-columns: minmax(0,1fr); } }
+  .tier-row { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-top: 12px; font-family: var(--font-display); letter-spacing: .06em; text-transform: uppercase; font-size: .85rem; color: #9fb2d3; }
+  .sandbox-grid { display: grid; grid-template-columns: minmax(0,.9fr) minmax(0,1.1fr); gap: 34px; align-items: center; }
+  @media (max-width: 900px) { .sandbox-grid { grid-template-columns: minmax(0,1fr); } }
+  .kv { display: grid; grid-template-columns: auto minmax(0,1fr); gap: 8px 16px; font-size: .95rem; }
+  .kv dt { font-weight: 700; color: var(--navy-800); }
+  .kv dd { margin: 0; color: var(--ink-2); }
+  .story { max-width: 820px; }
+  .story p { font-size: 1.05rem; }
+  .story .beat { border-left: 3px solid var(--sky-400); padding: 2px 0 2px 16px; margin: 0 0 16px; }
+  .story .beat b.k { font-family: var(--font-display); letter-spacing: .08em; text-transform: uppercase; font-size: .85rem; color: var(--blue-600); display: block; }
+  .objective-list { counter-reset: o; list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+  .objective-list li { counter-increment: o; position: relative; background: var(--white); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px 14px 58px; box-shadow: var(--shadow-1); }
+  .objective-list li::before { content: counter(o); position: absolute; left: 14px; top: 12px; width: 32px; height: 32px; border-radius: 50%; background: var(--navy-900); color: var(--beacon); font-family: var(--font-display); font-weight: 700; display: grid; place-items: center; }
+  .objective-list small { display: block; color: var(--ink-3); font-size: .85rem; margin-top: 2px; }
+  .flowcards { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; }
+  @media (max-width: 900px) { .flowcards { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+  @media (max-width: 520px) { .flowcards { grid-template-columns: minmax(0,1fr); } }
+  .flowcards .card { padding: 18px; }
+  .flowcards .card h3 { font-size: 1.15rem; }
+  .flowcards .card p { font-size: .93rem; color: var(--ink-2); margin: 0; }
+  .flowcards .card .eyebrow { font-size: .75rem; }
+</style>
+</head>
+<body>
+<header id="site-header"></header>
+<main id="main">
+
+<section class="hero">
+  <div class="clouds" aria-hidden="true">
+    <div class="cloud" style="top:14%;width:180px;height:44px;animation-duration:70s;animation-delay:-10s"></div>
+    <div class="cloud" style="top:58%;width:260px;height:60px;animation-duration:95s;animation-delay:-40s"></div>
+    <div class="cloud" style="top:80%;width:140px;height:36px;animation-duration:60s;animation-delay:-25s"></div>
+  </div>
+  <svg class="flightpath" viewBox="0 0 1900 520" preserveAspectRatio="none" aria-hidden="true"><path d="M -60 380 C 300 120, 700 520, 1100 160 S 1700 220, 1900 60"/></svg>
+  <svg class="plane-fly" viewBox="0 0 64 64" aria-hidden="true"><path fill="#ffb81c" d="M58 30 40 27 29 8h-5l5 19-13-1-5-6H7l3 12-3 12h4l5-6 13-1-5 19h5l11-19 18-3c2.6-.5 2.6-3.5 0-4z"/></svg>
+  <div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow">Crew Academy 301 · Advanced</div>
+      <h1>Jira Planning Analytics and Connected Work</h1>
+      <p class="lede">Make release decisions when forecasts, reports and test results disagree. Trace the underlying Jira records and use approved Git and Claude MCP connections to check the evidence.</p>
+      <div class="btn-row">
+        <a class="btn btn-primary" href="m1.html">✈ Start Module 1</a>
+        <a class="btn btn-ghost" href="outline.html">Read the course outline</a>
+      </div>
+    </div>
+    <div class="hero-pass">
+      <a class="pass" href="#logbook" aria-label="Your boarding pass and miles">
+        <div class="pass-main">
+          <div class="pass-head"><span>Boarding pass</span><span class="lvl" data-miles-tier>Trainee</span></div>
+          <div class="pass-route">
+            <div>FCST<small>The forecast says</small></div>
+            <div class="arrow"></div>
+            <div>EVID<small>The evidence shows</small></div>
+          </div>
+          <div class="pass-meta">
+            <div><span>Miles</span><b data-miles-total>0</b></div>
+            <div><span>Flight</span><b>CRW301</b></div>
+            <div><span>Gate</span><b>Release review</b></div>
+          </div>
+          <div class="light" style="margin-top:14px"><div class="progress-bar"><i data-miles-bar></i></div><div class="muted" style="font-size:.8rem;margin-top:6px" data-miles-next></div></div>
+        </div>
+        <div class="pass-stub">
+          <div class="center"><div class="seat-l">Seat</div><div class="seat">{SEAT}</div></div>
+          <div class="barcode" aria-hidden="true"></div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="tight band-white">
+  <div class="wrap">
+    <div class="board" role="region" aria-label="Course departures board: the eight modules">
+      <div class="board-title"><span>Departures · CRW301 modules</span><span class="board-clock"></span></div>
+      <table>
+        <thead><tr><th scope="col">Flight</th><th scope="col">Destination</th><th scope="col">Gate</th><th scope="col">Duration</th><th scope="col">Status</th></tr></thead>
+        <tbody>
+          <tr><td><a href="m1.html"><span class="flap">CRW301-1</span></a></td><td><a href="m1.html"><span class="flap">PORTFOLIO AND OUTCOMES</span></a></td><td><span class="flap">S1</span></td><td><span class="flap">35M</span></td><td><span data-module-status="m1"></span></td></tr>
+          <tr><td><a href="m2.html"><span class="flap">CRW301-2</span></a></td><td><a href="m2.html"><span class="flap">PLANS SCENARIOS</span></a></td><td><span class="flap">S1</span></td><td><span class="flap">55M</span></td><td><span data-module-status="m2"></span></td></tr>
+          <tr><td><a href="m3.html"><span class="flap">CRW301-3</span></a></td><td><a href="m3.html"><span class="flap">RECONCILE METRICS</span></a></td><td><span class="flap">S1</span></td><td><span class="flap">50M</span></td><td><span data-module-status="m3"></span></td></tr>
+          <tr><td><a href="m4.html"><span class="flap">CRW301-4</span></a></td><td><a href="m4.html"><span class="flap">RELEASE QUALITY</span></a></td><td><span class="flap">S1</span></td><td><span class="flap">40M</span></td><td><span data-module-status="m4"></span></td></tr>
+          <tr><td><a href="m5.html"><span class="flap">CRW301-5</span></a></td><td><a href="m5.html"><span class="flap">JIRA TO GIT TRACE</span></a></td><td><span class="flap">S2</span></td><td><span class="flap">45M</span></td><td><span data-module-status="m5"></span></td></tr>
+          <tr><td><a href="m6.html"><span class="flap">CRW301-6</span></a></td><td><a href="m6.html"><span class="flap">CLAUDE VIA MCP</span></a></td><td><span class="flap">S2</span></td><td><span class="flap">40M</span></td><td><span data-module-status="m6"></span></td></tr>
+          <tr><td><a href="m7.html"><span class="flap">CRW301-7</span></a></td><td><a href="m7.html"><span class="flap">VALIDATE AI QUERIES</span></a></td><td><span class="flap">S2</span></td><td><span class="flap">55M</span></td><td><span data-module-status="m7"></span></td></tr>
+          <tr><td><a href="m8.html"><span class="flap">CRW301-8</span></a></td><td><a href="m8.html"><span class="flap">RELEASE DECISION</span></a></td><td><span class="flap">S2</span></td><td><span class="flap">40M</span></td><td><span data-module-status="m8"></span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted" style="font-size:.88rem;margin:10px 0 0">Status turns to “In progress” when you finish a module's lab or checkpoint, and “Done” when you've finished both. Progress is saved in this browser only.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Course at a glance</div>
+      <h2>The hardest leg of the series</h2>
+      <p class="lede">Every number in a release review has a definition, a scope and a source record behind it. This course trains you to find all three before you sign your name under a recommendation.</p>
+    </div>
+    <div class="facts">
+      <div class="fact"><b>6 hours</b><span>of instruction and practice: one full day or two half-days, with breaks added</span></div>
+      <div class="fact"><b>195 min</b><span>of hands-on practice across 8 labs</span></div>
+      <div class="fact"><b>Blended</b><span>live virtual teaching, demos and sandbox exercises, plus 30 minutes of on-demand preparation</span></div>
+      <div class="fact"><b>≤ 20</b><span>learners per cohort, with a lab seat per learner or pair</span></div>
+    </div>
+    <div class="grid g2" style="margin-top:22px">
+      <div class="card">
+        <h3>Who it's for</h3>
+        <p>Delivery leads, product owners, reporting authors, QA leads, engineers and approved Claude users. You already run sprints and read reports. Here you decide what those reports are allowed to prove.</p>
+      </div>
+      <div class="card">
+        <h3>What you need first</h3>
+        <p>Intermediate skills or equivalent evidence of verified JQL, sprint reporting, Plan capacity and Zephyr execution. You use the approved Claude client. Engineers completing the Git exercise also need basic branch, commit and review skills.</p>
+        <p class="muted" style="margin:0">Coming from the 201 Intermediate course? You're ready. Links to the other courses are in the footer.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band-white">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Learning objectives</div>
+      <h2>By the end of the day you can</h2>
+    </div>
+    <ol class="objective-list">
+      <li>Trace Initiative and Epic decisions through delivery, monitoring and measured business outcomes.<small>Module 1 · CRW-1 and the Monitored Epic CRW-5</small></li>
+      <li>Compare Plan scenarios and explain capacity, dependency and release trade-offs.<small>Module 2 · Crew Self-Service 2027, your own scenario Lab {SEAT}</small></li>
+      <li>Reconcile a Jira report with an eazyBI measure using definitions, import timing and item evidence.<small>Module 3 · ALR-2026.q4.3: 19 versus 11</small></li>
+      <li>Evaluate test coverage, failed or unexecuted tests and retest evidence for a release decision.<small>Module 4 · Bug CRW-62 and the swap-approved notification path</small></li>
+      <li>Connect Jira and an approved Git provider and verify development traceability.<small>Module 5 · CRW-25 and the commit that went to the wrong key</small></li>
+      <li>Use Claude through Atlassian MCP, validate generated JQL and identify metric and permission risks.<small>Modules 6–7 · CRW-25 retrieval, the query that omits Bugs, the note planted in CRW-34</small></li>
+    </ol>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Classroom scenario</div>
+      <h2>Four days before the release review</h2>
+    </div>
+    <div class="story">
+      <p>It's Sunday 22 November 2026. Crew Scheduling is building <b>Crew Self-Service 2027</b> (<a data-jira="/browse/CRW-1">CRW-1 ↗</a>), an Initiative that promises 40% fewer scheduler-handled swap requests and swap turnaround from 2 days to under 2 hours by Q2 2027. Two teams share the work: <b>Swap Squad</b> builds the swap flow and <b>Alerts Squad</b> sends the notifications crew rely on. <b>Crew App 4.2</b> is due on <b>18 December</b>. Leadership wants a recommendation: proceed, hold or clarify.</p>
+      <div class="beat"><b class="k">The portfolio</b>Epic <a data-jira="/browse/CRW-5">CRW-5 ↗</a> Swap Request Status Tracking shipped in Crew App 4.1 on 30 October. Every child is Done. It sits in <b>Monitored</b> with an empty Outcome Evidence field. Can anyone close it yet?</div>
+      <div class="beat"><b class="k">The forecast</b>Plans shows a capacity risk. Swap Squad's capacity for SWP-2026.q4.5 drops from 20 to 15 points, but the sprint holds 18. Moving the obvious story, <a data-jira="/browse/CRW-31">CRW-31 ↗</a>, turns the capacity bar green and the Crew App 4.2 marker red, and leaves Alerts Squad's <a data-jira="/browse/CRW-73">CRW-73 ↗</a> scheduled 25 days before the rule it depends on.</div>
+      <div class="beat"><b class="k">The reports</b>Two reports disagree. Alerts Squad's board says ALR-2026.q4.3 completed 19 points. The sample eazyBI measure says 11. The 8-point gap is two work items, and only one of them is actually Done today.</div>
+      <div class="beat"><b class="k">The tests</b>Most tests pass. One cycle shows 93%, yet an acceptance criterion about crew personal data has no executed test, and the swap-approved email case keeps failing against Bug <a data-jira="/browse/CRW-62">CRW-62 ↗</a>.</div>
+      <div class="beat"><b class="k">The code</b>A code change has no Jira link, and another commit points at the wrong work item. Neither shows up where the release review looks.</div>
+      <div class="beat"><b class="k">The assistant</b>Claude, connected through Atlassian MCP, writes a confident query for missing estimates. It quietly leaves out Bugs. One of those Bugs carries a note addressed to AI assistants, asking them to tidy the sprint's numbers.</div>
+      <p>You investigate each claim, record what you observed and what you only assumed, and defend a recommendation that a peer can check against the source records in three minutes.</p>
+    </div>
+  </div>
+</section>
+
+<section class="band-white">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">How the live sessions flow</div>
+      <h2>Two legs, eight modules, one decision</h2>
+      <p>Each session is three instructional hours plus two 15-minute breaks. Every module follows the same rhythm: a short lesson, an instructor demo on the reference space, a timed lab and a checkpoint. Your evidence builds up module by module and comes together in Module 8. See the <a href="outline.html#agenda">full agenda with clock times</a>.</p>
+    </div>
+    <div class="grid g2">
+      <div class="card">
+        <div class="eyebrow">Session 1 · Modules 1–4 · 3½ h</div>
+        <h3>Connect outcomes to the forecast, then reconcile the delivery evidence</h3>
+        <div class="flowcards" style="grid-template-columns:repeat(2,minmax(0,1fr));margin-top:12px">
+          <div class="card"><div class="eyebrow">M1 · 35 min</div><h3>Close it or keep monitoring?</h3><p>Portfolio stages, outcome evidence, ROAM risk treatment.</p></div>
+          <div class="card"><div class="eyebrow">M2 · 55 min</div><h3>Choose a realistic forecast</h3><p>Two Plans scenarios for the reduced-capacity team.</p></div>
+          <div class="card"><div class="eyebrow">M3 · 50 min</div><h3>19 or 11?</h3><p>Reconcile the board with the eazyBI measure.</p></div>
+          <div class="card"><div class="eyebrow">M4 · 40 min</div><h3>The risk behind the pass rate</h3><p>Coverage, failures, retests and a quality call.</p></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="eyebrow">Session 2 · Modules 5–8 · 3½ h</div>
+        <h3>Connect Jira to code and Claude, then verify AI results and decide</h3>
+        <div class="flowcards" style="grid-template-columns:repeat(2,minmax(0,1fr));margin-top:12px">
+          <div class="card"><div class="eyebrow">M5 · 45 min</div><h3>Restore a missing code link</h3><p>Keys in branches, commits and pull requests.</p></div>
+          <div class="card"><div class="eyebrow">M6 · 40 min</div><h3>Verify the connection</h3><p>Site, identity and tool permissions for Claude.</p></div>
+          <div class="card"><div class="eyebrow">M7 · 55 min</div><h3>Catch the query that omits Bugs</h3><p>Expected versus actual keys, denominators, velocity.</p></div>
+          <div class="card"><div class="eyebrow">M8 · 40 min</div><h3>Defend the recommendation</h3><p>Proceed, hold or clarify in three minutes.</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="callout standard"><strong>Golden Template placement</strong>Use the approved Golden Template as the reference when you diagnose problems: which field a value belongs in, which status means done, how parent links build the hierarchy and how board filters decide what a board and its reports can see. In this course it explains why CRW-5 needed its board sub-filter cleared (Module 1), why Alerts Squad's board counts Ready for Release as complete (Module 3) and why <code>Team = "Swap Squad"</code> silently matches nothing (Modules 3 and 7). Confirm the template's authority and any Crew-specific variations with the template owner before you treat a difference as a defect.</div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap sandbox-grid">
+    <div>
+      <div class="eyebrow">Your training aircraft</div>
+      <h2>CRW for reference, your seat for practice</h2>
+      <p>Every investigation reads <b>Crew Scheduling (Training)</b>, a live Jira Premium space with two teams, real sprint history, a portfolio board, a shared plan and a few deliberate traps. You practise in your own seat in <b>Crew Practice Lab</b>, and in your own scenario inside the plan.</p>
+      <dl class="kv">
+        <dt>Reference</dt><dd>Space <b>CRW</b> · Crew Scheduling (Training). Boards: <a data-jira="/jira/software/c/projects/CRW/boards/60">SWP - Sprint Execution ↗</a>, <a data-jira="/jira/software/c/projects/CRW/boards/62">ALR - Sprint Execution ↗</a>, <a data-jira="/jira/software/c/projects/CRW/boards/64">Crew Portfolio ↗</a></dd>
+        <dt>Teams</dt><dd>Swap Squad (SWP, capacity 20) · Alerts Squad (ALR, capacity 18)</dd>
+        <dt>Sprints</dt><dd>Active: SWP-2026.q4.4 and ALR-2026.q4.4 (22 Nov – 4 Dec). Next: q4.5 (7 – 18 Dec)</dd>
+        <dt>Plan</dt><dd><a data-jira="/jira/plans/1/scenarios/1/timeline">Crew Self-Service 2027 ↗</a> · Baseline scenario · you work in <b>Lab {SEAT}</b></dd>
+        <dt>Releases</dt><dd>Crew App 4.1 (released 30 Oct) · <b>Crew App 4.2 (18 Dec)</b> · Notify 2.0 (22 Jan) · Crew App 4.3 (26 Feb)</dd>
+        <dt>Rule</dt><dd><b>CRW is read-only.</b> Twenty people share it. Search it, report on it, ask Rovo or Claude about it, but never create, edit, move, link, flag or comment there.</dd>
+        <dt>Your seat</dt><dd>Space <b>CRP · Crew Practice Lab</b>, seat <b data-seat-label></b>: epic <span data-seat-epic></span>, label <code>lab-{SEAT}</code>, summary prefix <code>L{SEAT} · </code>, <a data-seat-board>open my seat board ↗</a></dd>
+        <dt>Replicas</dt><dd>Zephyr, eazyBI and a Git provider aren't installed on the training site. Modules 3–5 use clearly labelled in-page practice replicas built from the same CRW records.</dd>
+      </dl>
+    </div>
+    <figure class="shot">
+      <div class="frame"><div class="frame-bar"><i></i><i></i><i></i><span>…atlassian.net/jira/software/c/projects/CRW/boards/64</span></div>
+      <img src="assets/img/crw-portfolio-board.jpg" alt="Crew Portfolio Kanban board with columns New Idea, Discovery, Technical Analysis, Prioritized, Developing, Monitored and Done; CRW-5 Swap Request Status Tracking sits alone in Monitored, and CRW-1, CRW-3 and CRW-11 carry the LeadershipRequest label" loading="lazy"></div>
+      <figcaption>The Crew Portfolio board you'll start from in Module 1. Notice CRW-5 alone in Monitored, and the LeadershipRequest labels that feed the leadership view.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="band-navy" id="logbook">
+  <div class="wrap logbook">
+    <div>
+      <div class="eyebrow" style="color:var(--beacon)">Pilot logbook</div>
+      <h2>Earn miles for evidence, not clicks</h2>
+      <p>Each lab you finish earns 400–600 miles, each checkpoint you pass (75% or better) earns 200, and the investigation tools inside the modules add a bonus when you complete them. Miles are saved in this browser. Climb from Trainee to Chief Scheduler.</p>
+      <div class="progress-bar" style="height:14px;margin-top:18px"><i data-miles-bar></i></div>
+      <div class="tier-row" data-tiers></div>
+    </div>
+    <div class="card" style="background:#0b2a5b;border-color:#1f3f78;color:#dbe6f7">
+      <div class="stat-l" style="color:#9fb2d3">Your miles</div>
+      <div class="stat" style="color:var(--beacon)"><span data-miles-total>0</span></div>
+      <p style="margin:10px 0 4px">Status: <b data-miles-tier style="color:#fff">Trainee</b></p>
+      <p class="muted" style="color:#9fb2d3;margin:0"><span data-count-done>0</span> labs, checkpoints and bonuses logged · <span data-miles-next></span></p>
+    </div>
+  </div>
+</section>
+
+<section class="band-white" id="prepare">
+  <div class="wrap grid g2" style="align-items:start">
+    <div>
+      <div class="eyebrow">Before you board · 30 minutes on demand</div>
+      <h2>Preparation checklist</h2>
+      <p>Complete these before Session 1. Your ticks save in this browser.</p>
+      <ul class="checklist" data-id="prep">
+        <li><input type="checkbox" id="pp1"><label for="pp1">I picked my <b>lab seat</b> (01–20) in the top bar. I'm on <b data-seat-label></b>. If I work in a pair, we agreed whose seat we use.</label></li>
+        <li><input type="checkbox" id="pp2"><label for="pp2">I can open the <a data-jira="/jira/software/c/projects/CRW/boards/64">Crew Portfolio board ↗</a> in CRW and <a data-seat-board>my seat board ↗</a> in CRP.</label></li>
+        <li><input type="checkbox" id="pp3"><label for="pp3">I reviewed <b>your organization's approved MCP setup guide</b>, confirmed which Claude client I'm allowed to use and know to select the <b>training Jira site</b> when I connect.</label></li>
+        <li><input type="checkbox" id="pp4"><label for="pp4">I can open the plan <a data-jira="/jira/plans/1/scenarios/1/timeline">Crew Self-Service 2027 ↗</a> and see the scenario menu. I know I'll copy Baseline into my own scenario <b>Lab {SEAT}</b> and never press Save.</label></li>
+        <li><input type="checkbox" id="pp5"><label for="pp5">I checked my access to report copies, test evidence and the practice repository. On this training site eazyBI, Zephyr and Git are practice replicas inside <a href="m3.html">Module 3</a>, <a href="m4.html">Module 4</a> and <a href="m5.html">Module 5</a>, so I opened each one once.</label></li>
+        <li><input type="checkbox" id="pp6"><label for="pp6">I opened the closed-sprint report for <a data-jira="/jira/software/c/projects/CRW/boards/62/reports/sprint-retrospective?sprint=50">ALR-2026.q4.3 ↗</a> and wrote down one thing I'd want to investigate (hint: look at the statuses in the Completed list).</label></li>
+        <li><input type="checkbox" id="pp7"><label for="pp7">I kept the setup guide somewhere I can find it after class.</label></li>
+      </ul>
+    </div>
+    <div>
+      <div class="eyebrow">Cabin rules</div>
+      <h2>How we fly together</h2>
+      <div class="callout captain"><strong>Twenty investigators, one reference space</strong><b>CRW is read-only.</b> Every Jira write you make happens in your CRP seat: label <code>lab-{SEAT}</code>, summary prefix <code>L{SEAT} · </code>, never another seat's records. In Plans you work only in your own scenario <b>Lab {SEAT}</b>, and you <b>discard</b> your changes. Nobody presses Save.</div>
+      <div class="callout tip"><strong>Run in Jira buttons</strong>Every JQL block has a <b>Run in Jira ↗</b> button that opens the query on the training site. Run it, compare the count and keys with the page, and write down any difference. A difference is a finding, not a failure.</div>
+      <div class="callout warn"><strong>Observed or claimed?</strong>Throughout the course you tag each statement as something you <b>observed</b> (with a link or query), an <b>assumption</b> you state openly, or an <b>unverified claim</b>. AI answers, dashboards and confident colleagues all go in the last pile until you check them.</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Completion evidence</div>
+      <h2>What you hand in</h2>
+      <p>Each module has a learner-output card inside its lab. Your entries save in this browser and come together on <a href="evidence.html">My completion record</a>, which you can print, save as PDF or download as Markdown.</p>
+    </div>
+    <div class="grid g2">
+      <div class="card"><h3>A Plan scenario comparison</h3><p>With downstream dependencies and the receiving team's capacity checked (Module 2).</p></div>
+      <div class="card"><h3>A reconciled metric</h3><p>With the report scope, definition, import time and Jira keys recorded (Module 3).</p></div>
+      <div class="card"><h3>A validated Claude-generated query</h3><p>With expected and actual results and one corrected error (Module 7).</p></div>
+      <div class="card"><h3>A development link and a release recommendation</h3><p>Supported by planning and test evidence (Modules 4, 5 and 8).</p></div>
+    </div>
+    <div class="btn-row"><a class="btn btn-blue" href="evidence.html">Open my completion record</a><a class="btn btn-sm" style="color:var(--blue-600)" href="reference.html">Reference sheets →</a></div>
+  </div>
+</section>
+
+<section class="band-sky">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Progression</div>
+      <h2>After you land</h2>
+    </div>
+    <div class="grid g3">
+      <div class="card"><h3>Use it in your role</h3><p>Completion supports independent use of the approved planning, reporting and connector workflows within your existing role.</p></div>
+      <div class="card"><h3>Route changes to owners</h3><p>Configuration changes and access requests go to the responsible platform or app owner: board and template settings, app installs, report definitions, MCP scopes and repository access.</p></div>
+      <div class="card"><h3>Follow up with your team</h3><p>Use your final evidence pack as the basis for team follow-up: agree metric definitions, fix traceability conventions and keep the release decision worksheet for the next review.</p></div>
+    </div>
+    <p class="muted" style="margin-top:18px">Other courses in the series, 101 Beginner and 201 Intermediate, are linked in the footer. Direct entry to 301 needs equivalent evidence of verified JQL, sprint reporting, Plan capacity and Zephyr execution.</p>
+  </div>
+</section>
+
+</main>
+<div id="site-footer"></div>
+<script src="assets/js/config.js?v=1"></script>
+<script src="assets/js/site.js?v=1"></script>
+<script src="assets/js/widgets.js?v=1"></script>
+</body>
+</html>

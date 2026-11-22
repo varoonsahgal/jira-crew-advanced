@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M3 · Reconcile eazyBI and Jira delivery metrics · Crew Academy 301</title>
+<meta name="description" content="Module 3 of Jira Planning Analytics and Connected Work: find the reason a Jira report and an eazyBI measure disagree before you use either number in a delivery decision.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/site.css?v=1">
+<link rel="icon" href="assets/img/favicon.svg">
+<style>
+  .m3-vs { display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); gap: 14px; align-items: stretch; margin: 18px 0 22px; }
+  .m3-vs .side { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; }
+  .m3-vs .side b.big { display: block; font-family: var(--font-display); font-size: 3rem; line-height: 1; color: var(--blue-600); }
+  .m3-vs .side.ez b.big { color: var(--beacon-ink); }
+  .m3-vs .neq { align-self: center; font-family: var(--font-display); font-size: 2.4rem; color: var(--alert); font-weight: 700; }
+  .m3-vs small { display: block; color: var(--ink-3); font-size: .85rem; }
+  @media (max-width: 640px) { .m3-vs { grid-template-columns: minmax(0,1fr); } .m3-vs .neq { text-align: center; } }
+  .m3-cols { display: flex; gap: 6px; flex-wrap: wrap; margin: 12px 0 6px; }
+  .m3-cols div { flex: 1 1 110px; border: 1px solid var(--line); border-radius: 8px; background: var(--white); font-size: .82rem; }
+  .m3-cols div b { display: block; background: var(--navy-900); color: #fff; font-family: var(--font-display); letter-spacing: .05em; padding: 5px 8px; border-radius: 7px 7px 0 0; }
+  .m3-cols div span { display: block; padding: 6px 8px; color: var(--ink-2); }
+  .m3-cols div.done b { background: var(--go); }
+  .m3-cols div.mapped span { background: var(--warn-bg); color: var(--beacon-ink); font-weight: 600; }
+  /* eazyBI practice replica */
+  .ez-tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px 14px; padding: 12px; background: #f6f8fb; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 12px; }
+  .ez-tools label { display: block; font-size: .78rem; font-weight: 700; color: var(--ink-2); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+  .ez-tools select { width: 100%; font: inherit; font-size: .92rem; padding: 6px 8px; border: 1px solid var(--line); border-radius: 7px; background: #fff; color: var(--ink); }
+  .ez-tools .chk { display: flex; gap: 8px; align-items: center; font-size: .9rem; text-transform: none; letter-spacing: 0; font-weight: 600; color: var(--ink); margin: 4px 0; }
+  .ez-tools .chk input { width: 18px; height: 18px; accent-color: var(--blue-600); }
+  .ez-def { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; }
+  .ez-def legend { font-size: .78rem; font-weight: 700; color: var(--ink-2); text-transform: uppercase; letter-spacing: .06em; padding: 0 6px; }
+  .ez-def label { display: flex; gap: 8px; align-items: flex-start; padding: 5px 0; font-size: .93rem; cursor: pointer; }
+  .ez-def input { margin-top: 4px; accent-color: var(--blue-600); }
+  .ez-def small { color: var(--ink-3); display: block; }
+  table.ez { width: 100%; border-collapse: collapse; font-size: .88rem; min-width: 640px; }
+  table.ez th { background: #2b3a55; color: #fff; text-align: right; padding: 8px 10px; font-weight: 600; font-size: .8rem; }
+  table.ez th:first-child, table.ez td:first-child { text-align: left; }
+  table.ez td { padding: 7px 10px; border-top: 1px solid var(--line); text-align: right; font-family: var(--font-mono); font-size: .84rem; }
+  table.ez tr.sel td { background: #fff8e6; }
+  table.ez td button { font: inherit; background: none; border: 0; color: var(--blue-500); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; padding: 2px 4px; border-radius: 4px; }
+  table.ez td button:focus-visible { outline: 2px solid var(--sky-400); }
+  .ez-empty { padding: 18px; text-align: center; color: var(--alert); background: var(--alert-bg); border-radius: 8px; font-weight: 600; }
+  .ez-meta { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: .8rem; color: var(--ink-3); margin: 8px 0 0; font-family: var(--font-mono); }
+  .ez-cmp { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin: 14px 0; }
+  .ez-cmp div { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: #fff; }
+  .ez-cmp b { display: block; font-family: var(--font-display); font-size: 1.9rem; line-height: 1.1; color: var(--navy-900); }
+  .ez-cmp div.diff b { color: var(--alert); }
+  .ez-cmp div.ok b { color: var(--go); }
+  .ez-cmp span { font-size: .8rem; color: var(--ink-3); }
+  @media (max-width: 560px) { .ez-cmp { grid-template-columns: minmax(0,1fr); } }
+  .ez-drill h4 { margin: 16px 0 6px; font-size: .85rem; }
+  .ez-drill table { min-width: 620px; }
+  .yes { color: var(--go); font-weight: 700; }
+  .no { color: var(--alert); font-weight: 700; }
+  .ez-save { border-top: 1px dashed var(--line); margin-top: 16px; padding-top: 12px; }
+  .ez-save label { display: block; font-weight: 600; font-size: .9rem; margin: 8px 0 4px; color: var(--navy-800); }
+  .ez-save input, .ez-save textarea { width: 100%; font: inherit; font-size: .92rem; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: var(--ice-50); color: var(--ink); }
+  .ez-save textarea { min-height: 96px; resize: vertical; }
+  .ez-copies { list-style: none; padding: 0; margin: 10px 0 0; font-size: .88rem; }
+  .ez-copies li { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; margin: 6px 0; background: #fff; }
+  .ez-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .btn-line { background: #fff; color: var(--blue-600); border: 1.5px solid var(--blue-500); }
+  .btn-line:hover { background: var(--sky-100); color: var(--blue-600); }
+</style>
+</head>
+<body>
+<header id="site-header"></header>
+<main id="main">
+
+<section class="hero compact module-hero">
+  <div class="clouds" aria-hidden="true"><div class="cloud" style="top:22%;width:200px;height:46px;animation-duration:80s"></div><div class="cloud" style="top:64%;width:150px;height:36px;animation-duration:64s;animation-delay:-30s"></div></div>
+  <div class="wrap">
+    <div class="eyebrow">Module 3 of 8 · Session 1 · Reconcile the delivery evidence</div>
+    <h1>Reconcile eazyBI and Jira delivery metrics</h1>
+    <p class="lede">The board says Alerts Squad completed 19 points in ALR-2026.q4.3. The report says 11. Before either number goes into a release decision, you find out why.</p>
+    <div class="meta-row"><span class="chip">50 min</span><span class="chip">25 min practice</span><span class="chip gold">Lab: Reconcile two conflicting totals</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap layout">
+    <aside class="toc" aria-label="On this page">
+      <h4>On this page</h4>
+      <ol>
+        <li><a href="#objective">Objective</a></li>
+        <li><a href="#l1">Two totals, one sprint</a></li>
+        <li><a href="#l2">Measures need definitions</a></li>
+        <li><a href="#l3">Align scope and import time</a></li>
+        <li><a href="#l4">Trace the gap to the item</a></li>
+        <li><a href="#replica">eazyBI practice replica</a></li>
+        <li><a href="#demo">Instructor demo</a></li>
+        <li><a href="#m3-lab">Lab: Reconcile two totals</a></li>
+        <li><a href="#check">Checkpoint</a></li>
+      </ol>
+    </aside>
+
+    <div>
+      <div class="objective-banner" id="objective">
+        <div class="eyebrow">Objective</div>
+        <p>Find the reason for a report discrepancy before using the number in a delivery decision.</p>
+      </div>
+      <ul class="topics" aria-label="Topics"><li>Sprint dimension</li><li>Committed and completed measures</li><li>Scope changes</li><li>Source-data refresh</li><li>Board-column completion mapping</li><li>Done status category at sprint close</li><li>Importing Team and estimate fields</li><li>Issue drill-through</li><li>Report copies with explicit definitions</li></ul>
+
+      <!-- L1 -->
+      <article class="lesson" id="l1">
+        <h2><span class="lesson-code">M3.1</span> Two totals, one sprint</h2>
+        <p>The release review is a week away. Your delivery lead pastes two numbers into the review notes for Alerts Squad's last closed sprint, <b>ALR-2026.q4.3</b>. One comes from the native Jira Sprint Report on the <a data-jira="/jira/software/c/projects/CRW/boards/62">ALR - Sprint Execution board ↗</a>. The other comes from a sample eazyBI report that leadership reads.</p>
+        <div class="m3-vs" role="group" aria-label="The two conflicting totals">
+          <div class="side"><small>Jira Sprint Report and Velocity · board 62</small><b class="big">19</b>story points completed (5 work items)</div>
+          <div class="neq" aria-hidden="true">≠</div>
+          <div class="side ez"><small>Sample eazyBI measure · "Sprint story points completed"</small><b class="big">11</b>story points completed (3 work items)</div>
+        </div>
+        <p>Nobody typed a wrong number. Both tools counted correctly against their own rules. The trouble is that a release decision will quote one of them as "what Alerts Squad delivered", and the two numbers answer different questions. Your job in this module is to name each question, prove the gap with Jira keys, and write down the definition so the next reader doesn't have to repeat your investigation.</p>
+        <figure class="shot">
+          <div class="frame"><div class="frame-bar"><i></i><i></i><i></i><span>…atlassian.net/jira/software/c/projects/CRW/boards/62/reports/sprint-retrospective?sprint=50</span></div>
+          <img src="assets/img/crw-sprint-report-alr-q4-3.jpg" alt="Sprint Report for ALR-2026.q4.3: Completed Issues CRW-53 Done 3, CRW-54 Ready for Release 5, CRW-55 Ready for Release 3, CRW-56 Done 3, CRW-57 Done 5, Story Points total 19" loading="lazy"></div>
+          <figcaption>The ALR-2026.q4.3 Sprint Report lists five items under <b>Completed Issues</b> with Story Points (19). Look at the Status column: CRW-54 and CRW-55 show <b>READY FOR RELEASE</b>, not Done. The report shows each item's status at sprint close.</figcaption>
+        </figure>
+        <div class="callout warn"><strong>Don't average, don't pick the bigger one</strong>A number you can't define is an opinion. If you can't say which statuses count as "completed", at which moment, for which team and from which data load, don't put the number in a decision yet. Record it as unverified and keep investigating.</div>
+      </article>
+
+      <!-- L2 -->
+      <article class="lesson" id="l2">
+        <h2><span class="lesson-code">M3.2</span> Measures need definitions</h2>
+        <p>eazyBI reports are built from <b>measures</b> (numbers such as "Sprint story points completed") sliced by <b>dimensions</b> (Sprint, Team, Issue Type, Status and others). A sprint measure is only meaningful when you know three things: which items belong to the sprint, what counts as completed, and at what moment the status is read.</p>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th>Measure (eazyBI naming)</th><th>What it counts</th><th>Watch out for</th></tr></thead>
+          <tbody>
+            <tr><td>Sprint issues committed / Sprint story points committed</td><td>Items (or points) in the sprint when it started.</td><td>Re-estimates after the start don't change commitment. Compare with the Velocity report's Commitment bar.</td></tr>
+            <tr><td>Sprint issues added</td><td>Items pulled in after the start.</td><td>CRW-21 in SWP-2026.q4.2 is the classic case: a 3-point Bug added after start and completed, so completed matched commitment with different work.</td></tr>
+            <tr><td>Sprint issues completed / Sprint story points completed</td><td>Items (or points) counted as done for the sprint.</td><td>"Done" needs a definition: a board column, a status category, a resolution, and a moment (close or now).</td></tr>
+          </tbody>
+        </table></div>
+        <h3>Three completion definitions you will meet</h3>
+        <div class="grid g3">
+          <div class="card"><h4>A · Board completion</h4><p>What Jira's Sprint Report and Velocity chart use: the item sat in the board's <b>rightmost column</b> when the sprint closed. The board's column mapping decides which statuses that includes.</p></div>
+          <div class="card"><h4>B · Done category at close</h4><p>The course's <b>sample eazyBI definition</b>: the item's status was in the <b>Done status category</b> at sprint close. Ready for Release is not in that category, so it doesn't count.</p></div>
+          <div class="card"><h4>C · Done category now</h4><p>A current-state count: is the item Done <b>at the last data import</b>? It drifts every time work moves after the sprint, and it depends on when the data was loaded.</p></div>
+        </div>
+        <p>The ALR board is the reason definition A and definition B disagree. Alerts Squad maps <b>Ready for Release into its Done column</b>. Swap Squad doesn't. Same workflow, same project, different board configuration.</p>
+        <p class="muted" style="margin-bottom:4px">ALR - Sprint Execution (board 62) columns:</p>
+        <div class="m3-cols" aria-label="ALR board columns">
+          <div><b>Ready</b><span>Ready</span></div><div><b>Development</b><span>Development</span></div><div><b>Ready for eQE</b><span>Ready for eQE</span></div><div><b>eQE Testing</b><span>eQE Testing</span></div><div><b>PO Review</b><span>PO Review</span></div><div class="done mapped"><b>Done</b><span>Ready for Release + Done</span></div>
+        </div>
+        <p class="muted" style="margin-bottom:4px">SWP - Sprint Execution (board 60) columns:</p>
+        <div class="m3-cols" aria-label="SWP board columns">
+          <div><b>Ready</b><span>Ready</span></div><div><b>Development</b><span>Development</span></div><div><b>Ready for eQE</b><span>Ready for eQE</span></div><div><b>eQE Testing</b><span>eQE Testing</span></div><div><b>PO Review</b><span>PO Review</span></div><div><b>Ready for Release</b><span>Ready for Release</span></div><div class="done"><b>Done</b><span>Done</span></div>
+        </div>
+        <div class="callout standard"><strong>Golden Template diagnosis</strong>Board-column mapping is one of the four things the template helps you diagnose (fields, statuses, parent links, board filters and columns). A team-to-team mapping difference isn't automatically wrong, but it must be a decision someone owns. "Is Ready for Release delivered or done?" is exactly the Delivered/Done and release-mapping question the template owner has to confirm.</div>
+        <p>Because SWP's rightmost column only holds Done, definitions A and B give the same SWP numbers (21, 18 and 16 for q4.1–q4.3, average 18.33). Comparing SWP's velocity with ALR's board velocity therefore compares two different definitions. That is the most common way team-to-team charts mislead a leadership audience.</p>
+        <figure class="shot">
+          <div class="frame"><div class="frame-bar"><i></i><i></i><i></i><span>…atlassian.net/jira/software/c/projects/CRW/boards/60/reports/velocity</span></div>
+          <img src="assets/img/crw-velocity-swp.jpg" alt="Velocity report for Swap Squad: SWP-2026.q4.1 commitment 21 completed 21, q4.2 18 and 18, q4.3 21 and 16, Average 18.33" loading="lazy"></div>
+          <figcaption>Swap Squad's Velocity report: 21/21, 18/18, 21/16, average 18.33. The legend says Completed is "the amount of work done during the sprint", but "done" means "in the board's last column", and that column differs between the two squads.</figcaption>
+        </figure>
+      </article>
+
+      <!-- L3 -->
+      <article class="lesson" id="l3">
+        <h2><span class="lesson-code">M3.3</span> Align scope and import time before you compare</h2>
+        <p>Before you blame a definition, make sure the two views look at the same slice of data. Four alignment checks catch most false discrepancies:</p>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th>Check</th><th>Jira side</th><th>eazyBI side</th><th>Typical trap</th></tr></thead>
+          <tbody>
+            <tr><td><b>Team</b></td><td>The board's filter (board 62 filters on the Alerts Squad team id).</td><td>Team dimension member "Alerts Squad".</td><td>The Team field wasn't selected in the import options, so the Team dimension has nothing to filter on and the report is empty or all teams together.</td></tr>
+            <tr><td><b>Sprint</b></td><td>Sprint ALR-2026.q4.3 (id 50).</td><td>Sprint dimension member ALR-2026.q4.3.</td><td>Similar names across teams, or a report defaulting to the current sprint.</td></tr>
+            <tr><td><b>Filter and estimate</b></td><td>Board estimation statistic: Story Points.</td><td>Story Points imported as a measure.</td><td>Story Points not imported, so the report falls back to issue counts.</td></tr>
+            <tr><td><b>Import time</b></td><td>Live: Jira reads current data.</td><td>"Last import" time on the account.</td><td>The report reads a data load from before an item moved. Current-state measures drift with each import.</td></tr>
+          </tbody>
+        </table></div>
+        <p>The Team field deserves its own warning. In JQL, a team <i>name</i> looks like it should work, but it doesn't:</p>
+        <figure class="shot">
+          <div class="frame"><div class="frame-bar"><i></i><i></i><i></i><span>…atlassian.net/issues/?jql=project%20%3D%20CRW%20AND%20Team%20%3D%20%22Swap%20Squad%22</span></div>
+          <img src="assets/img/jql-team-gotcha.jpg" alt="Jira search with JQL project = CRW AND Team = &quot;Swap Squad&quot; showing There are no work items here yet" loading="lazy"></div>
+          <figcaption><code>Team = "Swap Squad"</code> is valid JQL with no error, and it matches nothing. While the CRW board filters used the name, the boards and their Sprint Reports were silently empty. Use the team id.</figcaption>
+        </figure>
+        <pre data-jql data-label="Alerts Squad by team id (what board 62 filters on)">project = CRW AND Team = b5cf2b12-d7a8-49e4-bf33-0da3acadf620 AND sprint = "ALR-2026.q4.3"</pre>
+        <div class="callout tip"><strong>Import time is part of the number</strong>Every eazyBI account shows when its data was last imported. Write that time next to any number you quote. A close-time measure (definition B) stops changing once the sprint is closed and imported. A current-state measure (definition C) changes whenever someone moves an item after the sprint. If two people quote different numbers from "the same report", ask for both import times first.</div>
+        <div class="callout captain"><strong>Report copies, not report edits</strong>Don't change a shared report to make it match your view. Save a <b>copy</b>, put the definition in the copy's description (measure, completion rule, moment, team, sprint, source board, import time), and share the copy. If the shared report's definition is wrong, that is a change request for its owner, not a silent edit.</div>
+      </article>
+
+      <!-- L4 -->
+      <article class="lesson" id="l4">
+        <h2><span class="lesson-code">M3.4</span> Trace the gap to the item</h2>
+        <p>A discrepancy is only explained when you can name the work items that make up the difference and show the status evidence for each. Three tools do the tracing:</p>
+        <ol>
+          <li><b>Drill through</b> the eazyBI measure to the list of issues it counted. In eazyBI, use "Drill through issue" on the cell.</li>
+          <li><b>Compare</b> that list with the Sprint Report's Completed Issues. The keys that appear in only one list are the gap.</li>
+          <li><b>Prove the status</b> with history: the Sprint Report shows status at close; the work item's History tab shows when it changed; JQL history operators confirm it across items.</li>
+        </ol>
+        <pre data-jql data-label="Which q4.3 items were ever in Ready for Release? (expect CRW-54, CRW-55)">project = CRW AND sprint = "ALR-2026.q4.3" AND status WAS "Ready for Release"</pre>
+        <pre data-jql data-label="Current state: which q4.3 items are Done today? (expect 4)">project = CRW AND sprint = "ALR-2026.q4.3" AND statusCategory = Done ORDER BY key ASC</pre>
+        <p>The first query is history-based and returns both gap items. The second is current-state. It should return four items today, because CRW-55 was released after the sprint closed and CRW-54 is still in Ready for Release. Neither JQL result reproduces the board's 19 or the measure's 11 on its own. That's the point: current-state JQL can't tell you what was true at sprint close. The Sprint Report and history can.</p>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th>Key</th><th>Summary</th><th>Points</th><th>Status at close</th><th>Status today</th><th>A · Board</th><th>B · Done at close</th></tr></thead>
+          <tbody>
+            <tr><td><a data-jira="/browse/CRW-53">CRW-53</a></td><td>Rate-limit duplicate swap alerts</td><td>3</td><td>Done</td><td>Done</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+            <tr><td><a data-jira="/browse/CRW-54">CRW-54</a></td><td>SMS template for swap approved</td><td>5</td><td>Ready for Release</td><td>Ready for Release</td><td class="yes">✓</td><td class="no">✗</td></tr>
+            <tr><td><a data-jira="/browse/CRW-55">CRW-55</a></td><td>Scheduler alert when a swap needs approval</td><td>3</td><td>Ready for Release</td><td>Done</td><td class="yes">✓</td><td class="no">✗</td></tr>
+            <tr><td><a data-jira="/browse/CRW-56">CRW-56</a></td><td>Unsubscribe link in swap emails</td><td>3</td><td>Done</td><td>Done</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+            <tr><td><a data-jira="/browse/CRW-57">CRW-57</a></td><td>Retry failed push sends</td><td>5</td><td>Done</td><td>Done</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+            <tr><td colspan="2"><b>Total</b></td><td>19</td><td></td><td></td><td><b>19</b></td><td><b>11</b></td></tr>
+          </tbody>
+        </table></div>
+        <p>The difference is 8 points: CRW-54 (5) plus CRW-55 (3). You now have the reason (ALR's board maps Ready for Release into Done; the sample measure needs the Done category), the keys, and the status evidence. What you don't have yet is a decision about which definition the release review should use. That belongs to an owner, and you should say who.</p>
+        <div class="callout tip"><strong>A third number is waiting</strong>A current-state measure for ALR-2026.q4.3 would show <b>14</b> today (CRW-53, 55, 56 and 57). Loaded before CRW-55 reached Done, it would have shown 11. Same report, same sprint, different import time. Try it in the replica below.</div>
+      </article>
+
+      <!-- Replica -->
+      <article class="lesson" id="replica">
+        <h2><span class="lesson-code">M3.5</span> eazyBI practice replica</h2>
+        <div class="callout replica"><strong>Practice replica</strong>eazyBI isn't installed on the training site yet. This replica uses the same CRW sprints, keys, statuses and points as the live Sprint Reports, so you can do the same reconciliation. The two "imports" are replica fixtures that show what a data load before and after CRW-55's release would contain. When eazyBI is installed, repeat the lab in a copy of the real report.</div>
+        <div class="replica-frame">
+          <div class="replica-bar"><span>eazyBI · Crew Scheduling (Training) · Report: Sprint completion (sample)</span><span class="tag-rep">PRACTICE REPLICA</span></div>
+          <div class="replica-body" id="ez">
+            <div class="ez-tools">
+              <div><label for="ez-team">Pages · Team</label><select id="ez-team"><option value="ALR">Alerts Squad</option><option value="SWP">Swap Squad</option><option value="ALL">All teams</option></select></div>
+              <div><label for="ez-import">Data · Import</label><select id="ez-import"><option value="B">Latest import (after CRW-55 reached Done)</option><option value="A">Earlier import (before CRW-55 reached Done)</option></select></div>
+              <div><span class="chk-h" style="display:block;font-size:.78rem;font-weight:700;color:var(--ink-2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">Import options</span>
+                <label class="chk" for="ez-imp-team"><input type="checkbox" id="ez-imp-team" checked> Team field imported</label>
+                <label class="chk" for="ez-imp-sp"><input type="checkbox" id="ez-imp-sp" checked> Story Points imported</label></div>
+            </div>
+            <fieldset class="ez-def">
+              <legend>Measure definition · "Sprint … completed"</legend>
+              <label><input type="radio" name="ez-def" value="board"> <span><b>A · Board completion</b> <small>In the board's rightmost column at sprint close (matches the Jira Sprint Report and Velocity).</small></span></label>
+              <label><input type="radio" name="ez-def" value="close" checked> <span><b>B · Done status category at sprint close</b> <small>The sample eazyBI definition used by the leadership report.</small></span></label>
+              <label><input type="radio" name="ez-def" value="now"> <span><b>C · Done status category at last import</b> <small>Current state, as of the selected import.</small></span></label>
+            </fieldset>
+            <div id="ez-table" aria-live="polite"></div>
+            <div class="ez-meta" id="ez-meta"></div>
+            <div id="ez-drill" class="ez-drill" aria-live="polite"></div>
+            <div class="ez-save">
+              <h4 style="margin:0 0 4px;font-size:.85rem">Save report copy</h4>
+              <p class="muted" style="font-size:.88rem;margin:0">A copy keeps the shared report intact. Its description should let a stranger reproduce your number. The text below is generated from your current settings; edit it before you save.</p>
+              <label for="ez-name">Copy name</label><input id="ez-name" type="text">
+              <label for="ez-desc">Definition (report description)</label><textarea id="ez-desc"></textarea>
+              <div class="ez-btns">
+                <button class="btn btn-sm btn-blue" type="button" id="ez-save">Save report copy</button>
+                <button class="btn btn-sm btn-line" type="button" id="ez-totals">Send totals and scope to my evidence</button>
+                <button class="btn btn-sm btn-line" type="button" id="ez-keys">Send drilled keys to my evidence</button>
+              </div>
+              <ul class="ez-copies" id="ez-copies" aria-label="Saved report copies"></ul>
+            </div>
+          </div>
+        </div>
+        <h3>Quick sort: which definition answers the question?</h3>
+        <div class="sort-game" data-id="m3-defs" data-miles="150">
+          <div class="sort-card" data-answer="A · Board completion"><p>The Alerts Squad Scrum Master wants a planning number that matches the team's own Velocity chart.</p><div class="choices"><button>A · Board completion</button><button>B · Done at close</button><button>C · Done now</button></div><div class="why">Planning against your own board's history is consistent, as long as everyone knows the board counts Ready for Release.</div></div>
+          <div class="sort-card" data-answer="B · Done at close"><p>Leadership wants Alerts Squad and Swap Squad on one chart with the same meaning of "completed".</p><div class="choices"><button>A · Board completion</button><button>B · Done at close</button><button>C · Done now</button></div><div class="why">The boards map columns differently, so only a status-category rule applied to both teams compares like with like.</div></div>
+          <div class="sort-card" data-answer="C · Done now"><p>A release manager asks how much of the q4.3 work has actually reached Done by today, wherever it finished.</p><div class="choices"><button>A · Board completion</button><button>B · Done at close</button><button>C · Done now</button></div><div class="why">That's a current-state question. Quote the import time with it, because it changes as work moves.</div></div>
+          <div class="sort-card" data-answer="B · Done at close"><p>A retrospective asks: "Which committed items were genuinely finished when the sprint ended?"</p><div class="choices"><button>A · Board completion</button><button>B · Done at close</button><button>C · Done now</button></div><div class="why">Frozen at close and strict about Done. Board completion would count CRW-54 and CRW-55, which still had release work left.</div></div>
+          <div class="sort-card" data-answer="C · Done now"><p>Someone runs <code>sprint = "SWP-2026.q4.2" AND statusCategory = Done</code> and sums the points.</p><div class="choices"><button>A · Board completion</button><button>B · Done at close</button><button>C · Done now</button></div><div class="why">That's current state. It includes CRW-19, which was carried over and finished in q4.3, so it overstates q4.2. You'll meet this again in Module 7.</div></div>
+          <div class="game-score"></div>
+          <button class="btn btn-sm btn-line reset" type="button" style="margin-top:8px">Reset</button>
+        </div>
+      </article>
+
+      <!-- Demo -->
+      <div class="callout demo" id="demo"><strong>Instructor demo · 10 min</strong>
+        <ol>
+          <li>Open the <a data-jira="/jira/software/c/projects/CRW/boards/62/reports/sprint-retrospective?sprint=50">ALR-2026.q4.3 Sprint Report ↗</a>. Read out Completed Issues: five items, 19 points. Point at the two READY FOR RELEASE statuses.</li>
+          <li>Open the <a data-jira="/jira/software/c/projects/CRW/boards/62">ALR - Sprint Execution board ↗</a> and show that its Done column holds Ready for Release and Done. Compare with <a data-jira="/jira/software/c/projects/CRW/boards/60">board 60 ↗</a>, where Ready for Release has its own column.</li>
+          <li>In eazyBI (or the replica if the app isn't installed), build or copy the sprint report: Pages Team = Alerts Squad, rows Sprint, measure Sprint story points completed with the sample definition. Read out 11.</li>
+          <li>Drill through the completed cell. Three keys: CRW-53, CRW-56, CRW-57. Ask the room which two keys are missing compared with the Sprint Report.</li>
+          <li>Open <a data-jira="/browse/CRW-55">CRW-55 ↗</a> and show its History: Ready for Release at close, Done later. Open <a data-jira="/browse/CRW-54">CRW-54 ↗</a>: still Ready for Release.</li>
+          <li>Switch the replica to definition C and toggle the import: 11 on the earlier import, 14 on the latest. "Same report, same sprint, different import time."</li>
+          <li>Save a report copy and type the definition into its description, including the import time. Name the owner who decides which definition the release review uses.</li>
+        </ol>
+      </div>
+
+      <!-- Lab -->
+      <article class="mission" id="m3-lab" data-miles="500">
+        <div class="mission-head">
+          <div><span class="mcode">LAB M3 · 25 MIN · CRW READ-ONLY · REPLICA + YOUR SEAT</span><h3>Reconcile two conflicting totals</h3></div>
+          <span class="turb" title="Difficulty"><i class="on"></i><i class="on"></i><i class="on"></i><i></i> Turbulence</span>
+        </div>
+        <div class="mission-body">
+          <div class="brief"><b>Brief</b> The release review notes quote "Alerts Squad completed 19 points" from Jira and "11 points" from the leadership report for ALR-2026.q4.3. Find the reason, prove it with keys, and record a definition someone else can reuse. <b>CRW is read-only</b>: open reports, boards and work items, but don't edit, transition, comment or flag anything there. The only things you create are a report copy in the replica and, optionally, a private filter named with your seat prefix <code>L{SEAT} · </code>, plus an optional comment on your seat epic <span data-seat-epic></span>.</div>
+          <ol class="steps">
+            <li><b>Align the two views (7 min).</b>
+              <ol>
+                <li>Open the <a data-jira="/jira/software/c/projects/CRW/boards/62/reports/sprint-retrospective?sprint=50">ALR-2026.q4.3 Sprint Report ↗</a> and the <a data-jira="/jira/software/c/projects/CRW/boards/62/reports/velocity">ALR Velocity report ↗</a>. Write down completed points and the number of completed items.</li>
+                <li>In the <a href="#replica">replica</a>, set Team = Alerts Squad and check that both the Team field and Story Points are imported. Note the import you're reading.</li>
+                <li>Keep definition B selected and read the ALR-2026.q4.3 row. Confirm you're on the same team, sprint, estimate field and board scope as the Sprint Report. Record both totals and the aligned scope in your evidence.</li>
+                <li>Untick "Team field imported" for a moment and see what happens to a Team-filtered report. Tick it again.</li>
+              </ol></li>
+            <li><b>Trace the mismatch to Jira items (10 min).</b>
+              <ol>
+                <li>In the replica, click the completed points for ALR-2026.q4.3 to drill through. Switch to definition A and drill again. List the keys that appear under A but not under B.</li>
+                <li>Run the two "check your work" queries below. Confirm that the history query returns exactly the gap keys.</li>
+                <li>Open <a data-jira="/browse/CRW-54">CRW-54 ↗</a> and <a data-jira="/browse/CRW-55">CRW-55 ↗</a>. On each, open the History tab and note when it entered Ready for Release and whether it has reached Done.</li>
+                <li>Open the <a data-jira="/jira/software/c/projects/CRW/boards/62">ALR board ↗</a> and confirm which statuses sit in its Done column. If your role can view Board settings → Columns, check the mapping there; otherwise use the column headers and the lesson diagram.</li>
+                <li>Switch the replica to definition C and toggle the two imports. Explain in one sentence why the current-state number moves and the close-time number doesn't.</li>
+              </ol></li>
+            <li><b>Save the copy and record the definition (8 min).</b>
+              <ol>
+                <li>Set the replica back to the definition you'd recommend for the release review. Edit the generated description so it names the measure, the completion rule, the moment it's read, team, sprint, source board and import. Click <b>Save report copy</b>.</li>
+                <li>Optional in Jira: save the history query as a private filter called <code>L{SEAT} · ALR q4.3 reconciliation</code>. A private filter belongs to you and doesn't change CRW.</li>
+                <li>Write the reason and the owner action in your evidence card. Who decides whether Ready for Release counts as done for ALR, and what should the release notes say until then?</li>
+              </ol></li>
+          </ol>
+          <pre data-jql data-label="Check your work: the gap keys (expect CRW-54, CRW-55)">project = CRW AND sprint = "ALR-2026.q4.3" AND status WAS "Ready for Release" ORDER BY key ASC</pre>
+          <pre data-jql data-label="Check your work: not Done today (expect CRW-54 only)">project = CRW AND sprint = "ALR-2026.q4.3" AND statusCategory != Done</pre>
+          <details class="reveal"><summary>Debrief: what a strong answer looks like</summary><div>
+            <p><b>Totals and scope.</b> Board 62 Sprint Report and Velocity: 19 points, 5 items completed. Sample eazyBI measure "Sprint story points completed" (Done status category at sprint close): 11 points, 3 items. Both are for Team = Alerts Squad (Team field imported, filtered by team), sprint ALR-2026.q4.3 (id 50), estimate field Story Points, latest import.</p>
+            <p><b>Reason.</b> The ALR board maps Ready for Release into its Done column, and the Velocity and Sprint Report count whatever sat in the rightmost column at close. The sample measure only counts the Done status category. CRW-54 (5) and CRW-55 (3) were in Ready for Release at close: 19 − 11 = 8.</p>
+            <p><b>Source keys.</b> CRW-54: Ready for Release at close and still today. CRW-55: Ready for Release at close, Done today (released after the sprint). <code>status WAS "Ready for Release"</code> returns both.</p>
+            <p><b>Definition.</b> For example: "Sprint story points completed = sum of Story Points of items in the sprint at close whose status category was Done at close. Team = Alerts Squad (Atlassian Teams field, imported). Sprint ALR-2026.q4.3, source board ALR - Sprint Execution (62). Import: latest. Ready for Release is not counted."</p>
+            <p><b>Import-time angle.</b> A current-state version reads 11 before CRW-55 reached Done and 14 after. Close-time measures stop moving once the sprint is closed and imported; current-state measures never stop moving.</p>
+            <p><b>Owner action.</b> The template owner, with Alerts Squad's product owner, confirms whether Ready for Release counts as done for ALR (the Delivered/Done and release-mapping decision). Until then, the release review quotes both numbers with their definitions: "19 points reached ALR's Done column, of which 11 points were released at close." The reporting author adds the definition to the shared report's description through its owner. Note that CRW-54 is still not released; in Module 4 you'll find that one of its acceptance criteria has no executed test.</p>
+          </div></details>
+          <h4 style="margin-top:18px">Reconciliation checklist</h4>
+          <ul class="checklist" data-id="m3-recon">
+            <li><input type="checkbox" id="rc1"><label for="rc1">Same team (by id or imported Team field), same sprint, same estimate field.</label></li>
+            <li><input type="checkbox" id="rc2"><label for="rc2">Import time written next to the eazyBI number.</label></li>
+            <li><input type="checkbox" id="rc3"><label for="rc3">Both completion definitions written in words (which statuses, at which moment).</label></li>
+            <li><input type="checkbox" id="rc4"><label for="rc4">Gap explained by named keys, with status at close and today.</label></li>
+            <li><input type="checkbox" id="rc5"><label for="rc5">History evidence checked (Sprint Report status at close, History tab, <code>WAS</code> query).</label></li>
+            <li><input type="checkbox" id="rc6"><label for="rc6">Report copy saved with its definition; the shared report left untouched.</label></li>
+            <li><input type="checkbox" id="rc7"><label for="rc7">Owner and next action named for the definition decision.</label></li>
+          </ul>
+          <div class="evidence" data-evidence="m3">
+            <h4>Learner output · Module 3</h4>
+            <p class="hint">A reconciled report note with the two totals, reason, source key and the verified reporting definition.</p>
+            <label for="m3-totals">The two totals and the aligned scope (team, sprint, filter, import time)</label><textarea id="m3-totals" data-field="totals" placeholder="Board 62: … pts / … items. eazyBI sample measure: … pts. Team …, sprint …, import …"></textarea>
+            <label for="m3-reason">Reason for the difference</label><textarea id="m3-reason" data-field="reason"></textarea>
+            <label for="m3-keys">Source keys with status at sprint close and today</label><textarea id="m3-keys" data-field="keys" placeholder="CRW-…: at close …, today …"></textarea>
+            <label for="m3-definition">Verified reporting definition saved with the report copy</label><textarea id="m3-definition" data-field="definition"></textarea>
+            <label for="m3-action">Correction or next owner action</label><textarea id="m3-action" data-field="action"></textarea>
+          </div>
+        </div>
+        <div class="mission-foot"><span class="miles-tag">+500 mi</span><button class="complete-btn" type="button">Mark lab complete</button></div>
+      </article>
+
+      <!-- Quiz -->
+      <section class="quiz" id="check" data-id="m3" data-pass="75" data-miles="200" style="padding:24px">
+        <h2 style="margin-top:0">Checkpoint</h2>
+        <div class="q"><p class="prompt">1. Jira says 19 completed points, eazyBI says 11, for what looks like the same sprint. What do you do first?</p><div class="opts">
+          <button class="opt" type="button" data-right>Align team, sprint, estimate field and import time in both views, then compare the two completion definitions.</button>
+          <button class="opt" type="button">Use the eazyBI number, because the reporting tool is the system of record for leadership.</button>
+          <button class="opt" type="button">Re-run the eazyBI import until the numbers match.</button>
+          <button class="opt" type="button">Report the average, 15, and note that the tools differ.</button></div>
+          <div class="why">Most discrepancies are scope or timing mismatches. Once scope is aligned, the remaining gap comes from the definitions, and you explain it with keys. Re-importing can't fix a definition difference, and an average describes nothing.</div></div>
+        <div class="q"><p class="prompt">2. Why does the ALR Velocity report count CRW-54 as completed while it's still in Ready for Release?</p><div class="opts">
+          <button class="opt" type="button" data-right>Velocity counts items in the board's rightmost column at sprint close, and the ALR board maps Ready for Release into its Done column.</button>
+          <button class="opt" type="button">Ready for Release is in the Done status category in the Crew Delivery Workflow.</button>
+          <button class="opt" type="button">CRW-54 has a resolution set, and Velocity counts resolved items.</button>
+          <button class="opt" type="button">Velocity uses the current status, and someone moved CRW-54 after the sprint.</button></div>
+          <div class="why">The board's column mapping decides. If Ready for Release were in the Done category, the sample eazyBI measure would count it too, and it doesn't. SWP's board keeps Ready for Release in its own column, so the same status doesn't count there.</div></div>
+        <div class="q"><p class="prompt">3. A current-state measure for ALR-2026.q4.3 shows 11 in one person's report and 14 in another's. Same report definition. Most likely cause?</p><div class="opts">
+          <button class="opt" type="button" data-right>They read different imports: one loaded before CRW-55 reached Done, one after.</button>
+          <button class="opt" type="button">One of them filtered by team name instead of team id.</button>
+          <button class="opt" type="button">CRW-21 was added after the sprint started.</button>
+          <button class="opt" type="button">The sprint was replayed, so the numbers are random.</button></div>
+          <div class="why">Current state moves with every import. CRW-55 was released after the sprint closed. That's why you write the import time next to the number. CRW-21 belongs to a SWP sprint, and a team-name filter would give 0, not 11.</div></div>
+        <div class="q"><p class="prompt">4. Your eazyBI report filtered to Team = Alerts Squad shows no data at all. What's the best first check?</p><div class="opts">
+          <button class="opt" type="button" data-right>Whether the Team field was selected in the import options, so the Team dimension has members to filter on.</button>
+          <button class="opt" type="button">Whether Alerts Squad finished any work in the sprint.</button>
+          <button class="opt" type="button">Whether the sprint is still active.</button>
+          <button class="opt" type="button">Whether the report uses the Velocity definition.</button></div>
+          <div class="why">Custom fields such as Team and Story Points only appear in eazyBI when they're imported. It's the reporting cousin of <code>Team = "Swap Squad"</code> returning nothing in JQL: no error, just silence.</div></div>
+        <div class="q"><p class="prompt">5. Which note is fit to sit next to the number in a release decision?</p><div class="opts">
+          <button class="opt" type="button" data-right>"11 pts: Sprint story points completed, Done status category at sprint close; Alerts Squad; ALR-2026.q4.3 (board 62); latest import. Excludes CRW-54 and CRW-55 (Ready for Release at close). Board completion is 19."</button>
+          <button class="opt" type="button">"Alerts Squad completed 11 points (eazyBI)."</button>
+          <button class="opt" type="button">"19 points per Jira, which is the official tool."</button>
+          <button class="opt" type="button">"Between 11 and 19 points depending on the tool."</button></div>
+          <div class="why">A reusable note names the measure, the rule, the moment, the scope, the import and the keys behind any difference. The others are claims nobody can check.</div></div>
+        <div class="quiz-score"><span class="msg"></span><span><b>0 / 5</b> <button class="btn btn-sm btn-ghost retry" type="button">Retry</button></span></div>
+      </section>
+
+      <nav class="module-nav" aria-label="Module navigation">
+        <a class="prev" href="m2.html"><small>Previous</small><b>M2 · Compare Plans scenarios</b></a>
+        <a class="next" href="m4.html"><small>Next</small><b>M4 · Evaluate release quality in Zephyr</b></a>
+      </nav>
+    </div>
+  </div>
+</section>
+
+</main>
+<div id="site-footer"></div>
+<script src="assets/js/config.js?v=1"></script>
+<script src="assets/js/site.js?v=1"></script>
+<script src="assets/js/widgets.js?v=1"></script>
+<script>
+(function () {
+  "use strict";
+  const CA = window.CA, CW = window.CW || {};
+  const esc = CA.esc;
+  const $ = s => document.querySelector(s);
+
+  /* Replica data: every key, status and point value matches the CRW Sprint Reports.
+     it: [key, summary, points, statusAtClose, statusNowEarlierImport, statusNowLatestImport, addedAfterStart] */
+  const TEAMS = {
+    ALR: { name: "Alerts Squad", board: 62, boardName: "ALR - Sprint Execution", doneCols: ["Ready for Release", "Done"], sprints: [
+      { name: "ALR-2026.q4.1", id: 47, it: [
+        ["CRW-47", "Notification service: swap events topic", 5, "Done", "Done", "Done", false],
+        ["CRW-48", "Email template for swap submitted", 3, "Done", "Done", "Done", false],
+        ["CRW-49", "Push token registration", 5, "Done", "Done", "Done", false]] },
+      { name: "ALR-2026.q4.2", id: 48, it: [
+        ["CRW-50", "Push notification when a swap is approved", 5, "Done", "Done", "Done", false],
+        ["CRW-51", "Email when a swap is rejected", 3, "Done", "Done", "Done", false],
+        ["CRW-52", "Notification audit log", 5, "Done", "Done", "Done", false],
+        ["CRW-53", "Rate-limit duplicate swap alerts", 3, "Not done (carried to q4.3)", "Done", "Done", false]] },
+      { name: "ALR-2026.q4.3", id: 50, it: [
+        ["CRW-53", "Rate-limit duplicate swap alerts", 3, "Done", "Done", "Done", false],
+        ["CRW-54", "SMS template for swap approved", 5, "Ready for Release", "Ready for Release", "Ready for Release", false],
+        ["CRW-55", "Scheduler alert when a swap needs approval", 3, "Ready for Release", "Ready for Release", "Done", false],
+        ["CRW-56", "Unsubscribe link in swap emails", 3, "Done", "Done", "Done", false],
+        ["CRW-57", "Retry failed push sends", 5, "Done", "Done", "Done", false]] }] },
+    SWP: { name: "Swap Squad", board: 60, boardName: "SWP - Sprint Execution", doneCols: ["Done"], sprints: [
+      { name: "SWP-2026.q4.1", id: 46, it: [
+        ["CRW-12", "Crew can see the status of a submitted swap", 5, "Done", "Done", "Done", false],
+        ["CRW-13", "Show who approved or rejected a swap", 3, "Done", "Done", "Done", false],
+        ["CRW-14", "Status history timeline on swap detail", 5, "Done", "Done", "Done", false],
+        ["CRW-15", "Scheduler sees swap status in console", 8, "Done", "Done", "Done", false]] },
+      { name: "SWP-2026.q4.2", id: 49, it: [
+        ["CRW-16", "Swap request form: pick the trips to swap", 5, "Done", "Done", "Done", false],
+        ["CRW-17", "Search for a crew member to swap with", 5, "Done", "Done", "Done", false],
+        ["CRW-18", "Basic eligibility: same fleet and base", 3, "Done", "Done", "Done", false],
+        ["CRW-19", "Swap request draft autosave", 3, "Development", "Done", "Done", false],
+        ["CRW-20", "Swap request validation messages", 2, "Done", "Done", "Done", false],
+        ["CRW-21", "Bug: Swap list shows cancelled swaps", 3, "Done", "Done", "Done", true]] },
+      { name: "SWP-2026.q4.3", id: 51, it: [
+        ["CRW-19", "Swap request draft autosave", 3, "Done", "Done", "Done", false],
+        ["CRW-22", "Swap eligibility engine: rest and qualification checks", 5, "eQE Testing", "eQE Testing", "eQE Testing", false],
+        ["CRW-23", "Swap request review screen", 5, "Done", "Done", "Done", false],
+        ["CRW-24", "Withdraw a pending swap", 8, "Done", "Done", "Done", false]] }] }
+  };
+  const DEF_LABEL = { board: "A · Board completion (rightmost board column at sprint close)", close: "B · Done status category at sprint close", now: "C · Done status category at last import (current state)" };
+  const IMPORT_LABEL = { A: "earlier import (before CRW-55 reached Done)", B: "latest import (after CRW-55 reached Done)" };
+
+  const state = { team: "ALR", def: "close", imp: "B", impTeam: true, impSp: true, drill: null };
+  let drilledQ43 = { board: false, close: false };
+
+  function counted(team, item, def, imp) {
+    if (def === "board") return TEAMS[team].doneCols.indexOf(item[3]) > -1;
+    if (def === "close") return item[3] === "Done";
+    return (imp === "A" ? item[4] : item[5]) === "Done";
+  }
+  function rowsFor() {
+    const list = [];
+    (state.team === "ALL" ? ["ALR", "SWP"] : [state.team]).forEach(t => TEAMS[t].sprints.forEach(s => list.push({ team: t, s })));
+    return list;
+  }
+  function measures(team, s, def) {
+    const committed = s.it.filter(i => !i[6]), added = s.it.filter(i => i[6]);
+    const done = s.it.filter(i => counted(team, i, def, state.imp));
+    const sum = a => a.reduce((x, i) => x + i[2], 0);
+    return { ci: committed.length, cp: sum(committed), ai: added.length, di: done.length, dp: sum(done), done };
+  }
+  function findSprint(name) { for (const t in TEAMS) { const s = TEAMS[t].sprints.find(x => x.name === name); if (s) return { team: t, s }; } return null; }
+
+  function render() {
+    const box = $("#ez-table");
+    if (!state.impTeam && state.team !== "ALL") {
+      box.innerHTML = '<div class="ez-empty" role="alert">No data. The Team dimension has no member "' + esc(TEAMS[state.team].name) + '" because the Team field isn\'t in the import options. Import it (tick "Team field imported") or switch Pages to All teams, and note which you did.</div>';
+      $("#ez-drill").innerHTML = ""; meta(); desc(); return;
+    }
+    const pts = v => state.impSp ? v : "∅";
+    let h = '<table class="ez"><caption class="muted" style="caption-side:top;text-align:left;font-size:.82rem;padding-bottom:6px">Rows: Sprint · Pages: ' + esc(state.team === "ALL" ? "All teams" : TEAMS[state.team].name) + ' · Completed rule: ' + esc(DEF_LABEL[state.def]) + '</caption><thead><tr><th scope="col">Sprint</th><th scope="col">Sprint issues committed</th><th scope="col">Sprint issues added</th><th scope="col">Sprint issues completed</th><th scope="col">Sprint story points committed</th><th scope="col">Sprint story points completed</th></tr></thead><tbody>';
+    rowsFor().forEach(r => {
+      const m = measures(r.team, r.s, state.def);
+      const sel = state.drill === r.s.name ? ' class="sel"' : "";
+      h += "<tr" + sel + "><td>" + esc(r.s.name) + "</td><td>" + m.ci + "</td><td>" + m.ai + '</td><td><button type="button" data-drill="' + r.s.name + '" aria-label="Drill through completed issues for ' + r.s.name + '">' + m.di + "</button></td><td>" + pts(m.cp) + "</td><td>" +
+        (state.impSp ? '<button type="button" data-drill="' + r.s.name + '" aria-label="Drill through completed story points for ' + r.s.name + '">' + m.dp + "</button>" : "∅") + "</td></tr>";
+    });
+    h += "</tbody></table>";
+    if (!state.impSp) h += '<p class="ez-empty" style="margin-top:10px">Story Points (customfield_10036) isn\'t in the import options, so the story point measures are empty (∅). Issue counts still work, but they aren\'t what the Sprint Report totals.</p>';
+    box.innerHTML = h;
+    box.querySelectorAll("button[data-drill]").forEach(b => b.addEventListener("click", () => { state.drill = b.dataset.drill; render(); const d = $("#ez-drill"); d.scrollIntoView({ behavior: "smooth", block: "nearest" }); }));
+    drill(); meta(); desc();
+  }
+
+  function drill() {
+    const d = $("#ez-drill");
+    if (!state.drill) { d.innerHTML = '<p class="muted" style="font-size:.9rem;margin-top:10px">Click a completed value to drill through to the work items behind it.</p>'; return; }
+    const f = findSprint(state.drill);
+    if (!f || (state.team !== "ALL" && f.team !== state.team)) { state.drill = null; d.innerHTML = ""; return; }
+    const t = TEAMS[f.team];
+    const m = measures(f.team, f.s, state.def), b = measures(f.team, f.s, "board");
+    if (f.s.name === "ALR-2026.q4.3" && (state.def === "board" || state.def === "close")) drilledQ43[state.def] = true;
+    const diff = b.dp - m.dp;
+    let h = '<h4>Drill through issue · ' + esc(f.s.name) + ' · ' + esc(DEF_LABEL[state.def]) + '</h4>';
+    h += '<div class="ez-cmp"><div><span>Jira Sprint Report (board ' + t.board + ')</span><b>' + b.dp + ' pts</b><span>' + b.di + ' items in the rightmost column at close</span></div>' +
+      '<div><span>This report</span><b>' + (state.impSp ? m.dp + " pts" : "∅") + '</b><span>' + m.di + ' items counted</span></div>' +
+      '<div class="' + (diff ? "diff" : "ok") + '"><span>Difference</span><b>' + (state.impSp ? (diff > 0 ? "−" : diff < 0 ? "+" : "") + Math.abs(diff) + " pts" : "?") + '</b><span>' + (diff ? "explained by the ✗ rows below" : "definitions agree here") + '</span></div></div>';
+    h += '<div class="table-wrap" style="margin:0"><table class="data"><thead><tr><th>Key</th><th>Summary</th><th>Points</th><th>Status at close</th><th>Status at ' + (state.imp === "A" ? "earlier" : "latest") + ' import</th><th>Board column</th><th>Counted?</th></tr></thead><tbody>';
+    f.s.it.forEach(i => {
+      const c = counted(f.team, i, state.def, state.imp);
+      const inDoneCol = t.doneCols.indexOf(i[3]) > -1;
+      h += '<tr><td><a href="' + CA.siteUrl() + '/browse/' + i[0] + '" target="_blank" rel="noopener">' + i[0] + '</a>' + (i[6] ? ' <span class="chip gold" title="Added after sprint start">added</span>' : "") + '</td><td>' + esc(i[1]) + '</td><td>' + i[2] + '</td><td>' + esc(i[3]) + '</td><td>' + esc(state.imp === "A" ? i[4] : i[5]) + '</td><td>' + (inDoneCol ? "Done column" : "not done") + '</td><td class="' + (c ? "yes" : "no") + '">' + (c ? "✓" : "✗") + "</td></tr>";
+    });
+    h += "</tbody></table></div>";
+    const gap = f.s.it.filter(i => TEAMS[f.team].doneCols.indexOf(i[3]) > -1 && !counted(f.team, i, state.def, state.imp)).map(i => i[0]);
+    const extra = f.s.it.filter(i => TEAMS[f.team].doneCols.indexOf(i[3]) < 0 && counted(f.team, i, state.def, state.imp)).map(i => i[0]);
+    let note = "";
+    if (gap.length) note += "Counted by the board but not by this definition: <b>" + gap.join(", ") + "</b>. ";
+    if (extra.length) note += "Counted by this definition but not by the board at close: <b>" + extra.join(", ") + "</b> (finished after the sprint, so current state credits this sprint). ";
+    if (!note) note = "No gap between this definition and the board for this sprint.";
+    h += '<p style="font-size:.92rem;margin-top:10px">' + note + "</p>";
+    d.innerHTML = h;
+  }
+
+  function meta() {
+    $("#ez-meta").innerHTML = "<span>Last import: " + esc(IMPORT_LABEL[state.imp]) + "</span><span>Source: CRW boards 60 and 62</span><span>Team field: " + (state.impTeam ? "imported" : "NOT imported") + "</span><span>Story Points: " + (state.impSp ? "imported" : "NOT imported") + "</span>";
+  }
+
+  function currentSprintName() { return state.drill || (state.team === "SWP" ? "SWP-2026.q4.3" : "ALR-2026.q4.3"); }
+  function desc() {
+    const sn = currentSprintName(), f = findSprint(sn), t = TEAMS[f.team];
+    const seat = CA.seat() || "NN";
+    $("#ez-name").value = $("#ez-name").dataset.touched ? $("#ez-name").value : "Sprint completion · L" + seat + " copy";
+    if ($("#ez-desc").dataset.touched) return;
+    let rule;
+    if (state.def === "board") rule = "items in the board's rightmost column at sprint close (board " + t.board + " maps " + t.doneCols.join(" + ") + " into Done)";
+    else if (state.def === "close") rule = "items whose status category was Done at sprint close (Ready for Release is not counted)";
+    else rule = "items whose status category is Done at the time of the last import (current state; changes after the sprint)";
+    $("#ez-desc").value = "Measure: Sprint story points completed = sum of Story Points of " + rule + ".\nScope: Team = " + (state.team === "ALL" ? "all teams" : t.name) + " (Team field " + (state.impTeam ? "imported" : "not imported") + "); sprint " + sn + " (id " + f.s.id + "); source board " + t.boardName + " (" + t.board + ").\nData: " + IMPORT_LABEL[state.imp] + ".\nCompare with: Jira Sprint Report on board " + t.board + " (board completion).";
+  }
+
+  function listCopies() {
+    const copies = CA.store.get("m3:copies", []);
+    $("#ez-copies").innerHTML = copies.map(c => "<li><b>" + esc(c.name) + "</b> <span class=\"muted\">· saved " + esc(new Date(c.at).toLocaleString()) + "</span><br><span style=\"white-space:pre-wrap\">" + esc(c.desc) + "</span></li>").join("");
+  }
+
+  document.querySelectorAll('input[name="ez-def"]').forEach(r => r.addEventListener("change", () => { state.def = r.value; render(); }));
+  $("#ez-team").addEventListener("change", e => { state.team = e.target.value; render(); });
+  $("#ez-import").addEventListener("change", e => { state.imp = e.target.value; render(); });
+  $("#ez-imp-team").addEventListener("change", e => { state.impTeam = e.target.checked; render(); });
+  $("#ez-imp-sp").addEventListener("change", e => { state.impSp = e.target.checked; render(); });
+  $("#ez-desc").addEventListener("input", e => { e.target.dataset.touched = "1"; });
+  $("#ez-name").addEventListener("input", e => { e.target.dataset.touched = "1"; });
+
+  $("#ez-save").addEventListener("click", () => {
+    const name = $("#ez-name").value.trim() || "Sprint completion copy";
+    const d = $("#ez-desc").value.trim();
+    if (!d) { CA.toast("Write the definition before saving the copy"); return; }
+    const copies = CA.store.get("m3:copies", []);
+    copies.unshift({ name, desc: d, at: new Date().toISOString() });
+    CA.store.set("m3:copies", copies.slice(0, 5));
+    listCopies();
+    if (CW.saveEvidence) CW.saveEvidence("m3", "definition", name + ": " + d);
+    CA.toast("Report copy saved · definition added to your evidence");
+    if (drilledQ43.board && drilledQ43.close) CA.awardOnce("widget:m3-replica", 150, "Report reconciled in the replica");
+    else CA.toast("Tip: drill through ALR-2026.q4.3 under both A and B to finish the reconciliation");
+  });
+  $("#ez-totals").addEventListener("click", () => {
+    const f = findSprint(currentSprintName()), t = TEAMS[f.team];
+    const b = measures(f.team, f.s, "board"), m = measures(f.team, f.s, state.def);
+    const txt = "Jira Sprint Report / Velocity (board " + t.board + "): " + b.dp + " pts, " + b.di + " items. eazyBI (" + DEF_LABEL[state.def] + "): " + m.dp + " pts, " + m.di + " items. Scope: Team " + t.name + " (Team field " + (state.impTeam ? "imported" : "not imported") + "), sprint " + f.s.name + " (id " + f.s.id + "), Story Points, " + IMPORT_LABEL[state.imp] + ".";
+    if (CW.saveEvidence) CW.saveEvidence("m3", "totals", txt);
+    CA.toast("Totals and scope sent to your evidence");
+  });
+  $("#ez-keys").addEventListener("click", () => {
+    const f = findSprint(currentSprintName());
+    const lines = f.s.it.map(i => i[0] + " (" + i[2] + " pts): at close " + i[3] + "; at " + (state.imp === "A" ? "earlier" : "latest") + " import " + (state.imp === "A" ? i[4] : i[5]) + (counted(f.team, i, state.def, state.imp) ? "; counted" : "; NOT counted"));
+    if (CW.saveEvidence) CW.saveEvidence("m3", "keys", f.s.name + " under " + DEF_LABEL[state.def] + ":\n" + lines.join("\n"));
+    CA.toast("Drilled keys sent to your evidence");
+  });
+
+  render(); listCopies();
+})();
+</script>
+</body>
+</html>

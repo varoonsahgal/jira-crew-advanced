@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M1 · Trace portfolio work and business outcomes · Crew Academy 301</title>
+<meta name="description" content="Module 1 of Jira Planning Analytics and Connected Work: explain the decision and evidence needed at each Initiative or Epic stage, and decide whether a delivered Epic has earned Done.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/site.css?v=1">
+<link rel="icon" href="assets/img/favicon.svg">
+<style>
+  .m1-stages td:first-child { font-weight: 700; white-space: nowrap; }
+  .m1-gate { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-1); margin: 18px 0 26px; overflow: hidden; }
+  .m1-gate-head { background: linear-gradient(90deg, var(--navy-900), var(--navy-700)); color: #fff; padding: 12px 18px; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .m1-gate-head h3 { color: #fff; margin: 0; font-size: 1.25rem; }
+  .m1-gate-body { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 18px; padding: 16px 18px; }
+  @media (max-width: 760px) { .m1-gate-body { grid-template-columns: minmax(0,1fr); } }
+  .m1-gate fieldset { border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px 10px; margin: 0 0 12px; }
+  .m1-gate legend { font-family: var(--font-display); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; font-size: .8rem; color: var(--ink-2); padding: 0 6px; }
+  .m1-gate .chk { display: flex; gap: 10px; align-items: flex-start; padding: 5px 0; font-size: .95rem; }
+  .m1-gate .chk input { width: 18px; height: 18px; margin-top: 3px; accent-color: var(--blue-600); flex: none; }
+  .m1-verdict { border-radius: 12px; padding: 14px 16px; border: 1px solid var(--line); background: var(--ice-50); }
+  .m1-verdict .stage { font-family: var(--font-display); font-size: 1.7rem; font-weight: 700; color: var(--navy-900); line-height: 1.1; }
+  .m1-verdict.st-done { background: var(--go-bg); border-color: #b5e6cd; }
+  .m1-verdict.st-mon { background: #eef4ff; border-color: #c8d9fb; }
+  .m1-verdict.st-esc { background: var(--alert-bg); border-color: #f2b7c0; }
+  .m1-verdict.st-dev { background: var(--warn-bg); border-color: #f4d48b; }
+  .m1-verdict ul { margin: 8px 0 0; padding-left: 20px; font-size: .94rem; }
+  .m1-verdict li { margin: 3px 0; }
+  .m1-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .m1-btns .btn { color: var(--blue-600); border-color: var(--line); background: var(--white); }
+  .m1-btns .btn.btn-blue { color: #fff; background: var(--blue-600); }
+  .m1-timeline { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; margin: 14px 0 18px; }
+  @media (max-width: 640px) { .m1-timeline { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+  .m1-timeline div { background: var(--white); border: 1px solid var(--line); border-top: 4px solid var(--sky-400); border-radius: 10px; padding: 10px 12px; font-size: .9rem; }
+  .m1-timeline div.now { border-top-color: var(--beacon); }
+  .m1-timeline div.gap { border-top-color: var(--alert); }
+  .m1-timeline b { display: block; font-family: var(--font-display); font-size: 1.1rem; color: var(--navy-900); }
+  .m1-roam td:nth-child(3) { font-weight: 700; }
+</style>
+</head>
+<body>
+<header id="site-header"></header>
+<main id="main">
+
+<section class="hero compact module-hero">
+  <div class="clouds" aria-hidden="true"><div class="cloud" style="top:20%;width:200px;height:46px;animation-duration:80s"></div><div class="cloud" style="top:64%;width:150px;height:36px;animation-duration:66s;animation-delay:-30s"></div></div>
+  <div class="wrap">
+    <div class="eyebrow">Module 1 of 8 · Session 1 · Connect outcomes to the forecast</div>
+    <h1>Trace portfolio work and business outcomes</h1>
+    <p class="lede">Delivered is not the same as done. Decide whether an Epic with every child finished has actually earned its place in the Done column.</p>
+    <div class="meta-row"><span class="chip">35 min</span><span class="chip">15 min practice</span><span class="chip gold">Lab: Close the work or keep monitoring</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap layout">
+    <aside class="toc" aria-label="On this page">
+      <h4>On this page</h4>
+      <ol>
+        <li><a href="#objective">Objective</a></li>
+        <li><a href="#l1">Portfolio stages are decisions</a></li>
+        <li><a href="#l2">Trace an Initiative and size it</a></li>
+        <li><a href="#l3">Monitored and outcome evidence</a></li>
+        <li><a href="#gate">Stage-gate inspector</a></li>
+        <li><a href="#l4">Risks, impediments and the leadership view</a></li>
+        <li><a href="#roam">ROAM sorter</a></li>
+        <li><a href="#demo">Instructor demo</a></li>
+        <li><a href="#m1-lab">Lab: Close the work or keep monitoring</a></li>
+        <li><a href="#check">Checkpoint</a></li>
+      </ol>
+    </aside>
+
+    <div>
+      <div class="objective-banner" id="objective">
+        <div class="eyebrow">Objective</div>
+        <p>Explain the decision and evidence needed at an Initiative or Epic stage.</p>
+      </div>
+      <ul class="topics" aria-label="Topics">
+        <li>Portfolio stages</li><li>Expected Business Impact</li><li>Lean Canvas link</li><li>PPM reference</li><li>Start date and target dates</li><li>Outcome Evidence</li><li>Portfolio T-shirt sizing</li><li>Team story estimates</li><li>Initiative permissions</li><li>ROAM risk treatment</li><li>Impediments</li><li>LeadershipRequest label</li>
+      </ul>
+
+      <div class="callout captain"><strong>Why this module opens the course</strong>The release review later today asks one question: does the evidence support shipping? Before you look at forecasts, reports and tests, you need to know what the work was <em>for</em>. Every Epic in the Crew portfolio states an expected business impact. That statement is the yardstick for every later decision, including whether finished work is really finished.</div>
+
+      <!-- Lesson 1 -->
+      <article class="lesson" id="l1">
+        <h2><span class="lesson-code">M1.1</span> Portfolio stages are decisions, not progress bars</h2>
+        <p>Initiatives and Epics in the Crew space follow the <b>Crew Portfolio Workflow</b>. Each status records a decision someone made, and each move needs evidence that the decision was sound. A delivery team's workflow asks "is the work done?". A portfolio workflow asks "was the work worth doing, and did it pay off?".</p>
+        <div class="flow" aria-label="Crew Portfolio Workflow">
+          <span class="st todo">New Idea</span><span class="arr">→</span><span class="st todo">Discovery</span><span class="arr">→</span><span class="st prog">Technical Analysis</span><span class="arr">→</span><span class="st prog">Prioritized</span><span class="arr">→</span><span class="st prog">Developing</span><span class="arr">→</span><span class="st prog">Monitored</span><span class="arr">→</span><span class="st done">Done</span><span class="arr">|</span><span class="st done">Canceled</span>
+        </div>
+        <p>The outline calls the fourth stage "Ready/Prioritized". The Crew example template uses <b>Prioritized</b>, and that's the name you'll see on the board. If your own team's template differs, the template owner decides which name wins.</p>
+
+        <div class="table-wrap">
+          <table class="data m1-stages">
+            <thead><tr><th>Stage</th><th>Decision this stage records</th><th>Evidence to move on</th><th>Crew example</th></tr></thead>
+            <tbody>
+              <tr><td>New Idea</td><td>Is this worth spending discovery time on?</td><td>A problem statement, a requester, a first Portfolio Size and a draft Expected Business Impact.</td><td><a data-jira="/browse/CRW-10">CRW-10</a> Swap Chat Assistant: XL, no parent, no business impact stated. It can't move on yet.</td></tr>
+              <tr><td>Discovery</td><td>Is the problem real and valuable?</td><td>A Lean Canvas link, user evidence and a measurable Expected Business Impact.</td><td><a data-jira="/browse/CRW-2">CRW-2</a> Fatigue-Safe Rostering (L, PPM-2027-021); <a data-jira="/browse/CRW-8">CRW-8</a> Reserve Crew Pickup.</td></tr>
+              <tr><td>Technical Analysis</td><td>Can we build it, and at what risk?</td><td>Options considered, dependencies found, risks raised as Risk items, spikes timeboxed.</td><td><a data-jira="/browse/CRW-7">CRW-7</a> Fatigue Rule Checks in Swaps.</td></tr>
+              <tr><td>Prioritized</td><td>Is it funded and sequenced?</td><td>PPM reference, target start and end, a release and an owning team.</td><td><a data-jira="/browse/CRW-6">CRW-6</a> Scheduler Approval Console (Crew App 4.3).</td></tr>
+              <tr><td>Developing</td><td>Is delivery on track?</td><td>Child progress, a plan forecast, owned risks, no unmanaged impediments.</td><td><a data-jira="/browse/CRW-3">CRW-3</a> Shift Swap Self-Service, <a data-jira="/browse/CRW-4">CRW-4</a> Swap Notifications.</td></tr>
+              <tr><td>Monitored</td><td>Did the shipped work deliver the outcome?</td><td>Released, a measurement window running, a named person collecting the evidence.</td><td><a data-jira="/browse/CRW-5">CRW-5</a> Swap Request Status Tracking (today's fixture).</td></tr>
+              <tr><td>Done</td><td>Outcome measured and recorded; follow-up decided.</td><td>Outcome Evidence that answers the Expected Business Impact with a number, a source and a date.</td><td>None yet. The Done column on the portfolio board is empty.</td></tr>
+              <tr><td>Canceled</td><td>Stopped on purpose (resolution Won't Do).</td><td>The reason, recorded where the next person will look.</td><td><a data-jira="/browse/CRW-9">CRW-9</a> Paper Swap Form Retirement: Outcome Evidence explains it was superseded.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <figure class="shot">
+          <div class="frame"><div class="frame-bar"><i></i><i></i><i></i><span>…atlassian.net/jira/software/c/projects/CRW/boards/64</span></div>
+          <img src="assets/img/crw-portfolio-board.jpg" alt="Crew Portfolio Kanban board with columns New Idea (CRW-10, CRW-11), Discovery (CRW-2, CRW-8), Technical Analysis (CRW-7), Prioritized (CRW-6), Developing (CRW-1, CRW-3, CRW-4), Monitored (CRW-5) and an empty Done column" loading="lazy"></div>
+          <figcaption>The Crew Portfolio board (board 64). Notice that Monitored holds exactly one Epic, CRW-5, and Done is empty. LeadershipRequest labels show on CRW-11, CRW-1 and CRW-3.</figcaption>
+        </figure>
+
+        <div class="callout standard"><strong>Golden Template diagnosis: the vanishing Epic</strong>When this board was first built, CRW-5 didn't appear at all. Kanban boards get a default sub-filter, <code>fixVersion in unreleasedVersions() OR fixVersion is EMPTY</code>, which hides anything in a released version. CRW-5 shipped in Crew App 4.1, so the board hid exactly the Epic that most needed watching. The sub-filter was cleared. When a portfolio item is "missing", check the board filter <em>and</em> the sub-filter before you assume the data is wrong.</div>
+        <pre data-jql data-label="The portfolio board's filter">project = CRW AND issuetype in (Initiative, Epic) ORDER BY Rank ASC</pre>
+      </article>
+
+      <!-- Lesson 2 -->
+      <article class="lesson" id="l2">
+        <h2><span class="lesson-code">M1.2</span> Trace an Initiative and size it at the right level</h2>
+        <p>The Crew hierarchy is <b>Initiative → Epic → Story, Task, Bug, Spike, Risk, Impediment or Improvement → Sub-task</b>. Tracing means following the parent links in both directions: up to the business case, down to the delivered work.</p>
+        <p><a data-jira="/browse/CRW-1">CRW-1 Crew Self-Service 2027</a> is the Initiative behind everything in this course. It's in <b>Developing</b>, sized <b>XL</b>, labelled <code>LeadershipRequest</code>, and links to a Lean Canvas and PPM reference <b>PPM-2027-014</b>. Its Expected Business Impact is the promise the release review will be judged against: <em>"40% fewer scheduler-handled swap requests, swap turnaround from 2 days to under 2 hours by Q2 2027."</em></p>
+
+        <figure class="shot">
+          <div class="frame"><div class="frame-bar"><i></i><i></i><i></i><span>…atlassian.net/browse/CRW-1</span></div>
+          <img src="assets/img/crw-1-initiative.jpg" alt="Initiative CRW-1 in Developing: empty Outcome Evidence, child Epics CRW-3, CRW-4, CRW-5, CRW-6 and CRW-9 with their portfolio statuses, Portfolio Size XL, Lean Canvas URL, PPM Reference PPM-2027-014 and target end Jun 30, 2027" loading="lazy"></div>
+          <figcaption>CRW-1. Notice three things. The child Epics sit in different stages, from Prioritized (CRW-6) to Canceled (CRW-9). The child progress bar reads only 16% Done. And the Initiative's own Outcome Evidence is still empty, which is fine while it's in Developing.</figcaption>
+        </figure>
+
+        <h3>Two queries, two different answers</h3>
+        <p><code>parent = CRW-1</code> returns only the direct children, which here are the Epics. With Premium, <code>portfolioChildIssuesOf()</code> walks the whole tree below an Initiative: Epics and the work under them. Filter it by work type to get the level you want.</p>
+        <pre data-jql data-label="Every Epic under CRW-1 (Premium) · expect 6">issue in portfolioChildIssuesOf("CRW-1") AND issuetype = Epic</pre>
+        <p>The verified answer is six Epics: CRW-3, CRW-4, CRW-5, CRW-6, CRW-9 and CRW-11. CRW-9 is Canceled, so a "how many Epics are left?" question needs a status clause too. Remove the <code>issuetype</code> clause and you'll also get the Stories and Bugs under those Epics. That's the query to use when you trace delivered work back to the Initiative it serves.</p>
+        <pre data-jql data-label="Direct children only">parent = CRW-1 ORDER BY status ASC</pre>
+
+        <h3>Portfolio T-shirt sizes and team story points answer different questions</h3>
+        <p>The portfolio fields <b>Portfolio Size</b> (XS, S, M, L, XL), Expected Business Impact, Outcome Evidence, Lean Canvas and PPM Reference live on Initiatives and Epics only. Story Points live on team work. They aren't two scales for the same thing.</p>
+        <div class="split">
+          <div class="vs"><h4>Portfolio Size</h4><p style="margin:0">Made early, by the people who fund and sequence work, before anyone has split it into stories. It compares one Epic with another: is CRW-10 (XL) a bigger bet than CRW-11 (S)? It supports <b>funding, sequencing and intake</b> decisions.</p></div>
+          <div class="vs"><h4>Story Points</h4><p style="margin:0">Made late, by the team that will build the work, on refined stories. Summed and compared with velocity, they support <b>sprint commitment and delivery forecasts</b>, such as the Plans capacity bars in Module 2.</p></div>
+        </div>
+        <p>CRW-5 is a useful calibration point. It was sized <b>S</b>, and its four Stories (CRW-12 to CRW-15) carried 5 + 3 + 5 + 8 = <b>21 points</b>, delivered in one sprint, SWP-2026.q4.1. That doesn't mean "S = 21 points". Another team, another quarter, another S would differ. It means you can look back and ask whether the S size was a sensible bet. Keep the two scales separate, and don't publish a conversion table. Once a conversion exists, people start treating T-shirt sizes as commitments.</p>
+        <div class="callout warn"><strong>Initiative permissions</strong>Who may create Initiatives, edit their portfolio fields or move them between stages is a governance decision. The template owner and the portfolio owner make it, not each team. In this course CRW is read-only for everyone except the instructor, so you'll inspect the portfolio but not change it. In your own space, check who holds that permission before a stage review. "Anyone can move it to Done" is how CRW-5 could have closed with no evidence at all.</div>
+
+        <div class="sort-game" data-id="m1-size" data-miles="100">
+          <h3 style="margin-top:0">Which estimate supports this decision?</h3>
+          <p class="muted" style="margin-top:0">Pick the estimate that should drive each decision. Read the explanation after each answer.</p>
+          <div class="sort-card" data-answer="Portfolio Size"><p>The portfolio group must choose between funding CRW-10 Swap Chat Assistant or CRW-11 Swap Analytics for Leadership next half.</p><div class="choices"><button>Portfolio Size</button><button>Story Points</button><button>Both, compared over time</button></div><div class="why">Neither Epic has refined stories yet. A relative T-shirt size (XL vs S) plus the stated business impact is the right level for an intake decision. Note that CRW-10 has no business impact stated, which matters as much as its size.</div></div>
+          <div class="sort-card" data-answer="Story Points"><p>Swap Squad decides how much to commit to SWP-2026.q4.5.</p><div class="choices"><button>Portfolio Size</button><button>Story Points</button><button>Both, compared over time</button></div><div class="why">Sprint commitment uses the team's own estimates against its demonstrated velocity (average 18.33 completed) and planned capacity. Portfolio sizes are far too coarse for a two-week decision.</div></div>
+          <div class="sort-card" data-answer="Both, compared over time"><p>The portfolio owner asks whether "S" Epics tend to turn out bigger than expected.</p><div class="choices"><button>Portfolio Size</button><button>Story Points</button><button>Both, compared over time</button></div><div class="why">This is calibration. You compare the original size with what was delivered (CRW-5: S, 21 points in one sprint) across several Epics. You learn whether sizing is biased. You don't convert one scale into the other.</div></div>
+          <div class="sort-card" data-answer="Story Points"><p>The plan shows Crew App 4.2 at risk and leadership wants to know how much work is left on CRW-3.</p><div class="choices"><button>Portfolio Size</button><button>Story Points</button><button>Both, compared over time</button></div><div class="why">"How much is left" is a delivery forecast: remaining estimated stories against capacity. Also say what isn't estimated yet. Unestimated work (CRW-34 is a High Bug with no estimate) makes any point total an underestimate.</div></div>
+          <div class="game-score" aria-live="polite"></div>
+          <button class="btn btn-sm btn-ghost reset" type="button" style="color:var(--blue-600);border-color:var(--line)">Reset</button>
+        </div>
+      </article>
+
+      <!-- Lesson 3 -->
+      <article class="lesson" id="l3">
+        <h2><span class="lesson-code">M1.3</span> Monitored: the stage most teams skip</h2>
+        <p>Monitored exists because shipping isn't the goal. The goal is the effect described in Expected Business Impact. An Epic sits in Monitored after its work is released and before anyone has measured whether the effect happened. Teams skip it because the board looks tidier when delivered Epics jump straight to Done. Then nobody ever finds out whether the work paid off.</p>
+
+        <figure class="shot">
+          <div class="frame"><div class="frame-bar"><i></i><i></i><i></i><span>…atlassian.net/browse/CRW-5</span></div>
+          <img src="assets/img/crw-5-monitored-epic.jpg" alt="Epic CRW-5 Swap Request Status Tracking in Monitored. Description: released in Crew App 4.1, waiting for call-volume data. Expected Business Impact filled in, Outcome Evidence empty, Assignee unassigned, Portfolio Size S, target end Oct 30 2026, child work items 100% Done" loading="lazy"></div>
+          <figcaption>CRW-5 under parent CRW-1. Read it like an auditor. The description says the team is "waiting for the call-volume data before closing". Outcome Evidence is empty. Children are 100% Done. And the <b>Assignee is Unassigned</b>, so nobody is named to collect the data.</figcaption>
+        </figure>
+
+        <h3>Read the dates, not just the fields</h3>
+        <p>CRW-5's expected impact sets its own measurement window: <em>"Reduce 'where is my swap?' calls to scheduling by 30% <b>within 6 weeks of release</b>."</em> Work out where that window sits:</p>
+        <div class="m1-timeline" aria-label="CRW-5 measurement timeline">
+          <div><b>30 Oct 2026</b>Crew App 4.1 released (CRW-5's target end)</div>
+          <div class="now"><b>22 Nov 2026</b>Today: just over three weeks into the window</div>
+          <div><b>11 Dec 2026</b>Six weeks after release: the window closes</div>
+          <div class="gap"><b>Not set</b>Who measures, from what source, against what baseline</div>
+        </div>
+        <p>So the honest answer today isn't "close it" and isn't "it's late". The window is still open. The problem is that nothing in Jira says <b>who</b> will produce the evidence, <b>from which source</b>, or <b>compared with what</b>. If nobody fixes that, CRW-5 will still be in Monitored in February.</p>
+
+        <h3>What counts as outcome evidence</h3>
+        <div class="split">
+          <div class="vs" style="border-color:#b5e6cd"><h4 style="color:var(--go)">Evidence</h4><ul style="margin:0;padding-left:18px">
+            <li>A <b>baseline</b>: swap-status calls to scheduling for a comparable period before 30 Oct.</li>
+            <li>The <b>measured value</b> for the six weeks after release, and the percentage change against the 30% target.</li>
+            <li>The <b>source</b> (for example the scheduling contact log) and a link to the extract.</li>
+            <li><b>Who</b> measured it and <b>when</b>, plus any caveat such as a holiday-season effect.</li>
+          </ul></div>
+          <div class="vs" style="border-color:#f2b7c0"><h4 style="color:var(--alert)">Not evidence</h4><ul style="margin:0;padding-left:18px">
+            <li>"All child items are Done." That's a delivery fact, not an outcome.</li>
+            <li>"Crew App 4.1 shipped on time."</li>
+            <li>"Schedulers say it feels quieter." An anecdote is a starting point, not a measurement.</li>
+            <li>A number with no source, period or baseline.</li>
+          </ul></div>
+        </div>
+        <div class="callout tip"><strong>Done doesn't mean "target hit"</strong>An Epic can close as Done when the outcome is <em>measured and recorded</em>, even if it missed the 30% target. The Outcome Evidence then says so, and the follow-up decision (new Epic, accept the result, or stop) is recorded. Closing an Epic without measuring is the failure. Missing a target and saying so is learning.</div>
+        <pre data-jql data-label="Monitored Epics with no outcome evidence · expect CRW-5">project = CRW AND issuetype = Epic AND status = Monitored AND "Outcome Evidence" is EMPTY</pre>
+        <pre data-jql data-label="Delivered children of CRW-5 · expect 4">parent = CRW-5 AND statusCategory = Done</pre>
+      </article>
+
+      <!-- Interactive: stage-gate inspector -->
+      <section id="gate" class="m1-gate" aria-labelledby="gate-h" style="padding:0">
+        <div class="m1-gate-head"><h3 id="gate-h">Stage-gate inspector: close it or keep monitoring?</h3><span class="chip gold">Interactive</span></div>
+        <div class="m1-gate-body">
+          <div>
+            <p style="margin-top:0;font-size:.95rem">Tick only what you can <b>observe</b> in Jira, not what you assume. Start with <b>Load CRW-5 as it is today</b>, then change one box at a time and watch the recommendation move.</p>
+            <fieldset><legend>Delivery</legend>
+              <label class="chk"><input type="checkbox" data-g="children"> All child work items are Done</label>
+              <label class="chk"><input type="checkbox" data-g="released"> The work is in a released version</label>
+            </fieldset>
+            <fieldset><legend>Outcome</legend>
+              <label class="chk"><input type="checkbox" data-g="impact"> Expected Business Impact is stated and measurable</label>
+              <label class="chk"><input type="checkbox" data-g="window"> The measurement window has ended</label>
+              <label class="chk"><input type="checkbox" data-g="baseline"> A baseline and data source are recorded</label>
+              <label class="chk"><input type="checkbox" data-g="evidence"> Outcome Evidence compares the result with the target</label>
+            </fieldset>
+            <fieldset><legend>Ownership</legend>
+              <label class="chk"><input type="checkbox" data-g="owner"> A named person owns the measurement</label>
+              <label class="chk"><input type="checkbox" data-g="review"> A review date is set</label>
+              <label class="chk"><input type="checkbox" data-g="superseded"> The outcome is no longer wanted (superseded or withdrawn)</label>
+            </fieldset>
+            <div class="m1-btns">
+              <button type="button" class="btn btn-sm btn-blue" id="gate-load">Load CRW-5 as it is today</button>
+              <button type="button" class="btn btn-sm" id="gate-clear">Clear</button>
+            </div>
+          </div>
+          <div>
+            <div class="m1-verdict" id="gate-verdict" aria-live="polite">
+              <div class="stat-l">Recommended stage</div>
+              <div class="stage" id="gate-stage">Tick what you observe</div>
+              <p id="gate-why" style="margin:8px 0 0;font-size:.95rem"></p>
+              <ul id="gate-missing"></ul>
+            </div>
+            <div class="m1-btns">
+              <button type="button" class="btn btn-sm" id="gate-send">Send to my Module 1 evidence</button>
+            </div>
+            <p class="muted" style="font-size:.85rem;margin-top:10px">This sends the stage and the missing-evidence list to the evidence card in the lab below. Edit the text there in your own words.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Lesson 4 -->
+      <article class="lesson" id="l4">
+        <h2><span class="lesson-code">M1.4</span> Risks, impediments and the leadership view</h2>
+        <p>A <b>Risk</b> is something that <em>might</em> hurt the outcome. An <b>Impediment</b> is something that <em>is</em> blocking work right now. They need different handling, and mixing them up is how a real blocker hides in a risk register for three weeks.</p>
+        <h3>Risk treatment: ROAM</h3>
+        <p>Every Crew Risk carries a <b>Risk Treatment</b> value. Each value is a claim, and each claim needs its own evidence:</p>
+        <div class="table-wrap">
+          <table class="data m1-roam">
+            <thead><tr><th>Key</th><th>Risk</th><th>Treatment</th><th>Evidence that treatment needs</th></tr></thead>
+            <tbody>
+              <tr><td><a data-jira="/browse/CRW-72">CRW-72</a></td><td>Nightly roster sync delays swap visibility</td><td>Resolved</td><td>The risk no longer exists: what closed it (a change, a release) and when. CRW-72 is also Done.</td></tr>
+              <tr><td><a data-jira="/browse/CRW-69">CRW-69</a></td><td>Rules vendor API rate limits during holiday peak</td><td>Owned</td><td>A named owner, a plan and a review date. CRW-69 is High, labelled LeadershipRequest and relates to Spike <a data-jira="/browse/CRW-44">CRW-44</a> (vendor API latency under peak load). The spike's result is the evidence the owner needs.</td></tr>
+              <tr><td><a data-jira="/browse/CRW-70">CRW-70</a></td><td>Union review of the self-service swap policy</td><td>Accepted</td><td>Who accepted the impact, on what reasoning, and the trigger that reopens it (for example the review outcome).</td></tr>
+              <tr><td><a data-jira="/browse/CRW-71">CRW-71</a></td><td>Crew personal data in SMS notifications</td><td>Mitigated</td><td>Proof that the mitigation works, not just that it was planned. You'll meet this one again in Module 4, where a test is supposed to provide that proof.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <pre data-jql data-label="All Crew risks · expect 4 (CRW-69 to CRW-72)">project = CRW AND issuetype = Risk ORDER BY key ASC</pre>
+
+        <h3>An impediment, escalated properly</h3>
+        <p><a data-jira="/browse/CRW-46">CRW-46</a> <b>Rules vendor sandbox credentials not issued</b> is an Impediment, not a Risk. It's Highest priority, flagged, labelled <code>escalated</code>, was escalated to Vendor Management on 18 November, and the credentials are needed by 25 November. It <b>blocks CRW-25</b>, the trip-board swap Story in the active sprint. That's a complete escalation record: what's blocked, who it went to, when, and the date after which the plan breaks. Use it as your template whenever you escalate.</p>
+        <pre data-jql data-label="Open blockers and blocked work · expect 5">project = CRW AND (Flagged is not EMPTY OR issueLinkType = "is blocked by") AND statusCategory != Done</pre>
+
+        <h3>The leadership view runs on a label</h3>
+        <p>The approved leadership view in the Crew example is a filter on the practice label <code>LeadershipRequest</code>. Four items carry it today: the Initiative CRW-1, the Epics CRW-3 and CRW-11, and the Risk CRW-69. A Risk appears in that view only if someone deliberately labels it, which is a decision about what leadership needs to see.</p>
+        <pre data-jql data-label="Leadership view · expect CRW-1, CRW-3, CRW-11, CRW-69">project = CRW AND labels = LeadershipRequest ORDER BY issuetype DESC, key ASC</pre>
+        <div class="callout warn"><strong>Labels are fragile by design</strong>A label is free text. <code>LeadershipRequests</code> or <code>Leadership-Request</code> creates a new label that this filter won't match, so the item silently disappears from leadership's view. Two habits help. Choose the label from the suggestion list rather than typing it. And keep the <code>project = CRW</code> clause, so practice labels added in other spaces don't leak into the view.</div>
+      </article>
+
+      <div class="sort-game" id="roam" data-id="m1-roam" data-miles="150">
+        <h3 style="margin-top:0">ROAM sorter: what is each item, and how is it treated?</h3>
+        <p class="muted" style="margin-top:0">Read each record as you'd find it in CRW and choose its treatment, or say it isn't a risk at all.</p>
+        <div class="sort-card" data-answer="Owned"><p><b>CRW-69</b> Rules vendor API rate limits during holiday peak. High priority, in Development, a named owner is tracking it, related to Spike CRW-44.</p><div class="choices"><button>Resolved</button><button>Owned</button><button>Accepted</button><button>Mitigated</button><button>Impediment</button></div><div class="why">Owned. Someone has taken responsibility and work is under way (the CRW-44 spike measures latency under peak load). It stays Owned until the spike's evidence lets the owner resolve, mitigate or accept it.</div></div>
+        <div class="sort-card" data-answer="Accepted"><p><b>CRW-70</b> Union review of the self-service swap policy. The team can't speed it up and has decided to proceed while the review runs.</p><div class="choices"><button>Resolved</button><button>Owned</button><button>Accepted</button><button>Mitigated</button><button>Impediment</button></div><div class="why">Accepted. The impact is understood and someone with authority has agreed to carry it. The record should name who accepted it and what would reopen it, such as the review asking for policy changes.</div></div>
+        <div class="sort-card" data-answer="Mitigated"><p><b>CRW-71</b> Crew personal data in SMS notifications. Message templates were changed to reduce what an SMS reveals.</p><div class="choices"><button>Resolved</button><button>Owned</button><button>Accepted</button><button>Mitigated</button><button>Impediment</button></div><div class="why">Mitigated: action taken to reduce likelihood or impact. A mitigation claim is only as good as the test that proves it. In Module 4 you'll check whether any test actually covers it.</div></div>
+        <div class="sort-card" data-answer="Resolved"><p><b>CRW-72</b> Nightly roster sync delays swap visibility. The underlying sync problem was fixed and the item is Done.</p><div class="choices"><button>Resolved</button><button>Owned</button><button>Accepted</button><button>Mitigated</button><button>Impediment</button></div><div class="why">Resolved: the risk no longer exists. Record what closed it so nobody reopens the same discussion next quarter.</div></div>
+        <div class="sort-card" data-answer="Impediment"><p><b>CRW-46</b> Rules vendor sandbox credentials not issued. Highest priority, flagged, blocks CRW-25, needed by 25 November.</p><div class="choices"><button>Resolved</button><button>Owned</button><button>Accepted</button><button>Mitigated</button><button>Impediment</button></div><div class="why">Not a risk. It's already happening and already blocking work, so it's an Impediment with an escalation (Vendor Management, 18 Nov) and a needed-by date. ROAM values don't apply to it.</div></div>
+        <div class="game-score" aria-live="polite"></div>
+        <button class="btn btn-sm btn-ghost reset" type="button" style="color:var(--blue-600);border-color:var(--line)">Reset</button>
+      </div>
+
+      <div class="callout demo" id="demo"><strong>Instructor demo · 10 min</strong>
+        <ol style="margin:6px 0 0;padding-left:20px">
+          <li>Open the <a data-jira="/jira/software/c/projects/CRW/boards/64">Crew Portfolio board ↗</a>. Walk the columns left to right and say the decision each stage records. Point out that Done is empty and Monitored holds only CRW-5.</li>
+          <li>Open <a data-jira="/browse/CRW-1">CRW-1 ↗</a>. Read the Expected Business Impact aloud. Show the Lean Canvas link, PPM-2027-014 and Portfolio Size XL. Show the child Epics at different stages and the 16% Done bar.</li>
+          <li>Run <code>issue in portfolioChildIssuesOf("CRW-1") AND issuetype = Epic</code> (6 Epics), then <code>parent = CRW-1</code>. Explain when you'd use each.</li>
+          <li>Follow the benefit down: open <a data-jira="/browse/CRW-5">CRW-5 ↗</a>. Expected impact, Outcome Evidence empty, children 100% Done, Assignee Unassigned. Ask the room: "Close it?" Take two answers, then work out the six-week window together (30 Oct → 11 Dec).</li>
+          <li>Contrast with <a data-jira="/browse/CRW-9">CRW-9 ↗</a>, which is Canceled with its reason in Outcome Evidence. Evidence applies to stopping work too.</li>
+          <li>Show the Impediment: open <a data-jira="/browse/CRW-46">CRW-46 ↗</a> (flag, <code>escalated</code> label, needed by 25 Nov), then its link to CRW-25.</li>
+          <li>Leadership view: run <code>project = CRW AND labels = LeadershipRequest</code> (4 results). Show that Risk CRW-69 is in it. Then, on an instructor practice item in CRP, add the label <code>LeadershipRequest</code> and show that a filter <em>without</em> the project clause picks it up. Remove the label again.</li>
+        </ol>
+      </div>
+
+      <!-- Lab -->
+      <article class="mission" id="m1-lab" data-miles="400">
+        <div class="mission-head">
+          <div><span class="mcode">LAB M1 · 15 MIN · CRW READ-ONLY · YOUR SEAT</span><h3>Close the work or keep monitoring</h3></div>
+          <span class="turb" title="Difficulty"><i class="on"></i><i class="on"></i><i></i><i></i> Turbulence</span>
+        </div>
+        <div class="mission-body">
+          <div class="brief"><b>Brief</b> The portfolio owner wants the Monitored column cleared before the release review. "CRW-5 is 100% done, just close it." Your job is to decide whether CRW-5 has earned Done and to justify the call with evidence. <b>CRW is read-only:</b> inspect, search and report, but never edit, transition, comment or label anything there. The only write in this lab is an optional comment on your own seat epic <span data-seat-epic></span> in CRP (summary prefix <code>L{SEAT} · </code>).</div>
+          <ol class="steps">
+            <li><b>Inspect the Epic.</b> Open <a data-jira="/browse/CRW-5">CRW-5 ↗</a> and note its status, Expected Business Impact, Outcome Evidence, Portfolio Size, target end, Assignee and child progress. Run the two checks below. You should get 1 and 4.
+              <pre data-jql data-label="Monitored with no evidence">project = CRW AND issuetype = Epic AND status = Monitored AND "Outcome Evidence" is EMPTY</pre>
+              <pre data-jql data-label="Delivered children">parent = CRW-5 AND statusCategory = Done</pre>
+            </li>
+            <li><b>Place it in the measurement window.</b> CRW-5 shipped in Crew App 4.1 on 30 October. Work out when the six-week window closes and where today (22 November) sits in it. Then use the <a href="#gate">stage-gate inspector</a>: load CRW-5, check that each box matches what you actually saw, and read the recommendation.</li>
+            <li><b>List the missing evidence.</b> Write down exactly what Outcome Evidence must contain before Done is justified: baseline, measured value, source, period, who measured it. Be specific to "where is my swap?" calls.</li>
+            <li><b>Name ownership and risk.</b> Who should own the measurement, given that the Assignee is empty? What happens if no call-volume data exists by the review date? Decide whether that's a Risk to raise (and with which ROAM treatment), and who you'd escalate to. Use CRW-46's escalation record as your model.</li>
+            <li><b>Explain the sizing.</b> In two sentences, explain how CRW-5's Portfolio Size (S) and its Stories' points (21) each supported a different decision, and why you wouldn't convert one into the other.</li>
+            <li><b>Record it.</b> Fill in the evidence card below. Optionally, add your stage call as a comment on your seat epic <a data-jira-seat-epic href="#">(<span data-seat-epic></span>) ↗</a>, starting with <code>L{SEAT} · M1 decision on CRW-5:</code>. Comment only on your own seat epic.</li>
+          </ol>
+          <pre data-jql data-label="Check your work: your seat epic was updated">project = CRP AND issuetype = Epic AND summary ~ "L{SEAT}" AND updated >= -1d</pre>
+          <details class="reveal"><summary>Debrief: what a strong answer looks like</summary><div>
+            <p><b>Stage: keep CRW-5 in Monitored.</b> Delivery is finished (4 of 4 children Done, released 30 Oct), so it doesn't go back to Developing. It hasn't earned Done, because the measurement window runs to <b>11 December 2026</b> and Outcome Evidence is empty. Closing it now would record a delivery fact as if it were an outcome.</p>
+            <p><b>Evidence still needed:</b> the swap-status call volume to scheduling for a comparable pre-release period (baseline); the same measure for 30 Oct – 11 Dec; the percentage change against the 30% target; the source system and extract link; who measured and when; caveats (holiday season, the Crew App 4.2 release on 18 Dec if the measurement runs late).</p>
+            <p><b>Ownership and risk:</b> the Assignee is empty, so name a measurement owner, normally the Product Owner of the Swap Squad work, with a review date shortly after 11 Dec. If the call-volume source isn't confirmed, raise a Risk ("outcome for CRW-5 can't be measured"), treatment <b>Owned</b> by that person. Escalate to the portfolio owner if there's still no data by the review date. If the data shows the outcome no longer matters, the honest move is Done with the result recorded, or Canceled with the reason, as CRW-9 did.</p>
+            <p><b>Sizing:</b> "S" was an early, relative bet that helped the portfolio fund and sequence CRW-5 against other Epics. The 21 points were the team's estimates, used to commit work to SWP-2026.q4.1. Comparing the two afterwards calibrates future sizing. Converting them would turn a funding guess into a delivery promise.</p>
+          </div></details>
+
+          <div class="evidence" data-evidence="m1">
+            <h4>Learner output · Module 1</h4>
+            <p class="hint">A justified portfolio stage and a short list of outcome evidence, risk treatment and ownership still needed.</p>
+            <label for="m1-stage">Portfolio stage for CRW-5 and why</label><textarea id="m1-stage" data-field="stage" placeholder="Keep in Monitored because…"></textarea>
+            <label for="m1-evidence">Outcome evidence still needed before Done</label><textarea id="m1-evidence" data-field="evidence" placeholder="Baseline…, measured value…, source…, period…, measured by…"></textarea>
+            <label for="m1-risk">Risk treatment, owner and any escalation</label><textarea id="m1-risk" data-field="risk" placeholder="Owner role…, review date…, Risk raised? ROAM value…, escalate to… if…"></textarea>
+            <label for="m1-sizing">How portfolio sizing and team estimates support their decisions</label><textarea id="m1-sizing" data-field="sizing" placeholder="Portfolio Size S supported… Story points (21) supported…"></textarea>
+          </div>
+        </div>
+        <div class="mission-foot"><span class="miles-tag">+400 mi</span><button class="complete-btn" type="button">Mark lab complete</button></div>
+      </article>
+
+      <section class="quiz" id="check" data-id="m1" data-pass="75" data-miles="200" style="padding:24px">
+        <h2 style="margin-top:0">Checkpoint</h2>
+        <div class="q"><p class="prompt">1. CRW-5's children are all Done and Crew App 4.1 shipped on 30 October. Outcome Evidence is empty and the impact is measured "within 6 weeks of release". On 22 November, what's the right call?</p><div class="opts">
+          <button class="opt" type="button" data-right>Keep it in Monitored, name a measurement owner and set a review date after the window closes on 11 December.</button>
+          <button class="opt" type="button">Move it to Done. Every child item is finished and the release shipped.</button>
+          <button class="opt" type="button">Move it back to Developing until the outcome is reached.</button>
+          <button class="opt" type="button">Cancel it, because the outcome can't be proven yet.</button></div>
+          <div class="why">Delivery is complete, so it doesn't belong in Developing. Done needs measured outcome evidence, and the window is still open. Canceled means you stopped the work deliberately, which isn't the case. The gap to fix today is ownership: nobody is assigned to produce the evidence.</div></div>
+        <div class="q"><p class="prompt">2. You need every Epic under Initiative CRW-1, whatever its stage. Which statement is accurate?</p><div class="opts">
+          <button class="opt" type="button" data-right><code>issue in portfolioChildIssuesOf("CRW-1") AND issuetype = Epic</code> returns the six Epics. Without the work-type clause, the function also returns the work below them.</button>
+          <button class="opt" type="button"><code>parent = CRW-1</code> returns the Epics and all their Stories, because parent links are inherited.</button>
+          <button class="opt" type="button"><code>portfolioChildIssuesOf()</code> works in any Jira plan and only returns direct children.</button>
+          <button class="opt" type="button">You can't query the Initiative level with JQL. Use the board instead.</button></div>
+          <div class="why"><code>parent =</code> stops at direct children. <code>portfolioChildIssuesOf()</code> needs Premium (Plans) and walks the whole tree, so you filter it by work type to get the level you want. Here that's CRW-3, 4, 5, 6, 9 and 11.</div></div>
+        <div class="q"><p class="prompt">3. Risk CRW-70 (union review) is marked Accepted. What should the record contain for that treatment to be credible?</p><div class="opts">
+          <button class="opt" type="button" data-right>Who accepted the impact, the reasoning, and the trigger that would reopen it.</button>
+          <button class="opt" type="button">A linked Story that removes the risk.</button>
+          <button class="opt" type="button">Status Done and resolution Won't Do.</button>
+          <button class="opt" type="button">The LeadershipRequest label, so leadership sees it.</button></div>
+          <div class="why">Accepted means someone with authority has chosen to carry the impact. Without a named decision maker and a revisit trigger, "Accepted" is just "ignored". A Story that removes the risk would make it Mitigated or Resolved.</div></div>
+        <div class="q"><p class="prompt">4. A sponsor asks you to publish "S = 20 points, M = 40 points" so the portfolio can be forecast in points. What's the best response?</p><div class="opts">
+          <button class="opt" type="button" data-right>Decline the conversion. Use T-shirt sizes for funding and sequencing and team points for sprint forecasts, and compare them afterwards to calibrate.</button>
+          <button class="opt" type="button">Agree. CRW-5 was S and delivered 21 points, so S = 21 is evidence-based.</button>
+          <button class="opt" type="button">Replace Portfolio Size with Story Points on all Epics.</button>
+          <button class="opt" type="button">Agree, but only for Swap Squad's Epics.</button></div>
+          <div class="why">One data point isn't a scale, and points depend on the team that estimated them. A conversion table turns an early funding guess into a delivery commitment. Calibration (was S a good bet?) is the useful comparison.</div></div>
+        <div class="q"><p class="prompt">5. An Epic is labelled <code>LeadershipRequests</code> and doesn't appear in the leadership view. Why?</p><div class="opts">
+          <button class="opt" type="button" data-right>The leadership filter matches the exact label <code>LeadershipRequest</code>. The extra "s" is a different label.</button>
+          <button class="opt" type="button">Only Initiatives can appear in the leadership view.</button>
+          <button class="opt" type="button">Labels on Epics are hidden from JQL.</button>
+          <button class="opt" type="button">The Epic must also be flagged.</button></div>
+          <div class="why">Labels are free text. A near-miss spelling creates a new label, and the filter silently misses the item. Pick labels from the suggestion list, and check the leadership query's count when it matters.</div></div>
+        <div class="quiz-score"><span class="msg"></span><span><b>0 / 5</b> <button class="btn btn-sm btn-ghost retry" type="button">Retry</button></span></div>
+      </section>
+
+      <nav class="module-nav" aria-label="Module navigation">
+        <a class="prev" href="index.html"><small>Previous</small><b>Course home</b></a>
+        <a class="next" href="m2.html"><small>Next</small><b>M2 · Compare Plans scenarios across teams</b></a>
+      </nav>
+    </div>
+  </div>
+</section>
+
+</main>
+<div id="site-footer"></div>
+<script src="assets/js/config.js?v=1"></script>
+<script src="assets/js/site.js?v=1"></script>
+<script src="assets/js/widgets.js?v=1"></script>
+<script>
+(function () {
+  "use strict";
+  var root = document.getElementById("gate");
+  if (!root) return;
+  var boxes = Array.prototype.slice.call(root.querySelectorAll("input[data-g]"));
+  var stageEl = document.getElementById("gate-stage"), whyEl = document.getElementById("gate-why"), missEl = document.getElementById("gate-missing"), card = document.getElementById("gate-verdict");
+  var touched = false, last = { stage: "", why: "", missing: [] };
+  function v(k) { var b = root.querySelector('input[data-g="' + k + '"]'); return b && b.checked; }
+  var LABELS = {
+    children: "Finish or descope the remaining child work",
+    released: "Release the work (or record why it ships elsewhere)",
+    impact: "State a measurable Expected Business Impact (what, how much, by when)",
+    window: "Wait for the measurement window to close (CRW-5: 11 Dec 2026)",
+    baseline: "Record a baseline and the data source (e.g. swap-status calls to scheduling before 30 Oct)",
+    evidence: "Write Outcome Evidence that compares the measured result with the target, with source and date",
+    owner: "Name a person who owns the measurement (CRW-5's Assignee is empty)",
+    review: "Set a review date for the stage decision"
+  };
+  function evaluate() {
+    var s = {}; boxes.forEach(function (b) { s[b.dataset.g] = b.checked; });
+    var missing = [], stage, why, cls;
+    if (!touched) { stageEl.textContent = "Tick what you observe"; whyEl.textContent = ""; missEl.innerHTML = ""; card.className = "m1-verdict"; return; }
+    if (s.superseded) {
+      stage = "Canceled"; cls = "st-dev";
+      why = "If the outcome is no longer wanted, cancel deliberately (resolution Won't Do) and record the reason in Outcome Evidence, as CRW-9 does. Don't leave it parked in Monitored.";
+      if (!s.owner) missing.push("Name who made the call to stop");
+    } else if (!s.children || !s.released) {
+      stage = "Developing"; cls = "st-dev";
+      why = "Delivery isn't finished, so outcome measurement hasn't started. Monitored begins when the work is in users' hands.";
+      ["children", "released"].forEach(function (k) { if (!s[k]) missing.push(LABELS[k]); });
+      if (!s.impact) missing.push(LABELS.impact);
+    } else if (s.evidence && s.baseline) {
+      stage = "Done"; cls = "st-done";
+      why = "Delivered, measured and recorded. Close it, whether or not the target was hit, and record the follow-up decision.";
+      if (!s.window) missing.push("Check: is the evidence final? The window hasn't closed, so say it's an early reading or wait");
+      if (!s.owner) missing.push("Record who measured it");
+    } else if (!s.impact) {
+      stage = "Monitored · no yardstick"; cls = "st-esc";
+      why = "There's nothing to measure against. Escalate to the portfolio owner: either define the expected impact now or close it with an explicit 'not measured' note. Don't pretend it succeeded.";
+      ["impact", "baseline", "evidence", "owner", "review"].forEach(function (k) { if (!s[k]) missing.push(LABELS[k]); });
+    } else if (s.window) {
+      stage = "Monitored · overdue"; cls = "st-esc";
+      why = "The measurement window has closed but there's no evidence. This is now a portfolio risk: escalate to the portfolio owner with a date, and raise a Risk if the data source is in doubt.";
+      ["baseline", "evidence", "owner", "review"].forEach(function (k) { if (!s[k]) missing.push(LABELS[k]); });
+    } else {
+      stage = "Monitored · keep monitoring"; cls = "st-mon";
+      why = "Delivery is done and the window is still open. Keep it in Monitored, but make sure someone will actually produce the evidence when the window closes.";
+      ["baseline", "evidence", "owner", "review"].forEach(function (k) { if (!s[k]) missing.push(LABELS[k]); });
+      if (!s.window) missing.unshift(LABELS.window);
+    }
+    stageEl.textContent = stage; whyEl.textContent = why; card.className = "m1-verdict " + cls;
+    missEl.innerHTML = missing.length ? missing.map(function (m) { return "<li>" + window.CA.esc(m) + "</li>"; }).join("") : "<li>Nothing missing from this checklist.</li>";
+    last = { stage: stage, why: why, missing: missing };
+    if (stage.indexOf("keep monitoring") > -1 && !s.evidence && !s.window && s.children && s.released && s.impact) window.CA.awardOnce("widget:m1-gate", 100, "Stage-gate inspected");
+  }
+  boxes.forEach(function (b) { b.addEventListener("change", function () { touched = true; evaluate(); }); });
+  document.getElementById("gate-load").addEventListener("click", function () {
+    var today = { children: true, released: true, impact: true, window: false, baseline: false, evidence: false, owner: false, review: false, superseded: false };
+    boxes.forEach(function (b) { b.checked = !!today[b.dataset.g]; });
+    touched = true; evaluate(); window.CA.toast("Loaded CRW-5 as observed on 22 Nov");
+  });
+  document.getElementById("gate-clear").addEventListener("click", function () { boxes.forEach(function (b) { b.checked = false; }); touched = false; evaluate(); });
+  document.getElementById("gate-send").addEventListener("click", function () {
+    if (!last.stage) { window.CA.toast("Tick what you observe first"); return; }
+    window.CW.saveEvidence("m1", "stage", "CRW-5: " + last.stage + ". " + last.why);
+    if (last.missing.length) window.CW.saveEvidence("m1", "evidence", last.missing.map(function (m) { return "- " + m; }).join("\n"));
+    window.CA.toast("Sent to your Module 1 evidence card");
+  });
+})();
+</script>
+</body>
+</html>
