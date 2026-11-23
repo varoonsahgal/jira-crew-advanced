@@ -429,7 +429,7 @@
   function permFor(n) {
     var l = n.toLowerCase();
     if (/accessible|userinfo|user_info/.test(l)) return "None beyond sign-in (tells you which sites and which account)";
-    if (/confluence|page|cql|space/.test(l) && !/jira/.test(l)) return "Confluence space permissions (Confluence isn't on the training site)";
+    if (/confluence|page|cql|space/.test(l) && !/jira/.test(l)) return "Confluence space permissions (the training site's Confluence has one space, CWW)";
     if (/transition/.test(l) && !/^get/.test(l)) return "Transition work items";
     if (/comment/.test(l) && WRITE.test(l)) return "Add comments";
     if (/create/.test(l)) return "Create work items";
